@@ -13,9 +13,8 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 | i18n     | react-i18next (DE / EN / UA)            |
 | Routing  | React Router v7                         |
 | Backend  | Spring Boot 3.4, Kotlin                 |
-| Email    | Spring Mail — iCloud SMTP               |
+| Email    | Resend API                              |
 | Notify   | Telegram Bot API                        |
-| Serving  | nginx (SPA + API proxy)                 |
 | Deploy   | Vercel (frontend) + Render (backend)    |
 
 ---
@@ -38,8 +37,8 @@ dj-website/
 │   │   ├── pages/                  ← Impressum, Privacy
 │   │   ├── i18n/locales/           ← de / en / ua translation JSON files
 │   │   └── styles/globals.css
-│   ├── Dockerfile
-│   └── nginx.conf
+│   ├── vercel.json
+│   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
     │   ├── DjWebsiteBackendApplication.kt
@@ -58,19 +57,13 @@ dj-website/
 
 Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 
-| Variable             | Description                              |
-| -------------------- | ---------------------------------------- |
-| `MAIL_USERNAME`      | iCloud email address                     |
-| `MAIL_PASSWORD`      | iCloud app-specific password             |
-| `CONTACT_EMAIL`      | Where booking emails are delivered       |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather       |
-| `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID               |
-| `VERCEL_URL`         | Vercel preview URL (set in Railway only) |
-
-### Generate iCloud app-specific password
-
-1. Go to [appleid.apple.com](https://appleid.apple.com)
-2. Sign In → App-Specific Passwords → Generate
+| Variable             | Description                                  |
+| -------------------- | -------------------------------------------- |
+| `RESEND_API_KEY`     | Resend API key (from resend.com)             |
+| `CONTACT_EMAIL`      | Where booking emails are delivered           |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather           |
+| `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID                   |
+| `VERCEL_URL`         | Vercel domain (set in Render env vars only)  |
 
 ### Get Telegram chat ID
 
@@ -94,9 +87,8 @@ npm run dev
 
 ```bash
 # Set environment variables first
-export MAIL_USERNAME=your@icloud.com
-export MAIL_PASSWORD=your-app-password
-export CONTACT_EMAIL=your@icloud.com
+export RESEND_API_KEY=re_your_api_key
+export CONTACT_EMAIL=your@email.com
 export TELEGRAM_BOT_TOKEN=your_token
 export TELEGRAM_CHAT_ID=your_chat_id
 
@@ -223,7 +215,7 @@ git commit -m "your message"
 git push
 ```
 
-Both Railway and Vercel redeploy automatically on push.
+Both Render and Vercel redeploy automatically on push.
 
 ---
 
