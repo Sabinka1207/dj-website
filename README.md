@@ -151,17 +151,37 @@ Language switcher is in the Navbar.
 | Frontend | Vercel   | `dj-website-frontend` | https://dj-sabi.com                  |
 | Backend  | Render   | `dj-website-backend`  | https://dj-website-e09j.onrender.com |
 
-Vercel rewrites `/api/*` to the Railway backend URL — no CORS issues.
+Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
+
+### Branches
+
+| Branch  | Purpose     | Frontend URL                          |
+| ------- | ----------- | ------------------------------------- |
+| `main`  | Production  | https://dj-sabi.com                   |
+| `stage` | Staging     | Vercel preview URL (auto per PR/push) |
+
+**Workflow:**
+1. Work on `stage` branch
+2. Push → Vercel builds a preview URL automatically
+3. Test everything on preview
+4. Merge `stage` → `main` → production updates
+
+```bash
+# Merge stage to production
+git checkout main
+git merge stage
+git push
+```
 
 ---
 
-### Step 1 — Deploy backend to Railway
+### Step 1 — Deploy backend to Render
 
 1. Push this repo to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub repo
-3. Set root directory to `dj-website-backend`
-4. Add all environment variables from `.env.example` in the Railway dashboard
-5. Copy the Railway public URL (e.g. `dj-website-backend.up.railway.app`)
+2. Go to [render.com](https://render.com) → New Web Service → connect GitHub repo
+3. Set root directory to `dj-website-backend`, language to Docker
+4. Add all environment variables from `.env.example` in the Render dashboard
+5. Copy the Render public URL (e.g. `dj-website-backend.onrender.com`)
 
 ---
 
