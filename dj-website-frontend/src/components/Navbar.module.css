@@ -133,15 +133,20 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10, 10, 10, 0.97);
+    background: rgb(10, 10, 10);
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 40px;
+    z-index: 99;
   }
 
   .nav.open {
     display: flex;
+  }
+
+  .navbar:has(.nav.open) {
+    background: rgb(10, 10, 10);
   }
 
   .navLink {
