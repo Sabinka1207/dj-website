@@ -16,7 +16,7 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 | Email    | Spring Mail — iCloud SMTP               |
 | Notify   | Telegram Bot API                        |
 | Serving  | nginx (SPA + API proxy)                 |
-| Deploy   | Vercel (frontend) + Railway (backend)   |
+| Deploy   | Vercel (frontend) + Render (backend)    |
 
 ---
 
@@ -146,10 +146,10 @@ Language switcher is in the Navbar.
 
 ### Architecture
 
-| Service  | Platform | Folder                |
-| -------- | -------- | --------------------- |
-| Frontend | Vercel   | `dj-website-frontend` |
-| Backend  | Railway  | `dj-website-backend`  |
+| Service  | Platform | Folder                | URL                                  |
+| -------- | -------- | --------------------- | ------------------------------------ |
+| Frontend | Vercel   | `dj-website-frontend` | https://dj-sabi.com                  |
+| Backend  | Render   | `dj-website-backend`  | https://dj-website-e09j.onrender.com |
 
 Vercel rewrites `/api/*` to the Railway backend URL — no CORS issues.
 
@@ -167,11 +167,13 @@ Vercel rewrites `/api/*` to the Railway backend URL — no CORS issues.
 
 ### Step 2 — Configure frontend
 
-Open `dj-website-frontend/vercel.json` and replace `REPLACE_WITH_RAILWAY_URL` with your Railway URL:
+`dj-website-frontend/vercel.json` already points to the Render backend:
 
 ```json
-"destination": "https://your-backend.up.railway.app/api/:path*"
+"destination": "https://dj-website-e09j.onrender.com/api/:path*"
 ```
+
+If you redeploy the backend and get a new URL, update this file and push.
 
 ---
 
@@ -179,16 +181,16 @@ Open `dj-website-frontend/vercel.json` and replace `REPLACE_WITH_RAILWAY_URL` wi
 
 1. Go to [vercel.com](https://vercel.com) → New Project → Import GitHub repo
 2. Set root directory to `dj-website-frontend`
-3. Buy and connect domain `dj-sabi.com` in Vercel dashboard
+3. Connect domain `dj-sabi.com` in Vercel dashboard → Settings → Domains
 
 ---
 
-### Step 4 — Update CORS on Railway
+### Step 4 — Update CORS on Render
 
-Add this env var in Railway dashboard:
+Add this env var in Render → Environment:
 
 ```
-VERCEL_URL=dj-sabi.vercel.app
+VERCEL_URL=dj-sabi.com
 ```
 
 ---
