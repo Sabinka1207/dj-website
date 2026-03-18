@@ -83,6 +83,11 @@
   color: #fff;
 }
 
+/* Close button — hidden on desktop */
+.closeBtn {
+  display: none;
+}
+
 /* Burger — hidden on desktop */
 .burger {
   display: none;
@@ -131,17 +136,40 @@
 
   .nav {
     display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 10, 10, 0.97);
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
   }
 
   .nav.open {
     display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgb(10, 10, 10);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    z-index: 999;
+  }
+
+  .navbar:has(.nav.open) {
+    background: rgb(10, 10, 10);
+    z-index: 1000;
+  }
+
+  .closeBtn {
+    display: block;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
   }
 
   .navLink {

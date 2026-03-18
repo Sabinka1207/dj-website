@@ -22,6 +22,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
+
   const handleNavClick = (id: string) => {
     setMenuOpen(false)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -34,6 +39,7 @@ export default function Navbar() {
       </a>
 
       <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`}>
+        <button className={styles.closeBtn} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
         {NAV_LINKS.map((id) => (
           <button key={id} className={styles.navLink} onClick={() => handleNavClick(id)}>
             {t(`nav.${id}`)}
