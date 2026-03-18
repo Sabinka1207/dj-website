@@ -22,6 +22,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
+
   const handleNavClick = (id: string) => {
     setMenuOpen(false)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -33,7 +38,7 @@ export default function Navbar() {
         <img src={logo} alt="DJ Sabi" className={styles.logoImg} />
       </a>
 
-      <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`}>
+      <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setMenuOpen(false) }}>
         {NAV_LINKS.map((id) => (
           <button key={id} className={styles.navLink} onClick={() => handleNavClick(id)}>
             {t(`nav.${id}`)}
