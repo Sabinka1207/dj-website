@@ -38,7 +38,8 @@ export default function Navbar() {
         <img src={logo} alt="DJ Sabi" className={styles.logoImg} />
       </a>
 
-      <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setMenuOpen(false) }}>
+      <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`}>
+        <button className={styles.closeBtn} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
         {NAV_LINKS.map((id) => (
           <button key={id} className={styles.navLink} onClick={() => handleNavClick(id)}>
             {t(`nav.${id}`)}
