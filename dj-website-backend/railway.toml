@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "java -jar build/libs/dj-website-backend-0.0.1-SNAPSHOT.jar"
+restartPolicyType = "ON_FAILURE"

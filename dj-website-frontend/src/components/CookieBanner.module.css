@@ -1,0 +1,72 @@
+.banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 4px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 600px;
+  width: calc(100% - 48px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.message {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.accept,
+.decline {
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 8px 20px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.accept {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: #fff;
+}
+
+.accept:hover {
+  background: transparent;
+  color: var(--color-accent);
+}
+
+.decline {
+  background: transparent;
+  border: 1px solid #333;
+  color: var(--color-text-muted);
+}
+
+.decline:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+@media (max-width: 560px) {
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

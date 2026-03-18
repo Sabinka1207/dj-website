@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: ./dj-website-backend
+    restart: unless-stopped
+    environment:
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      CONTACT_EMAIL: ${CONTACT_EMAIL}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      cors.allowed-origins: http://localhost
+    expose:
+      - "8080"
+
+  frontend:
+    build: ./dj-website-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

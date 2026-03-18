@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "about": "Über mich",
+    "mixes": "Mixes",
+    "gallery": "Galerie",
+    "contact": "Kontakt"
+  },
+  "hero": {
+    "tagline": "Bar · Club · Festival · Radio"
+  },
+  "about": {
+    "title": "Über mich",
+    "bio": "DJ SABI (Sabina Abdulaliieva) ist eine DJ mit über 15 Jahren Erfahrung, die ihre Karriere in der Ukraine begann und in Deutschland fortsetzte.\n\nSeit 2015 ist sie Residentin des legendären Kiewer Clubs Forsage und Teilnehmerin der Projekte RnB BooM und Latino Fiesta. Anfangs in den Genres RnB und Hip-Hop tätig, entwickelte sie mit der Zeit einen vielseitigen Stil, der kommerzielle Musik, 80er/90er, House und Techno vereint.\n\nNach ihrem Umzug nach Deutschland im Jahr 2022 integrierte sie sich schnell in die lokale Szene und trat in einer der aktivsten Bars Frankfurts auf — der Zar Vodka Bar — wo sie für ein internationales Publikum mit unterschiedlichen Musikgeschmäckern spielte.\n\nSpäter wurde sie zu einer der wichtigsten DJs der ukrainischen Partys in Deutschland, füllte Tanzflächen und brachte Menschen durch Musik in einer schwierigen Zeit zusammen. Heute ist DJ SABI eine vielseitige Künstlerin, die gleichermaßen souverän mit Themenevents, kommerziellen Venues, Clubs und Festivals umgeht."
+  },
+  "mixes": {
+    "title": "Mixes"
+  },
+  "gallery": {
+    "title": "Galerie",
+    "pressPhotos": "Pressefotos",
+    "download": "Herunterladen",
+    "loadMore": "Mehr laden"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "name": "Name",
+    "email": "E-Mail",
+    "event": "Veranstaltung / Venue",
+    "date": "Datum",
+    "message": "Nachricht",
+    "send": "Senden",
+    "success": "Danke! Ich melde mich bald.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  },
+  "footer": {
+    "impressum": "Impressum",
+    "privacy": "Datenschutz"
+  },
+  "impressum": {
+    "back": "← Zurück",
+    "title": "Impressum",
+    "legalInfoTitle": "Angaben gemäß § 5 TMG",
+    "contactTitle": "Kontakt",
+    "professionTitle": "Berufsbezeichnung",
+    "professionText": "Freiberufliche DJ",
+    "disputeTitle": "Streitschlichtung",
+    "disputeText1": "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr",
+    "disputeText2": "Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+  },
+  "privacy": {
+    "back": "← Zurück",
+    "title": "Datenschutzerklärung",
+    "s1Title": "1. Verantwortliche Person",
+    "s2Title": "2. Erhebung und Verarbeitung personenbezogener Daten",
+    "s2p1": "Beim Besuch dieser Website werden grundsätzlich keine personenbezogenen Daten erhoben.",
+    "s2p2": "Personenbezogene Daten werden nur dann erhoben, wenn Sie diese freiwillig im Rahmen einer Kontaktaufnahme (z. B. per E-Mail oder Kontaktformular) mitteilen.",
+    "s2p3": "Die übermittelten Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage verwendet und nicht an Dritte weitergegeben.",
+    "s2p4": "Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragsanbahnung) sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).",
+    "s2p5": "Die Daten werden gelöscht, sobald sie für die Bearbeitung Ihrer Anfrage nicht mehr erforderlich sind.",
+    "s3Title": "3. Hosting",
+    "s3p1": "Diese Website wird bei einem externen Dienstleister gehostet. Dabei können automatisch technische Daten (z. B. IP-Adresse, Browsertyp, Zeitpunkt des Zugriffs) erfasst werden.",
+    "s3p2": "Diese Daten dienen ausschließlich der Sicherstellung eines störungsfreien Betriebs der Website und werden nicht mit anderen Datenquellen zusammengeführt.",
+    "s4Title": "4. Eingebettete Inhalte (YouTube, SoundCloud, Mixcloud)",
+    "s4p1": "Diese Website bindet Inhalte von Drittanbietern ein (YouTube, SoundCloud, Mixcloud).",
+    "s4p2": "Beim Aufruf einer Seite mit eingebetteten Inhalten wird eine Verbindung zu den Servern der jeweiligen Anbieter hergestellt. Dabei können personenbezogene Daten (z. B. IP-Adresse, Nutzungsdaten) übertragen und Cookies gesetzt werden.",
+    "s4p3": "Die Einbindung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer ansprechenden Darstellung der Inhalte).",
+    "s4p4": "Weitere Informationen finden Sie in den Datenschutzerklärungen der jeweiligen Anbieter.",
+    "s5Title": "5. Ihre Rechte",
+    "s5p1": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung sowie Datenübertragbarkeit Ihrer personenbezogenen Daten.",
+    "s5p2": "Wenden Sie sich dazu an: djsabi_ua@icloud.com",
+    "s5p3": "Sie haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit (HBDI)."
+  },
+  "cookies": {
+    "message": "Diese Website verwendet Cookies für eingebettete Inhalte.",
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen"
+  }
+}

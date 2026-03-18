@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "about": "About",
+    "mixes": "Mixes",
+    "gallery": "Gallery",
+    "contact": "Contact"
+  },
+  "hero": {
+    "tagline": "Bar · Club · Festival · Radio"
+  },
+  "about": {
+    "title": "About",
+    "bio": "DJ SABI (Sabina Abdulaliieva) is a DJ with over 15 years of experience, who started her career in Ukraine and continued it in Germany.\n\nSince 2015, she has been a resident of the iconic Kyiv club Forsage and a participant in the RnB BooM and Latino Fiesta projects. Starting out in RnB and Hip-Hop, she gradually developed a versatile style combining commercial music, 80s/90s, house, and techno.\n\nAfter moving to Germany in 2022, she quickly integrated into the local scene, performing at one of Frankfurt's most active bars — Zar Vodka Bar — playing for an international audience with diverse musical tastes.\n\nShe later became one of the key DJs at Ukrainian parties in Germany, filling dance floors and bringing people together through music during difficult times. Today, DJ SABI is a versatile artist equally at home with themed events, commercial venues, clubs, and festivals."
+  },
+  "mixes": {
+    "title": "Mixes"
+  },
+  "gallery": {
+    "title": "Gallery",
+    "pressPhotos": "Press Photos",
+    "download": "Download",
+    "loadMore": "Load more"
+  },
+  "contact": {
+    "title": "Contact",
+    "name": "Name",
+    "email": "Email",
+    "event": "Event / Venue",
+    "date": "Date",
+    "message": "Message",
+    "send": "Send",
+    "success": "Thank you! I will be in touch soon.",
+    "error": "Something went wrong. Please try again."
+  },
+  "footer": {
+    "impressum": "Impressum",
+    "privacy": "Privacy Policy"
+  },
+  "impressum": {
+    "back": "← Back",
+    "title": "Impressum",
+    "legalInfoTitle": "Information pursuant to § 5 TMG",
+    "contactTitle": "Contact",
+    "professionTitle": "Profession",
+    "professionText": "Freelance DJ",
+    "disputeTitle": "Dispute Resolution",
+    "disputeText1": "The European Commission provides a platform for online dispute resolution (ODR): https://ec.europa.eu/consumers/odr",
+    "disputeText2": "We are not obligated to participate in dispute resolution proceedings before a consumer arbitration board."
+  },
+  "privacy": {
+    "back": "← Back",
+    "title": "Privacy Policy",
+    "s1Title": "1. Responsible Party",
+    "s2Title": "2. Collection and Processing of Personal Data",
+    "s2p1": "In general, no personal data is collected when you visit this website.",
+    "s2p2": "Personal data is only collected if you voluntarily provide it when making contact (e.g. via email or the contact form).",
+    "s2p3": "The data submitted is used solely to process your inquiry and is not shared with third parties.",
+    "s2p4": "Processing is based on Art. 6(1)(b) GDPR (pre-contractual measures) and Art. 6(1)(f) GDPR (legitimate interest).",
+    "s2p5": "Data will be deleted as soon as it is no longer needed to process your inquiry.",
+    "s3Title": "3. Hosting",
+    "s3p1": "This website is hosted by an external service provider. In this context, technical data (e.g. IP address, browser type, time of access) may be automatically recorded.",
+    "s3p2": "This data is used solely to ensure the smooth operation of the website and is not merged with other data sources.",
+    "s4Title": "4. Embedded Content (YouTube, SoundCloud, Mixcloud)",
+    "s4p1": "This website embeds content from third-party providers (YouTube, SoundCloud, Mixcloud).",
+    "s4p2": "When a page with embedded content is accessed, a connection to the servers of the respective provider is established. Personal data (e.g. IP address, usage data) may be transmitted and cookies may be set.",
+    "s4p3": "Embedding is based on Art. 6(1)(f) GDPR (legitimate interest in an appealing presentation of content).",
+    "s4p4": "For more information, please refer to the privacy policies of the respective providers.",
+    "s5Title": "5. Your Rights",
+    "s5p1": "You have the right to access, rectify, erase, restrict processing, and port your personal data.",
+    "s5p2": "Please contact: djsabi_ua@icloud.com",
+    "s5p3": "You also have the right to lodge a complaint with a data protection supervisory authority. The competent authority in Hesse is the Hessian Commissioner for Data Protection and Freedom of Information (HBDI)."
+  },
+  "cookies": {
+    "message": "This site uses cookies for embedded content.",
+    "accept": "Accept",
+    "decline": "Decline"
+  }
+}

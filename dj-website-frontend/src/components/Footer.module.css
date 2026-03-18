@@ -1,0 +1,39 @@
+.footer {
+  background: #080808;
+  border-top: 1px solid #1a1a1a;
+  padding: 48px 24px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.links {
+  display: flex;
+  gap: 32px;
+}
+
+.link {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--color-text);
+}
+
+.copy {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  letter-spacing: 0.06em;
+}

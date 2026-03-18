@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Frontend
+dj-website-frontend/node_modules/
+dj-website-frontend/dist/
+
+# Backend
+dj-website-backend/.gradle/
+dj-website-backend/build/
+
+# OS
+.DS_Store

@@ -1,0 +1,71 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 120px 24px 80px;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: 48px;
+  transition: color 0.2s;
+}
+
+.back:hover {
+  color: var(--color-text);
+}
+
+.title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 48px;
+}
+
+.title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: var(--color-accent);
+  margin-top: 16px;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.section p {
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--color-text-muted);
+}
+
+.emailLink {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.emailLink:hover {
+  text-decoration: underline;
+}
