@@ -131,22 +131,26 @@
 
   .nav {
     display: none;
+  }
+
+  .nav.open {
+    display: flex;
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgb(10, 10, 10);
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 40px;
-    z-index: 99;
-  }
-
-  .nav.open {
-    display: flex;
+    z-index: 999;
   }
 
   .navbar:has(.nav.open) {
     background: rgb(10, 10, 10);
+    z-index: 1000;
   }
 
   .navLink {
