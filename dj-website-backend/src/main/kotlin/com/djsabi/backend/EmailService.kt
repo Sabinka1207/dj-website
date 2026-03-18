@@ -21,7 +21,7 @@ class EmailService(
         msg.replyTo = req.email
         msg.subject = "New booking request from ${req.name}"
         msg.text = """
-            New booking inquiry received via djsabi.com
+            New booking inquiry received via dj-sabi.com
             Received: $receivedAt
 
             Name:    ${req.name}

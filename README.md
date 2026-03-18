@@ -7,16 +7,16 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 
 ## Tech Stack
 
-| Layer     | Technology                              |
-|-----------|-----------------------------------------|
-| Frontend  | React 19, TypeScript, Vite, CSS Modules |
-| i18n      | react-i18next (DE / EN / UA)            |
-| Routing   | React Router v7                         |
-| Backend   | Spring Boot 3.4, Kotlin                 |
-| Email     | Spring Mail — iCloud SMTP               |
-| Notify    | Telegram Bot API                        |
-| Serving   | nginx (SPA + API proxy)                 |
-| Deploy    | Docker + Docker Compose                 |
+| Layer    | Technology                              |
+| -------- | --------------------------------------- |
+| Frontend | React 19, TypeScript, Vite, CSS Modules |
+| i18n     | react-i18next (DE / EN / UA)            |
+| Routing  | React Router v7                         |
+| Backend  | Spring Boot 3.4, Kotlin                 |
+| Email    | Spring Mail — iCloud SMTP               |
+| Notify   | Telegram Bot API                        |
+| Serving  | nginx (SPA + API proxy)                 |
+| Deploy   | Vercel (frontend) + Railway (backend)   |
 
 ---
 
@@ -58,19 +58,22 @@ dj-website/
 
 Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 
-| Variable             | Description                          |
-|----------------------|--------------------------------------|
-| `MAIL_USERNAME`      | iCloud email address                 |
-| `MAIL_PASSWORD`      | iCloud app-specific password         |
-| `CONTACT_EMAIL`      | Where booking emails are delivered   |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather   |
-| `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID           |
+| Variable             | Description                              |
+| -------------------- | ---------------------------------------- |
+| `MAIL_USERNAME`      | iCloud email address                     |
+| `MAIL_PASSWORD`      | iCloud app-specific password             |
+| `CONTACT_EMAIL`      | Where booking emails are delivered       |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather       |
+| `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID               |
+| `VERCEL_URL`         | Vercel preview URL (set in Railway only) |
 
 ### Generate iCloud app-specific password
+
 1. Go to [appleid.apple.com](https://appleid.apple.com)
 2. Sign In → App-Specific Passwords → Generate
 
 ### Get Telegram chat ID
+
 Send a message to your bot, then open:
 `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
 
@@ -111,7 +114,17 @@ Start backend first, then frontend.
 
 ## Adding Gallery Photos
 
-1. Compress photos to `.webp` using [squoosh.app](https://squoosh.app)
+### Compress photos before adding
+
+**For bulk compression (recommended for Mac):** [XnConvert](https://www.xnview.com/en/xnconvert/)
+- Free, handles batch processing of hundreds of photos
+- Export as `.webp` with quality ~80 for a good size/quality balance
+
+**For single photos:** [squoosh.app](https://squoosh.app) (browser-based)
+
+### Add to the project
+
+1. Compress photos to `.webp`
 2. Drop files into `dj-website-frontend/src/assets/images/Gallery/`
 3. Vite picks them up automatically — no code changes needed
 
@@ -120,6 +133,7 @@ Start backend first, then frontend.
 ## Translations
 
 Translation files are in `dj-website-frontend/src/i18n/locales/`:
+
 - `de/translation.json` — German
 - `en/translation.json` — English
 - `ua/translation.json` — Ukrainian
@@ -128,62 +142,70 @@ Language switcher is in the Navbar.
 
 ---
 
-## Docker — Production Deployment
+## Deployment
 
-### First-time setup on server
+### Architecture
 
-```bash
-# 1. Clone the repo
-git clone <your-repo-url>
-cd dj-website
+| Service  | Platform | Folder                |
+| -------- | -------- | --------------------- |
+| Frontend | Vercel   | `dj-website-frontend` |
+| Backend  | Railway  | `dj-website-backend`  |
 
-# 2. Create .env from example
-cp .env.example .env
-nano .env   # fill in real values
+Vercel rewrites `/api/*` to the Railway backend URL — no CORS issues.
 
-# 3. Build and start
-docker compose up -d --build
+---
+
+### Step 1 — Deploy backend to Railway
+
+1. Push this repo to GitHub
+2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub repo
+3. Set root directory to `dj-website-backend`
+4. Add all environment variables from `.env.example` in the Railway dashboard
+5. Copy the Railway public URL (e.g. `dj-website-backend.up.railway.app`)
+
+---
+
+### Step 2 — Configure frontend
+
+Open `dj-website-frontend/vercel.json` and replace `REPLACE_WITH_RAILWAY_URL` with your Railway URL:
+
+```json
+"destination": "https://your-backend.up.railway.app/api/:path*"
 ```
 
-Site will be available on port **80**.
+---
+
+### Step 3 — Deploy frontend to Vercel
+
+1. Go to [vercel.com](https://vercel.com) → New Project → Import GitHub repo
+2. Set root directory to `dj-website-frontend`
+3. Buy and connect domain `dj-sabi.com` in Vercel dashboard
+
+---
+
+### Step 4 — Update CORS on Railway
+
+Add this env var in Railway dashboard:
+
+```
+VERCEL_URL=dj-sabi.vercel.app
+```
+
+---
 
 ### Update after code changes
 
 ```bash
-git pull
-docker compose up -d --build
+git add .
+git commit -m "your message"
+git push
 ```
 
-### Useful Docker commands
+Both Railway and Vercel redeploy automatically on push.
 
-```bash
-# View running containers
-docker compose ps
+---
 
-# View logs (all services)
-docker compose logs -f
-
-# View logs (backend only)
-docker compose logs -f backend
-
-# View logs (frontend/nginx only)
-docker compose logs -f frontend
-
-# Stop everything
-docker compose down
-
-# Stop and remove volumes
-docker compose down -v
-
-# Rebuild a single service
-docker compose up -d --build backend
-docker compose up -d --build frontend
-
-# Restart a service without rebuilding
-docker compose restart backend
-```
-
-### Build commands (without Docker)
+### Build commands (manual)
 
 ```bash
 # Frontend production build
@@ -201,14 +223,16 @@ cd dj-website-backend
 
 ## API
 
-| Method | Endpoint      | Description          |
-|--------|---------------|----------------------|
-| POST   | /api/contact  | Submit booking form  |
+| Method | Endpoint     | Description         |
+| ------ | ------------ | ------------------- |
+| POST   | /api/contact | Submit booking form |
 
 ### Request body
+
 ```json
 {
   "name": "Max Mustermann",
+  "email": "max@example.com",
   "event": "Club night at Berghain",
   "date": "2025-08-15",
   "message": "We would love to book you for..."
@@ -216,5 +240,6 @@ cd dj-website-backend
 ```
 
 ### Response
+
 - `200 OK` — email and Telegram notification sent
 - `500` — server error
