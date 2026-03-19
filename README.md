@@ -138,10 +138,12 @@ Language switcher is in the Navbar.
 
 ### Architecture
 
-| Service  | Platform | Folder                | URL                                  |
-| -------- | -------- | --------------------- | ------------------------------------ |
-| Frontend | Vercel   | `dj-website-frontend` | https://dj-sabi.com                  |
-| Backend  | Render   | `dj-website-backend`  | https://dj-website-e09j.onrender.com |
+| Service            | Branch  | Platform | URL                                                                    |
+| ------------------ | ------- | -------- | ---------------------------------------------------------------------- |
+| Frontend (prod)    | `main`  | Vercel   | https://dj-sabi.com                                                    |
+| Frontend (staging) | `stage` | Vercel   | https://dj-website-git-stage-sabinka1207-7879s-projects.vercel.app     |
+| Backend (prod)     | `main`  | Render   | https://dj-website-e09j.onrender.com                                   |
+| Backend (staging)  | `stage` | Render   | https://dj-website-stage.onrender.com                                  |
 
 Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
 
@@ -154,16 +156,23 @@ Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
 
 **Workflow:**
 1. Work on `stage` branch
-2. Push → Vercel builds a preview URL automatically
-3. Test everything on preview
-4. Merge `stage` → `main` → production updates
+2. Push → Vercel builds staging preview automatically
+3. Test everything on staging
+4. Merge `stage` → `main` (see below) → production updates
+
+### Merging stage → main
+
+`vercel.json` differs between branches (different backend URLs), so never let it overwrite production. Always merge like this:
 
 ```bash
-# Merge stage to production
 git checkout main
-git merge stage
+git merge stage --no-commit
+git checkout main -- dj-website-frontend/vercel.json
+git commit -m "Merge stage into main"
 git push
 ```
+
+This merges all changes from `stage` except `vercel.json`, which stays pointing to the production backend.
 
 ---
 
