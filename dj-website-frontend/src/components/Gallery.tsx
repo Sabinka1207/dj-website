@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './Gallery.module.css'
 
@@ -34,10 +34,15 @@ export default function Gallery() {
   const [page, setPage] = useState(1)
   const [lightbox, setLightbox] = useState<number | null>(null)
 
-  const goToPage = (p: number) => {
-    setPage(p)
-    document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return }
+    const el = document.getElementById('gallery')
+    if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' })
+  }, [page])
+
+  const goToPage = (p: number) => setPage(p)
 
   useEffect(() => {
     fetch('/api/photos')
