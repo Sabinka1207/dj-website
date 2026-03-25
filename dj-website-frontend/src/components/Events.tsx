@@ -186,8 +186,8 @@ export default function Events() {
                       isBooked ? styles.booked : '',
                       !isPast && !isBooked ? styles.available : '',
                     ].filter(Boolean).join(' ')}
-                    onClick={() => !isPast && handleDayClick(dateStr)}
-                    disabled={isPast}
+                    onClick={() => handleDayClick(dateStr)}
+                    disabled={isPast && !isBooked}
                     title={isBooked ? `${event!.venue} · ${event!.city}` : undefined}
                   >
                     <span className={styles.dayNum}>{day}</span>

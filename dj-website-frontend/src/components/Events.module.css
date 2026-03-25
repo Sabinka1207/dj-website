@@ -195,6 +195,22 @@
   opacity: 0.18;
 }
 
+/* Past booked — keep visible and clickable, gray to show it's past */
+.past.booked {
+  opacity: 0.65;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.past.booked .dayNum {
+  color: var(--color-text-muted);
+}
+
+.past.booked .eventLabel {
+  color: var(--color-text-muted);
+}
+
 /* Today */
 .today {
   border-color: rgba(0, 102, 255, 0.45);

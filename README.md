@@ -129,19 +129,21 @@ Start backend first, then frontend.
 
 ## Adding Gallery Photos
 
-### Compress photos before adding
+Photos are managed through the admin panel (`/admin/photos`) and stored on Cloudinary. No static files needed.
 
-**For bulk compression (recommended for Mac):** [XnConvert](https://www.xnview.com/en/xnconvert/)
-- Free, handles batch processing of hundreds of photos
-- Export as `.webp` with quality ~80 for a good size/quality balance
+### Upload via admin panel
 
-**For single photos:** [squoosh.app](https://squoosh.app) (browser-based)
+1. Log in to `/admin`
+2. Go to **Photos** tab
+3. Click **+ Upload photos** — upload originals, Cloudinary handles compression automatically
 
-### Add to the project
+### Sync existing Cloudinary photos
 
-1. Compress photos to `.webp`
-2. Drop files into `dj-website-frontend/src/assets/images/Gallery/`
-3. Vite picks them up automatically — no code changes needed
+If you already have photos in Cloudinary under `dj-sabi/gallery`, click **Sync from Cloudinary** in the admin Photos tab. It imports any photos not yet in the database.
+
+### Static fallback
+
+The public gallery falls back to static bundled images in `dj-website-frontend/src/assets/images/Gallery/` if the API returns nothing (useful during local dev without Cloudinary configured). These can be removed once you have photos in Cloudinary.
 
 ---
 
@@ -163,7 +165,7 @@ Available at `/admin`. Login with password or Google Sign-In. Session expires af
 
 Left sidebar navigation with two tabs:
 - **Events** (`/admin/events`) — create, edit, delete gig bookings
-- **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete. Changes reflect immediately in the public gallery.
+- **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
 
 ### Google Sign-In setup
 
@@ -334,7 +336,9 @@ cd dj-website-backend
 | DELETE | /api/admin/events/:id       | Delete event                       |
 | GET    | /api/admin/photos           | List all photos                    |
 | POST   | /api/admin/photos/upload    | Upload photo (multipart) → Cloudinary |
+| POST   | /api/admin/photos/sync      | Import existing Cloudinary photos from `dj-sabi/gallery` |
 | DELETE | /api/admin/photos/:id       | Delete photo from Cloudinary + DB  |
+| DELETE | /api/admin/photos           | Delete all photos from Cloudinary + DB |
 | PUT    | /api/admin/photos/reorder   | Bulk update display order          |
 
 ### Request body
