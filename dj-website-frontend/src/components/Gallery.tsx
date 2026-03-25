@@ -62,13 +62,17 @@ export default function Gallery() {
 
   useEffect(() => {
     if (lightbox === null) return
+    document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
       if (e.key === 'ArrowLeft') prev()
       if (e.key === 'ArrowRight') next()
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
   }, [lightbox, close, prev, next])
 
   const current = lightbox !== null ? photos[lightbox] : null

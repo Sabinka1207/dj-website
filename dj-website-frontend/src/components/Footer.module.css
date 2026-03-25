@@ -103,3 +103,11 @@
   opacity: 0.5;
   letter-spacing: 0.06em;
 }
+
+@media (max-width: 480px) {
+  .links {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+}
