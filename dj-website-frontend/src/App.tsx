@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { HelmetProvider } from 'react-helmet-async'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -90,6 +91,7 @@ function App() {
         </Route>
       </Routes>
       <Analytics />
+      <SpeedInsights />
     </HelmetProvider>
   )
 }
