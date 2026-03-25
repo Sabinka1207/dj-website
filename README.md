@@ -68,7 +68,9 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather           |
 | `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID                   |
 | `VERCEL_URL`         | Vercel domain (set in Render env vars only)  |
-| `DATABASE_URL`       | `jdbc:postgresql://...` — Supabase connection string with `jdbc:` prefix |
+| `DATABASE_URL`       | `jdbc:postgresql://aws-1-*.pooler.supabase.com:5432/postgres?sslmode=require` — use session pooler URL |
+| `DB_USERNAME`        | `postgres.your-project-ref` (from Supabase session pooler connection string) |
+| `DB_PASSWORD`        | Supabase database password                   |
 | `DB_DRIVER`          | `org.postgresql.Driver`                      |
 | `ADMIN_PASSWORD`     | Password for admin login at `/admin`         |
 | `ADMIN_GOOGLE_EMAIL` | Gmail address allowed to log in via Google   |
@@ -191,7 +193,12 @@ The public gallery falls back to static bundled images if the API returns nothin
 
 Free PostgreSQL hosted on Supabase. On first backend boot, existing events are auto-seeded from `events.json`.
 
-Connection string: Supabase → Connect → URI tab → prepend `jdbc:` → set as `DATABASE_URL`.
+Use the **Session Mode pooler** connection string (not the direct connection) — Render's free tier is IPv4 only, but Supabase direct connections are IPv6. The pooler supports both.
+
+In Supabase → Connect → Session pooler tab, copy the host (e.g. `aws-1-eu-north-1.pooler.supabase.com`) and set:
+- `DATABASE_URL` = `jdbc:postgresql://<pooler-host>:5432/postgres?sslmode=require`
+- `DB_USERNAME` = `postgres.<project-ref>` (shown in the pooler connection string)
+- `DB_PASSWORD` = your Supabase password
 
 ---
 
