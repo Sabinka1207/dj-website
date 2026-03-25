@@ -8,6 +8,7 @@ dj-website-frontend/dist/
 # Backend
 dj-website-backend/.gradle/
 dj-website-backend/build/
+dj-website-backend/.kotlin/
 
 # OS
 .DS_Store
