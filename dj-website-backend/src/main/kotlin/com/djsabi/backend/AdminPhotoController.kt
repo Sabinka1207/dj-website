@@ -75,4 +75,40 @@ class AdminPhotoController(
         photoRepository.saveAll(updated)
         return ResponseEntity.noContent().build()
     }
+
+    @DeleteMapping
+    fun deleteAll(req: jakarta.servlet.http.HttpServletRequest): ResponseEntity<Void> {
+        if (!authorized(req)) return ResponseEntity.status(401).build()
+        val photos = photoRepository.findAll()
+        photos.forEach { cloudinary.uploader().destroy(it.publicId, mapOf<String, Any>()) }
+        photoRepository.deleteAll()
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/sync")
+    fun syncFromCloudinary(req: jakarta.servlet.http.HttpServletRequest): ResponseEntity<List<PhotoAdminResponse>> {
+        if (!authorized(req)) return ResponseEntity.status(401).build()
+        val existingPublicIds = photoRepository.findAll().map { it.publicId }.toSet()
+        @Suppress("UNCHECKED_CAST")
+        val result = cloudinary.search()
+            .expression("folder:dj-sabi/gallery")
+            .maxResults(500)
+            .execute() as Map<String, Any>
+        @Suppress("UNCHECKED_CAST")
+        val resources = result["resources"] as? List<Map<String, Any>> ?: emptyList()
+        val maxOrder = photoRepository.findAll().maxOfOrNull { it.displayOrder } ?: -1
+        val newPhotos = resources
+            .filter { it["public_id"] as String !in existingPublicIds }
+            .mapIndexed { i, r ->
+                Photo(
+                    publicId = r["public_id"] as String,
+                    url = r["secure_url"] as String,
+                    displayOrder = maxOrder + 1 + i
+                )
+            }
+        val saved = photoRepository.saveAll(newPhotos)
+        val all = photoRepository.findAll().sortedBy { it.displayOrder }
+            .map { PhotoAdminResponse(it.id, it.publicId, it.url, it.displayOrder) }
+        return ResponseEntity.ok(all)
+    }
 }

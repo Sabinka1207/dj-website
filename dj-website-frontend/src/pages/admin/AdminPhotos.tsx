@@ -86,6 +86,19 @@ export default function AdminPhotos() {
     setPhotos(p => p.filter(ph => ph.id !== id))
   }
 
+  const handleDeleteAll = async () => {
+    if (!window.confirm(`Delete all ${photos.length} photos? This cannot be undone.`)) return
+    const res = await fetch('/api/admin/photos', { method: 'DELETE', headers: authHeaders() })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    setPhotos([])
+  }
+
+  const handleSync = async () => {
+    const res = await fetch('/api/admin/photos/sync', { method: 'POST', headers: authHeaders() })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    setPhotos(await res.json())
+  }
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -108,6 +121,14 @@ export default function AdminPhotos() {
           <button className={styles.btn} onClick={() => fileRef.current?.click()} disabled={uploading}>
             {uploading ? 'Uploading…' : '+ Upload photos'}
           </button>
+          <button className={`${styles.btn} ${styles.btnGhost}`} onClick={handleSync}>
+            Sync from Cloudinary
+          </button>
+          {photos.length > 0 && (
+            <button className={`${styles.btn} ${styles.btnDanger}`} onClick={handleDeleteAll}>
+              Delete all
+            </button>
+          )}
           <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={handleUpload} />
         </div>
       </div>
