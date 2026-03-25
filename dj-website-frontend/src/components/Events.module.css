@@ -1,0 +1,394 @@
+.events {
+  padding: 120px 24px;
+  background: #080808;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Section title */
+.sectionTitle {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.sectionTitle::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: var(--color-accent);
+  margin-top: 16px;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  margin-top: 24px;
+  margin-bottom: 36px;
+}
+
+/* Navigation row */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.navBtn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: var(--color-text);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.navBtn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.navBtn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* Dropdowns group */
+.dropdowns {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.select {
+  flex: 1;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  padding: 8px 36px 8px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.2s;
+}
+
+.select:hover {
+  border-color: #444;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* Month card */
+.monthCard {
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  padding: 32px 28px 28px;
+}
+
+.monthHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.monthName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.monthYear {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  opacity: 0.45;
+  letter-spacing: 0.06em;
+}
+
+/* Weekday labels */
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.weekDay {
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  opacity: 0.35;
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* Day grid — uniform rows */
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 72px;
+  gap: 4px;
+}
+
+.empty {
+  /* spacer */
+}
+
+/* Base day cell */
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 4px 6px;
+  height: 100%;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  font-family: inherit;
+  color: var(--color-text);
+  cursor: default;
+  transition: background 0.15s, border-color 0.15s;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.dayNum {
+  font-size: 1.05rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Past */
+.past {
+  opacity: 0.18;
+}
+
+/* Today */
+.today {
+  border-color: rgba(0, 102, 255, 0.45);
+}
+
+.today .dayNum {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Available */
+.available {
+  cursor: pointer;
+}
+
+.available:hover {
+  background: rgba(0, 102, 255, 0.1);
+  border-color: rgba(0, 102, 255, 0.2);
+}
+
+.available:active {
+  background: rgba(0, 102, 255, 0.2);
+}
+
+/* Booked */
+.booked {
+  background: rgba(0, 102, 255, 0.08);
+  border-color: rgba(0, 102, 255, 0.18);
+  cursor: pointer;
+}
+
+.booked:hover {
+  background: rgba(0, 102, 255, 0.16);
+}
+
+.booked .dayNum {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Venue name on booked cell */
+.eventLabel {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  color: var(--color-accent);
+  opacity: 0.9;
+  text-align: center;
+  line-height: 1.3;
+  margin-top: 7px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* City on booked cell */
+.eventCity {
+  display: block;
+  font-size: 0.64rem;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 3px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendAvailable {
+  background: rgba(0, 102, 255, 0.4);
+  border: 1px solid rgba(0, 102, 255, 0.6);
+}
+
+.legendBooked {
+  background: var(--color-accent);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .dropdowns {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .days {
+    grid-auto-rows: 72px;
+  }
+}
+
+@media (max-width: 480px) {
+  .events {
+    padding: 80px 16px;
+  }
+
+  .monthCard {
+    padding: 16px 12px;
+  }
+}
+
+/* Event details modal */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.detailsModal {
+  position: relative;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 3px;
+  padding: 48px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.detailsClose {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.detailsClose:hover {
+  color: var(--color-text);
+}
+
+.detailsDate {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 16px;
+}
+
+.detailsVenue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.detailsCity {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+
+.detailsDesc {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  padding-top: 20px;
+  border-top: 1px solid #1a1a1a;
+}

@@ -17,6 +17,14 @@ export default function About() {
           {t('about.bio').split('\n\n').map((para, i) => (
             <p key={i} className={styles.bio}>{para}</p>
           ))}
+          <a
+            href="https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.promoLink}
+          >
+            ↓ {t('gallery.downloadPromo')}
+          </a>
         </div>
       </div>
     </section>

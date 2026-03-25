@@ -53,6 +53,25 @@
   margin-bottom: 0;
 }
 
+.promoLink {
+  display: inline-block;
+  margin-top: 32px;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border: 1px solid #2a2a2a;
+  padding: 10px 20px;
+  border-radius: 2px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.promoLink:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 @media (max-width: 768px) {
   .container {
     grid-template-columns: 1fr;

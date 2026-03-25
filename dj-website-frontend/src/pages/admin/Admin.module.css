@@ -1,0 +1,401 @@
+/* Login */
+.loginWrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080808;
+  padding: 24px;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.loginTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+/* Admin layout with sidebar */
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  background: #080808;
+}
+
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: #060606;
+  border-right: 1px solid #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  padding-top: 48px;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+  flex: 1;
+}
+
+.navItem {
+  display: block;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: 2px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.navItem:hover {
+  color: var(--color-text);
+  background: #111;
+}
+
+.navItemActive {
+  color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sidebarFooter {
+  padding: 16px 12px 24px;
+}
+
+.adminContent {
+  flex: 1;
+  padding: 48px 40px 64px;
+  max-width: 1000px;
+}
+
+/* Panel (legacy, kept for compatibility) */
+.panel {
+  min-height: 100vh;
+  background: #080808;
+  padding: 100px 32px 64px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 16px;
+}
+
+.panelTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.panelActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Form */
+.form {
+  background: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.formTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 20px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formFooter {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Inputs */
+.input {
+  background: #080808;
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  color-scheme: dark;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* Buttons */
+.btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: 2px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btnGhost {
+  background: transparent;
+  border-color: #2a2a2a;
+  color: var(--color-text-muted);
+}
+
+.btnGhost:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.btnSm {
+  padding: 5px 12px;
+  font-size: 0.72rem;
+}
+
+.btnDanger {
+  background: transparent;
+  border-color: #551111;
+  color: #cc4444;
+}
+
+.btnDanger:hover {
+  background: rgba(204, 68, 68, 0.1);
+  opacity: 1;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.table td {
+  padding: 12px 12px;
+  color: var(--color-text);
+  border-bottom: 1px solid #111;
+  vertical-align: middle;
+}
+
+.table tr:hover td {
+  background: #0d0d0d;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  padding: 40px 0 !important;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: #cc4444;
+}
+
+.optional {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.muted {
+  opacity: 0.3;
+}
+
+/* Photo grid */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.photoCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.photoThumb {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid #1a1a1a;
+  cursor: grab;
+}
+
+.photoThumb:active {
+  cursor: grabbing;
+}
+
+.photoThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.btnGoogle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.divider {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin: 8px 0;
+}
+
+/* Table scroll wrapper */
+.tableWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Layout: sidebar becomes top nav bar */
+  .adminLayout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid #1a1a1a;
+    padding-top: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+  }
+
+  .sidebarNav {
+    flex-direction: row;
+    padding: 0;
+    gap: 4px;
+  }
+
+  .navItem {
+    padding: 14px 12px;
+  }
+
+  .sidebarFooter {
+    padding: 8px 0;
+  }
+
+  .adminContent {
+    padding: 24px 16px 48px;
+  }
+
+  /* Form: single column */
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .form {
+    padding: 16px;
+  }
+
+  .panelTitle {
+    font-size: 1.2rem;
+  }
+
+  /* Photo grid: 2 columns on mobile */
+  .photoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

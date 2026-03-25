@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import styles from './Navbar.module.css'
 import logo from '../assets/Sabi logo white s png.png'
 
-const NAV_LINKS = ['about', 'mixes', 'gallery', 'contact'] as const
+const NAV_LINKS = ['about', 'mixes', 'gallery', 'events', 'contact'] as const
 
 const LANGUAGES = [
   { code: 'de', label: 'DE' },

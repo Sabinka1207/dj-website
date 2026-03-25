@@ -3,7 +3,8 @@
     "about": "About",
     "mixes": "Mixes",
     "gallery": "Gallery",
-    "contact": "Contact"
+    "contact": "Contact",
+    "events": "Events"
   },
   "hero": {
     "tagline": "Bar · Club · Festival · Radio"
@@ -19,7 +20,8 @@
     "title": "Gallery",
     "pressPhotos": "Press Photos",
     "download": "Download",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "downloadPromo": "Download Promo Pack"
   },
   "contact": {
     "title": "Contact",
@@ -32,7 +34,18 @@
     "success": "Thank you! I will be in touch soon.",
     "error": "Something went wrong. Please try again."
   },
+  "events": {
+    "title": "Book a Date",
+    "subtitle": "Click any available day to send a booking request.",
+    "legendAvailable": "Available",
+    "legendBooked": "Booked"
+  },
+  "modal": {
+    "title": "Booking Request",
+    "close": "Close"
+  },
   "footer": {
+    "promoKit": "Promo Pack",
     "impressum": "Impressum",
     "privacy": "Privacy Policy"
   },

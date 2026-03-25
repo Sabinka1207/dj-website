@@ -12,7 +12,9 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 | Frontend | React 19, TypeScript, Vite, CSS Modules |
 | i18n     | react-i18next (DE / EN / UA)            |
 | Routing  | React Router v7                         |
-| Backend  | Spring Boot 3.4, Kotlin                 |
+| Backend  | Spring Boot 3.4, Kotlin, Spring Data JPA |
+| Database | PostgreSQL (Supabase) — H2 in-memory for local dev |
+| Auth     | Password + Google Sign-In (admin panel) |
 | Email    | Resend API                              |
 | Notify   | Telegram Bot API                        |
 | Deploy   | Vercel (frontend) + Render (backend)    |
@@ -57,6 +59,8 @@ dj-website/
 
 Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 
+### Backend (Render env vars)
+
 | Variable             | Description                                  |
 | -------------------- | -------------------------------------------- |
 | `RESEND_API_KEY`     | Resend API key (from resend.com)             |
@@ -64,6 +68,19 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather           |
 | `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID                   |
 | `VERCEL_URL`         | Vercel domain (set in Render env vars only)  |
+| `DATABASE_URL`       | `jdbc:postgresql://...` — Supabase connection string with `jdbc:` prefix |
+| `DB_DRIVER`          | `org.postgresql.Driver`                      |
+| `ADMIN_PASSWORD`     | Password for admin login at `/admin`         |
+| `ADMIN_GOOGLE_EMAIL` | Gmail address allowed to log in via Google   |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)     |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key                        |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret                     |
+
+### Frontend (Vercel / Render build env vars)
+
+| Variable              | Description                                  |
+| --------------------- | -------------------------------------------- |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID (see Admin panel setup below) |
 
 ### Get Telegram chat ID
 
@@ -85,8 +102,12 @@ npm run dev
 
 ### Backend
 
+Uses H2 in-memory database locally — no setup needed. On first boot it seeds events from `src/main/resources/events.json`.
+
 ```bash
-# Set environment variables first
+# Set environment variables first (minimum for local dev)
+export ADMIN_PASSWORD=yourpassword
+export ADMIN_GOOGLE_EMAIL=your@gmail.com
 export RESEND_API_KEY=re_your_api_key
 export CONTACT_EMAIL=your@email.com
 export TELEGRAM_BOT_TOKEN=your_token
@@ -131,6 +152,46 @@ Translation files are in `dj-website-frontend/src/i18n/locales/`:
 - `ua/translation.json` — Ukrainian
 
 Language switcher is in the Navbar.
+
+---
+
+## Admin panel
+
+Available at `/admin`. Login with password or Google Sign-In. Session expires after 1 hour.
+
+Left sidebar navigation with two tabs:
+- **Events** (`/admin/events`) — create, edit, delete gig bookings
+- **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete. Changes reflect immediately in the public gallery.
+
+### Google Sign-In setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials
+2. Create OAuth 2.0 Client ID → Web application
+3. Add **Authorized JavaScript origins**:
+   - `http://localhost:5173`
+   - `https://dj-sabi.com`
+   - Your staging URL (e.g. `https://dj-website-stage.onrender.com`)
+4. Set env vars:
+   - `VITE_GOOGLE_CLIENT_ID` — on frontend (Vercel / Render build)
+   - `ADMIN_GOOGLE_EMAIL` — on backend (Render)
+
+---
+
+## Photo storage (Cloudinary)
+
+Gallery photos are stored on Cloudinary (free tier: 25 GB storage, 25 GB/month bandwidth). Upload originals — Cloudinary auto-compresses and optimizes.
+
+Setup: cloudinary.com → free account → Dashboard → copy Cloud name, API Key, API Secret → set as `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` on the backend.
+
+The public gallery falls back to static bundled images if the API returns nothing (useful during local dev without Cloudinary configured).
+
+---
+
+## Database (Supabase)
+
+Free PostgreSQL hosted on Supabase. On first backend boot, existing events are auto-seeded from `events.json`.
+
+Connection string: Supabase → Connect → URI tab → prepend `jdbc:` → set as `DATABASE_URL`.
 
 ---
 
@@ -181,7 +242,7 @@ This merges all changes from `stage` except `vercel.json`, which stays pointing 
 1. Push this repo to GitHub
 2. Go to [render.com](https://render.com) → New Web Service → connect GitHub repo
 3. Set root directory to `dj-website-backend`, language to Docker
-4. Add all environment variables from `.env.example` in the Render dashboard
+4. Add all backend env vars from `.env.example` in the Render dashboard
 5. Copy the Render public URL (e.g. `dj-website-backend.onrender.com`)
 
 ---
@@ -246,9 +307,28 @@ cd dj-website-backend
 
 ## API
 
+### Public
+
 | Method | Endpoint     | Description         |
 | ------ | ------------ | ------------------- |
+| GET    | /api/events  | List all events     |
+| GET    | /api/photos  | List gallery photos (sorted by display order) |
 | POST   | /api/contact | Submit booking form |
+
+### Admin (requires `Authorization: Bearer <token>`)
+
+| Method | Endpoint                    | Description                        |
+| ------ | --------------------------- | ---------------------------------- |
+| POST   | /api/admin/login            | Password login                     |
+| POST   | /api/admin/google-login     | Google Sign-In login               |
+| GET    | /api/admin/events           | List all events                    |
+| POST   | /api/admin/events           | Create event                       |
+| PUT    | /api/admin/events/:id       | Update event                       |
+| DELETE | /api/admin/events/:id       | Delete event                       |
+| GET    | /api/admin/photos           | List all photos                    |
+| POST   | /api/admin/photos/upload    | Upload photo (multipart) → Cloudinary |
+| DELETE | /api/admin/photos/:id       | Delete photo from Cloudinary + DB  |
+| PUT    | /api/admin/photos/reorder   | Bulk update display order          |
 
 ### Request body
 

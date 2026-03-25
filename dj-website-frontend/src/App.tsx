@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
+import { HelmetProvider } from 'react-helmet-async'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -9,8 +10,15 @@ import Gallery from './components/Gallery'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
+import SEO from './components/SEO'
+import Events from './components/Events'
 import Impressum from './pages/Impressum'
 import Privacy from './pages/Privacy'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminEvents from './pages/admin/AdminEvents'
+import AdminPhotos from './pages/admin/AdminPhotos'
+import ProtectedRoute from './components/ProtectedRoute'
 
 type Consent = 'accepted' | 'declined' | null
 
@@ -27,11 +35,13 @@ function Home({ consent, onAccept, onDecline }: {
 }) {
   return (
     <>
+      <SEO />
       <main>
         <Hero />
         <About />
         <Mixes cookiesAccepted={consent === 'accepted'} />
         <Gallery />
+        <Events />
         <Contact />
       </main>
       <Footer />
@@ -53,9 +63,12 @@ function App() {
     setConsent('declined')
   }
 
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
+
   return (
-    <div>
-      <Navbar />
+    <HelmetProvider>
+      {!isAdmin && <Navbar />}
       <Routes>
         <Route
           path="/"
@@ -69,9 +82,15 @@ function App() {
         />
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="/admin/events" replace />} />
+          <Route path="events" element={<AdminEvents />} />
+          <Route path="photos" element={<AdminPhotos />} />
+        </Route>
       </Routes>
       <Analytics />
-    </div>
+    </HelmetProvider>
   )
 }
 
