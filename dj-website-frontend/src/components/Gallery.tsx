@@ -33,8 +33,10 @@ export default function Gallery() {
   const [photos, setPhotos] = useState<Photo[]>(staticPhotos)
   const [page, setPage] = useState(1)
   const [lightbox, setLightbox] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const isFirstRender = useRef(true)
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return }
@@ -44,12 +46,26 @@ export default function Gallery() {
 
   const goToPage = (p: number) => setPage(p)
 
-  useEffect(() => {
+  const fetchPhotos = useCallback(() => {
     fetch('/api/photos')
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.length) setPhotos(data) })
-      .catch(() => {})
+      .then(data => {
+        if (data?.length) {
+          setPhotos(data)
+          setLoading(false)
+        } else {
+          retryRef.current = setTimeout(fetchPhotos, 5000)
+        }
+      })
+      .catch(() => {
+        retryRef.current = setTimeout(fetchPhotos, 5000)
+      })
   }, [])
+
+  useEffect(() => {
+    fetchPhotos()
+    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
+  }, [fetchPhotos])
 
   const totalPages = Math.ceil(photos.length / PAGE_SIZE)
   const pagePhotos = photos.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -86,6 +102,10 @@ export default function Gallery() {
         <div className={styles.titleRow}>
           <h2 className={styles.title}>{t('gallery.title')}</h2>
         </div>
+
+        {loading && photos.length === 0 && (
+          <p className={styles.loadingMsg}>Loading photos…</p>
+        )}
 
         <div className={styles.grid}>
           {pagePhotos.map((photo, index) => (

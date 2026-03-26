@@ -268,3 +268,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+.loadingMsg {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  padding: 48px 0;
+}
