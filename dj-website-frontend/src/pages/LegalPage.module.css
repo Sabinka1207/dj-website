@@ -1,3 +1,34 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 48px 24px 80px;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: 48px;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.back:hover {
+  color: var(--color-text);
+}
+
 .title {
   font-size: clamp(1.6rem, 4vw, 2.4rem);
   font-weight: 700;

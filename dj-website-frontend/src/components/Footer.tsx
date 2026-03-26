@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './Footer.module.css'
 import qrWhatsApp from '../assets/WhatsApp.jpeg'
 import qrViber from '../assets/Viber.jpg'
-import Impressum from '../pages/Impressum'
-import Privacy from '../pages/Privacy'
 
 const SOCIAL_LINKS = [
   {
@@ -61,90 +59,58 @@ const SOCIAL_LINKS = [
   },
 ]
 
-type LegalModal = 'impressum' | 'privacy' | null
-
 export default function Footer() {
   const { t } = useTranslation()
   const year = new Date().getFullYear()
-  const [legalModal, setLegalModal] = useState<LegalModal>(null)
-
-  useEffect(() => {
-    if (!legalModal) return
-    document.body.style.overflow = 'hidden'
-    const preventScroll = (e: TouchEvent) => e.preventDefault()
-    document.addEventListener('touchmove', preventScroll, { passive: false })
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLegalModal(null) }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = ''
-      document.removeEventListener('touchmove', preventScroll)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [legalModal])
 
   return (
-    <>
-      <footer id="footer" className={styles.footer}>
-        <div className={styles.container}>
-          <div className={styles.social}>
-            {SOCIAL_LINKS.map(({ name, href, qr, icon }) =>
-              qr ? (
-                <button
-                  key={name}
-                  className={styles.socialLink}
-                  aria-label={name}
-                >
-                  {icon}
-                  <span className={styles.iconLabel}>{name}</span>
-                  <div className={styles.qrPopup}>
-                    <img src={qr} alt={`${name} QR`} className={styles.qrImg} />
-                  </div>
-                </button>
-              ) : (
-                <a
-                  key={name}
-                  href={href!}
-                  className={styles.socialLink}
-                  aria-label={name}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {icon}
-                  <span className={styles.iconLabel}>{name}</span>
-                </a>
-              )
-            )}
-          </div>
-
-          <nav className={styles.links}>
-            <a
-              href="https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
-              {t('footer.promoKit')}
-            </a>
-            <button className={styles.link} onClick={() => setLegalModal('impressum')}>{t('footer.impressum')}</button>
-            <button className={styles.link} onClick={() => setLegalModal('privacy')}>{t('footer.privacy')}</button>
-          </nav>
-
-          <p className={styles.copy}>© {year} DJ Sabi</p>
+    <footer id="footer" className={styles.footer}>
+      <div className={styles.container}>
+        <div className={styles.social}>
+          {SOCIAL_LINKS.map(({ name, href, qr, icon }) =>
+            qr ? (
+              <button
+                key={name}
+                className={styles.socialLink}
+                aria-label={name}
+              >
+                {icon}
+                <span className={styles.iconLabel}>{name}</span>
+                <div className={styles.qrPopup}>
+                  <img src={qr} alt={`${name} QR`} className={styles.qrImg} />
+                </div>
+              </button>
+            ) : (
+              <a
+                key={name}
+                href={href!}
+                className={styles.socialLink}
+                aria-label={name}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {icon}
+                <span className={styles.iconLabel}>{name}</span>
+              </a>
+            )
+          )}
         </div>
-      </footer>
 
-      {legalModal && (
-        <div className={styles.legalOverlay} onClick={() => setLegalModal(null)}>
-          <div className={styles.legalModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.legalHeader}>
-              <button className={styles.legalClose} onClick={() => setLegalModal(null)}>✕</button>
-            </div>
-            <div className={styles.legalContent}>
-              {legalModal === 'impressum' ? <Impressum /> : <Privacy />}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+        <nav className={styles.links}>
+          <a
+            href="https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
+            {t('footer.promoKit')}
+          </a>
+          <Link to="/impressum" className={styles.link}>{t('footer.impressum')}</Link>
+          <Link to="/privacy" className={styles.link}>{t('footer.privacy')}</Link>
+        </nav>
+
+        <p className={styles.copy}>© {year} DJ Sabi</p>
+      </div>
+    </footer>
   )
 }

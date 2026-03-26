@@ -13,6 +13,8 @@ import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
 import SEO from './components/SEO'
 import Events from './components/Events'
+import Impressum from './pages/Impressum'
+import Privacy from './pages/Privacy'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminEvents from './pages/admin/AdminEvents'
@@ -32,6 +34,17 @@ function Home({ consent, onAccept, onDecline }: {
   onAccept: () => void
   onDecline: () => void
 }) {
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.scrollToFooter) {
+      window.history.replaceState({}, '')
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: document.body.scrollHeight })
+      })
+    }
+  }, [])
+
   return (
     <>
       <SEO />
@@ -71,10 +84,11 @@ function App() {
 
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
+  const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy'
 
   return (
     <HelmetProvider>
-      {!isAdmin && <Navbar />}
+      {!isAdmin && !isLegal && <Navbar />}
       <Routes>
         <Route
           path="/"
@@ -86,6 +100,8 @@ function App() {
             />
           }
         />
+        <Route path="/impressum" element={<Impressum />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/events" replace />} />
