@@ -12,7 +12,7 @@ export default function Impressum() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <button className={styles.back} onClick={() => navigate('/', { state: { scrollToFooter: true } })}>{t('impressum.back')}</button>
+        <button className={styles.back} onClick={() => navigate('/', { state: { scrollToContact: true } })}>{t('impressum.back')}</button>
         <h1 className={styles.title}>{t('impressum.title')}</h1>
 
         <section className={styles.section}>

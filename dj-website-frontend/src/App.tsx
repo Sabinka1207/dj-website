@@ -37,11 +37,11 @@ function Home({ consent, onAccept, onDecline }: {
   const location = useLocation()
 
   useEffect(() => {
-    if (location.state?.scrollToFooter) {
+    if (location.state?.scrollToContact) {
       window.history.replaceState({}, '')
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: document.body.scrollHeight })
-      })
+      setTimeout(() => {
+        document.getElementById('contact')?.scrollIntoView()
+      }, 50)
     }
   }, [])
 
