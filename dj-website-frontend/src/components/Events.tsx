@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './Events.module.css'
@@ -52,11 +52,20 @@ export default function Events() {
   const baseYear = today.getFullYear()
   const baseMonth = today.getMonth()
 
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
-    fetch('/api/events')
-      .then((r) => r.json())
-      .then((data: Event[]) => setEvents(data))
-      .catch(() => {})
+    const fetchEvents = () => {
+      fetch('/api/events')
+        .then((r) => r.json())
+        .then((data: Event[]) => {
+          setEvents(data)
+          window.dispatchEvent(new Event('backend-alive'))
+        })
+        .catch(() => { retryRef.current = setTimeout(fetchEvents, 5000) })
+    }
+    fetchEvents()
+    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
   }, [])
 
   const eventsByDate = new Map(events.map((e) => [e.date, e]))

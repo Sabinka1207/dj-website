@@ -58,6 +58,7 @@ export default function Gallery() {
         if (data?.length) {
           setPhotos(data)
           setLoading(false)
+          window.dispatchEvent(new Event('backend-alive'))
         } else {
           retryRef.current = setTimeout(fetchPhotos, 5000)
         }
