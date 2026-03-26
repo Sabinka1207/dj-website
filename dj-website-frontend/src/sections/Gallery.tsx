@@ -115,7 +115,7 @@ export default function Gallery() {
           <h2 className={styles.title}>{t('gallery.title')}</h2>
         </div>
 
-        {loading && photos.length === 0 && (
+        {loading && photos.length === 0 ? (
           <div className={styles.loadingRow}>
             <span className={styles.spinner} />
             {showReload && (
@@ -124,53 +124,55 @@ export default function Gallery() {
               </button>
             )}
           </div>
-        )}
+        ) : (
+          <>
+            <div className={styles.grid}>
+              {pagePhotos.map((photo, index) => (
+                <button
+                  key={photo.id}
+                  className={styles.card}
+                  onClick={() => setLightbox((page - 1) * PAGE_SIZE + index)}
+                >
+                  <img
+                    src={thumbUrl(photo.url)}
+                    alt=""
+                    loading="lazy"
+                    draggable={false}
+                    onContextMenu={blockEvent}
+                  />
+                  <div className={styles.overlay} />
+                </button>
+              ))}
+            </div>
 
-        <div className={styles.grid}>
-          {pagePhotos.map((photo, index) => (
-            <button
-              key={photo.id}
-              className={styles.card}
-              onClick={() => setLightbox((page - 1) * PAGE_SIZE + index)}
-            >
-              <img
-                src={thumbUrl(photo.url)}
-                alt=""
-                loading="lazy"
-                draggable={false}
-                onContextMenu={blockEvent}
-              />
-              <div className={styles.overlay} />
-            </button>
-          ))}
-        </div>
-
-        {totalPages > 1 && (
-          <div className={styles.pagination}>
-            <button
-              className={styles.pageBtn}
-              onClick={() => goToPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-            >
-              &#8592;
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <button
-                key={p}
-                className={`${styles.pageBtn} ${p === page ? styles.pageBtnActive : ''}`}
-                onClick={() => goToPage(p)}
-              >
-                {p}
-              </button>
-            ))}
-            <button
-              className={styles.pageBtn}
-              onClick={() => goToPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-            >
-              &#8594;
-            </button>
-          </div>
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => goToPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                >
+                  &#8592;
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    className={`${styles.pageBtn} ${p === page ? styles.pageBtnActive : ''}`}
+                    onClick={() => goToPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                >
+                  &#8594;
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

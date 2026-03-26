@@ -124,7 +124,7 @@ export default function Events() {
           <h2 className={styles.sectionTitle}>{t('events.title')}</h2>
           <p className={styles.subtitle}>{t('events.subtitle')}</p>
 
-          {loading && (
+          {loading ? (
             <div className={styles.loadingRow}>
               <span className={styles.spinner} />
               {showReload && (
@@ -133,8 +133,8 @@ export default function Events() {
                 </button>
               )}
             </div>
-          )}
-
+          ) : (
+          <>
           {/* Navigation */}
           <div className={styles.nav}>
             <button
@@ -241,6 +241,8 @@ export default function Events() {
               {t('events.legendBooked')}
             </span>
           </div>
+          </>
+          )}
         </div>
       </section>
 
