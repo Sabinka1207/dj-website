@@ -42,7 +42,11 @@ export default function Gallery() {
     if (prevPage.current === page) return
     prevPage.current = page
     const el = document.getElementById('gallery')
-    if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' })
+    if (el) {
+      const title = document.getElementById('gallery-title')
+      const target = title ?? el
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+    }
   }, [page])
 
   const goToPage = (p: number) => setPage(p)
@@ -100,7 +104,7 @@ export default function Gallery() {
   return (
     <section id="gallery" className={styles.gallery}>
       <div className={styles.container}>
-        <div className={styles.titleRow}>
+        <div id="gallery-title" className={styles.titleRow}>
           <h2 className={styles.title}>{t('gallery.title')}</h2>
         </div>
 
