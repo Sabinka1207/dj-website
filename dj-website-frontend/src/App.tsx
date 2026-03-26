@@ -38,10 +38,13 @@ function Home({ consent, onAccept, onDecline }: {
 
   useEffect(() => {
     if (location.state?.scrollToFooter) {
+      // Clear the state so a refresh doesn't re-trigger the scroll
+      window.history.replaceState({}, '')
       setTimeout(() => {
-        document.getElementById('footer')?.scrollIntoView()
+        const footer = document.getElementById('footer')
+        if (footer) window.scrollTo({ top: footer.offsetTop })
       }, 100)
-    } else if (!window.location.hash) {
+    } else {
       window.scrollTo(0, 0)
     }
   }, [])
