@@ -115,7 +115,17 @@ Features:
 - Service type: **Web Service** (Docker)
 - Set all backend env vars in Render dashboard
 - Free tier sleeps after 15 min inactivity; cold start takes ~60s
-- The frontend auto-reloads after 75s if the backend doesn't respond
+- The frontend shows a spinner and auto-reloads after 75s if the backend doesn't respond
+
+### Keeping the backend alive (free)
+To prevent cold starts, set up a keep-alive ping on [cron-job.org](https://cron-job.org) (free):
+1. Sign up and click **Create cronjob**
+2. **URL:** your Render backend URL + `/api/events` (e.g. `https://your-app.onrender.com/api/events`)
+3. **Schedule:** every 10 minutes (`0, 10, 20, 30, 40, 50` minutes past the hour)
+4. **Method:** GET → Save
+5. Create a second cronjob for the production backend URL
+
+This prevents Render from sleeping the service — backend responds instantly for all visitors.
 
 ### Frontend (Vercel)
 - Connected to GitHub repo, deploys automatically on push
