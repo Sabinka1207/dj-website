@@ -52,7 +52,10 @@ export default function Events() {
   const baseYear = today.getFullYear()
   const baseMonth = today.getMonth()
 
+  const [loading, setLoading] = useState(true)
+  const [showReload, setShowReload] = useState(false)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const fetchEvents = () => {
@@ -60,12 +63,17 @@ export default function Events() {
         .then((r) => r.json())
         .then((data: Event[]) => {
           setEvents(data)
+          setLoading(false)
           window.dispatchEvent(new Event('backend-alive'))
         })
         .catch(() => { retryRef.current = setTimeout(fetchEvents, 5000) })
     }
     fetchEvents()
-    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 20000)
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current)
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+    }
   }, [])
 
   const eventsByDate = new Map(events.map((e) => [e.date, e]))
@@ -115,6 +123,17 @@ export default function Events() {
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>{t('events.title')}</h2>
           <p className={styles.subtitle}>{t('events.subtitle')}</p>
+
+          {loading && (
+            <div className={styles.loadingRow}>
+              <span className={styles.spinner} />
+              {showReload && (
+                <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
+                  Reload
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Navigation */}
           <div className={styles.nav}>

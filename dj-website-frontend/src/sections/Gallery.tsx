@@ -34,9 +34,11 @@ export default function Gallery() {
   const [page, setPage] = useState(1)
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showReload, setShowReload] = useState(false)
 
   const prevPage = useRef(page)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (prevPage.current === page) return
@@ -70,7 +72,11 @@ export default function Gallery() {
 
   useEffect(() => {
     fetchPhotos()
-    return () => { if (retryRef.current) clearTimeout(retryRef.current) }
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 20000)
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current)
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+    }
   }, [fetchPhotos])
 
   const totalPages = Math.ceil(photos.length / PAGE_SIZE)
@@ -110,7 +116,14 @@ export default function Gallery() {
         </div>
 
         {loading && photos.length === 0 && (
-          <p className={styles.loadingMsg}>Loading photos…</p>
+          <div className={styles.loadingRow}>
+            <span className={styles.spinner} />
+            {showReload && (
+              <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            )}
+          </div>
         )}
 
         <div className={styles.grid}>
