@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { HelmetProvider } from 'react-helmet-async'
@@ -34,6 +34,18 @@ function Home({ consent, onAccept, onDecline }: {
   onAccept: () => void
   onDecline: () => void
 }) {
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.scrollToFooter) {
+      setTimeout(() => {
+        document.getElementById('footer')?.scrollIntoView()
+      }, 100)
+    } else if (!window.location.hash) {
+      window.scrollTo(0, 0)
+    }
+  }, [])
+
   return (
     <>
       <SEO />
@@ -66,10 +78,11 @@ function App() {
 
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
+  const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy'
 
   return (
     <HelmetProvider>
-      {!isAdmin && <Navbar />}
+      {!isAdmin && !isLegal && <Navbar />}
       <Routes>
         <Route
           path="/"

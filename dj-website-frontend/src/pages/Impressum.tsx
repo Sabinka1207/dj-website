@@ -1,14 +1,15 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './LegalPage.module.css'
 
 export default function Impressum() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <Link to="/" className={styles.back}>{t('impressum.back')}</Link>
+        <button className={styles.back} onClick={() => navigate('/', { state: { scrollToFooter: true } })}>{t('impressum.back')}</button>
         <h1 className={styles.title}>{t('impressum.title')}</h1>
 
         <section className={styles.section}>

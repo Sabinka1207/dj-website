@@ -246,17 +246,14 @@ function EventDetailsModal({
   })
 
   useEffect(() => {
-    const scrollY = window.scrollY
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
+    document.body.style.overflow = 'hidden'
+    const preventScroll = (e: TouchEvent) => e.preventDefault()
+    document.addEventListener('touchmove', preventScroll, { passive: false })
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, scrollY)
+      document.body.style.overflow = ''
+      document.removeEventListener('touchmove', preventScroll)
       document.removeEventListener('keydown', onKey)
     }
   }, [onClose])
