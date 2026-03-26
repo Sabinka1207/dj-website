@@ -27,8 +27,14 @@ Personal website for DJ Sabi. Multilingual (DE / EN / UA), fully responsive, wit
 
 ```
 dj-website/
-├── dj-website-frontend/   # React app
-└── dj-website-backend/    # Spring Boot API
+├── dj-website-frontend/        # React app
+│   └── src/
+│       ├── sections/           # One-per-page sections (Hero, About, Mixes, Gallery, Events, Contact)
+│       ├── components/         # Reusable UI components (Navbar, Footer, CookieBanner, SEO, BookingModal, ProtectedRoute)
+│       ├── pages/              # Standalone pages (Impressum, Privacy, admin/*)
+│       ├── assets/             # Images, fonts, video
+│       └── styles/             # Global CSS
+└── dj-website-backend/         # Spring Boot API
 ```
 
 ---

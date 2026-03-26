@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type React from 'react'
 import { useTranslation } from 'react-i18next'
 import styles from './Events.module.css'
-import BookingModal from './BookingModal'
+import BookingModal from '../components/BookingModal'
 
 type Event = {
   id: string
