@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { HelmetProvider } from 'react-helmet-async'
@@ -13,8 +13,6 @@ import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
 import SEO from './components/SEO'
 import Events from './components/Events'
-import Impressum from './pages/Impressum'
-import Privacy from './pages/Privacy'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminEvents from './pages/admin/AdminEvents'
@@ -34,21 +32,6 @@ function Home({ consent, onAccept, onDecline }: {
   onAccept: () => void
   onDecline: () => void
 }) {
-  const location = useLocation()
-
-  useEffect(() => {
-    if (location.state?.scrollToFooter) {
-      // Clear the state so a refresh doesn't re-trigger the scroll
-      window.history.replaceState({}, '')
-      setTimeout(() => {
-        const footer = document.getElementById('footer')
-        if (footer) window.scrollTo({ top: footer.offsetTop })
-      }, 100)
-    } else {
-      window.scrollTo(0, 0)
-    }
-  }, [])
-
   return (
     <>
       <SEO />
@@ -81,11 +64,10 @@ function App() {
 
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
-  const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy'
 
   return (
     <HelmetProvider>
-      {!isAdmin && !isLegal && <Navbar />}
+      {!isAdmin && <Navbar />}
       <Routes>
         <Route
           path="/"
@@ -97,8 +79,6 @@ function App() {
             />
           }
         />
-        <Route path="/impressum" element={<Impressum />} />
-        <Route path="/privacy" element={<Privacy />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/events" replace />} />
