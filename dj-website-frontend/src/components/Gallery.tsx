@@ -35,11 +35,12 @@ export default function Gallery() {
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const isFirstRender = useRef(true)
+  const prevPage = useRef(page)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return }
+    if (prevPage.current === page) return
+    prevPage.current = page
     const el = document.getElementById('gallery')
     if (el) window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' })
   }, [page])
