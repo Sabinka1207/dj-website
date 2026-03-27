@@ -129,9 +129,9 @@ This prevents Render from sleeping the service — backend responds instantly fo
 
 ### Frontend (Vercel)
 - Connected to GitHub repo, deploys automatically on push
-- `main` branch → production (`dj-sabi.com`)
-- `stage` branch → staging (`dj-website-peach.vercel.app`)
-- `vercel.json` proxies `/api/*` to the Render backend URL
+- `main` branch → production (`https://www.dj-sabi.com`) → backend `https://dj-website-e09j.onrender.com`
+- `stage` branch → staging (`https://dj-website-peach.vercel.app`) → backend `https://dj-website-stage.onrender.com`
+- `vercel.json` proxies `/api/*` to the Render backend URL (different per branch — verify after every `stage → main` merge)
 
 ### Branches
 - `main` — production
