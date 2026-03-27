@@ -120,10 +120,11 @@ Features:
 ### Keeping the backend alive (free)
 To prevent cold starts, set up a keep-alive ping on [cron-job.org](https://cron-job.org) (free):
 1. Sign up and click **Create cronjob**
-2. **URL:** your Render backend URL + `/api/events` (e.g. `https://your-app.onrender.com/api/events`)
+2. Create one cronjob per backend:
+   - `https://dj-website-e09j.onrender.com/api/events` (production)
+   - `https://dj-website-stage.onrender.com/api/events` (stage)
 3. **Schedule:** every 10 minutes (`0, 10, 20, 30, 40, 50` minutes past the hour)
 4. **Method:** GET → Save
-5. Create a second cronjob for the production backend URL
 
 This prevents Render from sleeping the service — backend responds instantly for all visitors.
 
@@ -131,10 +132,11 @@ This prevents Render from sleeping the service — backend responds instantly fo
 - Connected to GitHub repo, deploys automatically on push
 - `main` branch → production (`https://www.dj-sabi.com`) → backend `https://dj-website-e09j.onrender.com`
 - `stage` branch → staging (`https://dj-website-peach.vercel.app`) → backend `https://dj-website-stage.onrender.com`
-- `vercel.json` proxies `/api/*` to the Render backend URL (different per branch — verify after every `stage → main` merge)
+- `vercel.json` proxies `/api/*` to the Render backend URL (different per branch)
+- Reference copies: `vercel prod.json.example` and `vercel stage.json.example` — use these to restore `vercel.json` if it gets overwritten during a merge
 
 ### Branches
 - `main` — production
 - `stage` — staging (same code, different Render/Vercel targets)
 
-> When merging `stage → main`, manually verify `vercel.json` still points to the production backend URL after the merge.
+> When merging `stage → main`, restore `vercel.json` from `vercel prod.json.example` if it was overwritten.
