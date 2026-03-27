@@ -35,20 +35,31 @@ dj-website/
 │   │   │   │   ├── Gallery/        ← gallery photos (.webp)
 │   │   │   │   └── *.webp          ← about photo
 │   │   │   └── video/              ← hero background video
-│   │   ├── components/             ← Navbar, Hero, About, Mixes, Gallery, Contact, Footer, CookieBanner
-│   │   ├── pages/                  ← Impressum, Privacy
+│   │   ├── sections/               ← Hero, About, Mixes, Gallery, Events, Contact
+│   │   ├── components/             ← Navbar, Footer, CookieBanner, BookingModal, ProtectedRoute, SEO
+│   │   ├── pages/                  ← Impressum, Privacy, admin/*
 │   │   ├── i18n/locales/           ← de / en / ua translation JSON files
 │   │   └── styles/globals.css
-│   ├── vercel.json
+│   ├── vercel.json                 ← API proxy (differs per branch — see vercel *.json.example)
+│   ├── vercel prod.json.example    ← reference config for production branch
+│   ├── vercel stage.json.example   ← reference config for stage branch
 │   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
+    │   ├── model/                  ← Event.kt, Photo.kt
+    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt
     │   ├── DjWebsiteBackendApplication.kt
     │   ├── ContactController.kt
-    │   ├── ContactRequest.kt
+    │   ├── EventController.kt
+    │   ├── AdminEventController.kt
+    │   ├── PhotoController.kt
+    │   ├── AdminPhotoController.kt
+    │   ├── AdminAuthController.kt
+    │   ├── AdminAuthService.kt
+    │   ├── CloudinaryConfig.kt
+    │   ├── CorsConfig.kt
     │   ├── EmailService.kt
-    │   ├── TelegramService.kt
-    │   └── CorsConfig.kt
+    │   └── TelegramService.kt
     ├── src/main/resources/application.properties
     └── Dockerfile
 ```
@@ -174,7 +185,7 @@ Left sidebar navigation with two tabs:
 3. Add **Authorized JavaScript origins**:
    - `http://localhost:5173`
    - `https://dj-sabi.com`
-   - Your staging URL (e.g. `https://dj-website-stage.onrender.com`)
+   - `https://dj-website-peach.vercel.app` (staging)
 4. Set env vars:
    - `VITE_GOOGLE_CLIENT_ID` — on frontend (Vercel / Render build)
    - `ADMIN_GOOGLE_EMAIL` — on backend (Render)
@@ -211,7 +222,7 @@ In Supabase → Connect → Session pooler tab, copy the host (e.g. `aws-1-eu-no
 | Service            | Branch  | Platform | URL                                                                    |
 | ------------------ | ------- | -------- | ---------------------------------------------------------------------- |
 | Frontend (prod)    | `main`  | Vercel   | https://dj-sabi.com                                                    |
-| Frontend (staging) | `stage` | Vercel   | https://dj-website-git-stage-sabinka1207-7879s-projects.vercel.app     |
+| Frontend (staging) | `stage` | Vercel   | https://dj-website-peach.vercel.app                                    |
 | Backend (prod)     | `main`  | Render   | https://dj-website-e09j.onrender.com                                   |
 | Backend (staging)  | `stage` | Render   | https://dj-website-stage.onrender.com                                  |
 
@@ -222,7 +233,7 @@ Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
 | Branch  | Purpose     | Frontend URL                          |
 | ------- | ----------- | ------------------------------------- |
 | `main`  | Production  | https://dj-sabi.com                   |
-| `stage` | Staging     | Vercel preview URL (auto per PR/push) |
+| `stage` | Staging     | https://dj-website-peach.vercel.app   |
 
 **Workflow:**
 1. Work on `stage` branch
@@ -243,6 +254,19 @@ git push
 ```
 
 This merges all changes from `stage` except `vercel.json`, which stays pointing to the production backend.
+
+### Keeping the backend alive (free)
+
+Render free tier sleeps after 15 min inactivity (cold start ~60s). Set up keep-alive pings on [cron-job.org](https://cron-job.org) (free):
+
+1. Sign up → **Create cronjob**
+2. Create one job per backend:
+   - `https://dj-website-e09j.onrender.com/api/events` (production)
+   - `https://dj-website-stage.onrender.com/api/events` (stage)
+3. **Schedule:** every 10 minutes
+4. **Method:** GET → Save
+
+The frontend also shows a spinner and auto-reloads after 75s if the backend doesn't respond in time.
 
 ---
 
