@@ -37,11 +37,12 @@ function Home({ consent, onAccept, onDecline }: {
   const location = useLocation()
 
   useEffect(() => {
-    if (location.state?.scrollToContact) {
+    if (location.state?.scrollToFooter) {
       window.history.replaceState({}, '')
-      setTimeout(() => {
-        document.getElementById('contact')?.scrollIntoView()
-      }, 50)
+      const scroll = () => document.getElementById('footer')?.scrollIntoView()
+      const onAlive = () => { clearTimeout(fallback); setTimeout(scroll, 50) }
+      const fallback = setTimeout(scroll, 3000)
+      window.addEventListener('backend-alive', onAlive, { once: true })
     }
   }, [])
 
