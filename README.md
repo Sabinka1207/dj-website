@@ -93,11 +93,9 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 
 ### Frontend (Vercel env vars — set in Vercel dashboard)
 
-| Variable              | Environment | Description                                  |
-| --------------------- | ----------- | -------------------------------------------- |
-| `VITE_GOOGLE_CLIENT_ID` | All       | Google OAuth Client ID (see Admin panel setup below) |
-| `BACKEND_URL`         | Production  | `https://dj-website-e09j.onrender.com` — proxied as `/api/*` |
-| `BACKEND_URL`         | Preview     | `https://dj-website-stage.onrender.com` — proxied as `/api/*` |
+| Variable              | Description                                  |
+| --------------------- | -------------------------------------------- |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID (see Admin panel setup below) |
 
 ### Get Telegram chat ID
 
@@ -232,7 +230,7 @@ In Supabase → Connect → Session pooler tab, copy the host (e.g. `aws-1-eu-no
 | Backend (prod)     | `main`  | Render   | https://dj-website-e09j.onrender.com                                   |
 | Backend (staging)  | `stage` | Render   | https://dj-website-stage.onrender.com                                  |
 
-Vercel rewrites `/api/*` to the Render backend via the `$BACKEND_URL` environment variable — no CORS issues, no branch-specific config files.
+Vercel rewrites `/api/*` to the Render backend — no CORS issues.
 
 ### Branches
 
@@ -243,17 +241,23 @@ Vercel rewrites `/api/*` to the Render backend via the `$BACKEND_URL` environmen
 
 **Workflow:**
 1. Work on `stage` branch
-2. Push → Vercel builds staging preview automatically (uses Preview `BACKEND_URL`)
+2. Push → Vercel builds staging preview automatically
 3. Test everything on staging
-4. Merge `stage` → `main` → production updates (uses Production `BACKEND_URL`)
+4. Merge `stage` → `main` (see below) → production updates
+
+### Merging stage → main
+
+`vercel.json` differs between branches (stage points to stage backend, main to prod backend), so never let it overwrite production. Always merge like this:
 
 ```bash
 git checkout main
-git merge stage
+git merge stage --no-commit
+git checkout main -- dj-website-frontend/vercel.json
+git commit -m "Merge stage into main"
 git push
 ```
 
-No special handling needed — `vercel.json` is identical on both branches, the backend URL comes from Vercel environment variables.
+This merges all changes from `stage` except `vercel.json`, which stays pointing to the production backend.
 
 ### Keeping the backend alive (free)
 
@@ -282,17 +286,11 @@ The frontend also shows a spinner and auto-reloads after 75s if the backend does
 
 ### Step 2 — Configure frontend
 
-`dj-website-frontend/vercel.json` uses `$BACKEND_URL` to proxy API calls:
+`dj-website-frontend/vercel.json` has the backend URL hardcoded per branch:
+- `stage` branch → `https://dj-website-stage.onrender.com`
+- `main` branch → `https://dj-website-e09j.onrender.com`
 
-```json
-"destination": "$BACKEND_URL/api/:path*"
-```
-
-Set `BACKEND_URL` in Vercel dashboard → Settings → Environment Variables:
-- **Production**: `https://dj-website-e09j.onrender.com`
-- **Preview**: `https://dj-website-stage.onrender.com`
-
-If you redeploy the backend and get a new URL, update the env var in Vercel dashboard — no code changes needed.
+If you redeploy the backend and get a new URL, update `vercel.json` and push.
 
 ---
 
