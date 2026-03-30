@@ -84,6 +84,7 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `DB_USERNAME`        | `postgres.your-project-ref` (from Supabase session pooler connection string) |
 | `DB_PASSWORD`        | Supabase database password                   |
 | `DB_DRIVER`          | `org.postgresql.Driver`                      |
+| `DB_DIALECT`         | `org.hibernate.dialect.PostgreSQLDialect`    |
 | `ADMIN_PASSWORD`     | Password for admin login at `/admin`         |
 | `ADMIN_GOOGLE_EMAIL` | Gmail address allowed to log in via Google   |
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)     |
