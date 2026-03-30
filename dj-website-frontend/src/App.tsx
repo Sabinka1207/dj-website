@@ -19,6 +19,8 @@ import AdminLogin from './pages/admin/AdminLogin'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminEvents from './pages/admin/AdminEvents'
 import AdminPhotos from './pages/admin/AdminPhotos'
+import AdminBookings from './pages/admin/AdminBookings'
+import AdminAvailability from './pages/admin/AdminAvailability'
 import ProtectedRoute from './components/ProtectedRoute'
 
 type Consent = 'accepted' | 'declined' | null
@@ -108,6 +110,8 @@ function App() {
           <Route index element={<Navigate to="/admin/events" replace />} />
           <Route path="events" element={<AdminEvents />} />
           <Route path="photos" element={<AdminPhotos />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="availability" element={<AdminAvailability />} />
         </Route>
       </Routes>
       <Analytics />

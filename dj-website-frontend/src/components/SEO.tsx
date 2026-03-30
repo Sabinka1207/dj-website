@@ -23,7 +23,7 @@ const SEO_DATA: Record<string, { title: string; description: string; lang: strin
 }
 
 const SITE_URL = 'https://dj-sabi.com'
-const OG_IMAGE = `${SITE_URL}/favicon.png`
+const OG_IMAGE = `${SITE_URL}/og-image.webp`
 
 const JSON_LD = JSON.stringify({
   '@context': 'https://schema.org',

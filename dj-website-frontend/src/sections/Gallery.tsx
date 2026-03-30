@@ -57,13 +57,13 @@ export default function Gallery() {
     fetch('/api/photos')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.length) {
-          setPhotos(data)
-          setLoading(false)
-          window.dispatchEvent(new Event('backend-alive'))
-        } else {
+        if (data === null) {
           retryRef.current = setTimeout(fetchPhotos, 5000)
+          return
         }
+        if (data.length > 0) setPhotos(data)
+        setLoading(false)
+        window.dispatchEvent(new Event('backend-alive'))
       })
       .catch(() => {
         retryRef.current = setTimeout(fetchPhotos, 5000)

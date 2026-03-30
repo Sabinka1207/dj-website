@@ -15,7 +15,7 @@ const getLocale = (lang: string) =>
 export default function BookingModal({ date, onClose }: Props) {
   const { t, i18n } = useTranslation()
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '' })
+  const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '', source: 'calendar', language: i18n.language })
   const firstInputRef = useRef<HTMLInputElement>(null)
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(

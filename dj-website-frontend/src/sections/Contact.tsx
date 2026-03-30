@@ -5,9 +5,9 @@ import styles from './Contact.module.css'
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 export default function Contact() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', event: '', date: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', event: '', date: '', message: '', source: 'contact', language: i18n.language })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))

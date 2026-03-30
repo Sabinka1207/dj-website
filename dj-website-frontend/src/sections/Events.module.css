@@ -315,6 +315,32 @@
   background: var(--color-accent);
 }
 
+.legendUnavailable {
+  background: #555;
+}
+
+/* Unavailable date */
+.unavailable {
+  cursor: not-allowed;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(255, 255, 255, 0.03) 4px,
+    rgba(255, 255, 255, 0.03) 8px
+  );
+  border-color: #222;
+}
+
+.unavailable .dayNum {
+  opacity: 0.35;
+}
+
+.unavailable .eventLabel {
+  opacity: 0.6;
+  color: #aaa;
+}
+
 /* Responsive */
 @media (max-width: 700px) {
   .dropdowns {

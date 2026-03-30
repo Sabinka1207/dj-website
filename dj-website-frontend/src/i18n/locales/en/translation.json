@@ -38,7 +38,8 @@
     "title": "Book a Date",
     "subtitle": "Click any available day to send a booking request.",
     "legendAvailable": "Available",
-    "legendBooked": "Booked"
+    "legendBooked": "Booked",
+    "legendUnavailable": "Unavailable"
   },
   "modal": {
     "title": "Booking Request",

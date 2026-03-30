@@ -1,5 +1,7 @@
 package com.djsabi.backend
 
+import com.djsabi.backend.model.BookingRequest
+import com.djsabi.backend.repository.BookingRequestRepository
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,11 +14,19 @@ import org.springframework.web.bind.annotation.RestController
 class ContactController(
     private val emailService: EmailService,
     private val telegramService: TelegramService,
+    private val bookingRequestRepository: BookingRequestRepository,
 ) {
     private val log = LoggerFactory.getLogger(ContactController::class.java)
 
     @PostMapping("/contact")
     fun contact(@RequestBody req: ContactRequest): ResponseEntity<Void> {
+        try {
+            bookingRequestRepository.save(
+                BookingRequest(name = req.name, email = req.email, event = req.event, date = req.date, message = req.message, source = req.source, language = req.language)
+            )
+        } catch (e: Exception) {
+            log.error("Failed to save booking request", e)
+        }
         try {
             emailService.sendContactEmail(req)
         } catch (e: Exception) {

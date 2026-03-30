@@ -38,7 +38,8 @@
     "title": "Termin anfragen",
     "subtitle": "Klicke auf einen verfügbaren Tag, um eine Buchungsanfrage zu senden.",
     "legendAvailable": "Verfügbar",
-    "legendBooked": "Gebucht"
+    "legendBooked": "Gebucht",
+    "legendUnavailable": "Nicht verfügbar"
   },
   "modal": {
     "title": "Buchungsanfrage",

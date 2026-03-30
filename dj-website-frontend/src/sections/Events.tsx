@@ -40,6 +40,7 @@ const MAX_OFFSET = TOTAL_MONTHS - 1
 export default function Events() {
   const { t, i18n } = useTranslation()
   const [events, setEvents] = useState<Event[]>([])
+  const [unavailableDates, setUnavailableDates] = useState<Map<string, string | null>>(new Map())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [offset, setOffset] = useState(0)
@@ -59,10 +60,13 @@ export default function Events() {
 
   useEffect(() => {
     const fetchEvents = () => {
-      fetch('/api/events')
-        .then((r) => r.json())
-        .then((data: Event[]) => {
-          setEvents(data)
+      Promise.all([
+        fetch('/api/events').then((r) => r.json()),
+        fetch('/api/unavailable-dates').then((r) => r.json()),
+      ])
+        .then(([eventsData, unavailableData]: [Event[], { date: string; note: string | null }[]]) => {
+          setEvents(eventsData)
+          setUnavailableDates(new Map(unavailableData.map(u => [u.date, u.note])))
           setLoading(false)
           window.dispatchEvent(new Event('backend-alive'))
         })
@@ -203,6 +207,8 @@ export default function Events() {
                 const isToday = cellDate.getTime() === today.getTime()
                 const event = eventsByDate.get(dateStr)
                 const isBooked = !!event
+                const isUnavailable = !isBooked && unavailableDates.has(dateStr)
+                const unavailableNote = isUnavailable ? unavailableDates.get(dateStr) : undefined
 
                 return (
                   <button
@@ -212,11 +218,12 @@ export default function Events() {
                       isPast ? styles.past : '',
                       isToday ? styles.today : '',
                       isBooked ? styles.booked : '',
-                      !isPast && !isBooked ? styles.available : '',
+                      isUnavailable ? styles.unavailable : '',
+                      !isPast && !isBooked && !isUnavailable ? styles.available : '',
                     ].filter(Boolean).join(' ')}
-                    onClick={() => handleDayClick(dateStr)}
-                    disabled={isPast && !isBooked}
-                    title={isBooked ? `${event!.venue} · ${event!.city}` : undefined}
+                    onClick={() => !isUnavailable && handleDayClick(dateStr)}
+                    disabled={(isPast && !isBooked) || isUnavailable}
+                    title={isBooked ? `${event!.venue} · ${event!.city}` : (unavailableNote ?? undefined)}
                   >
                     <span className={styles.dayNum}>{day}</span>
                     {isBooked && (
@@ -224,6 +231,9 @@ export default function Events() {
                         <span className={styles.eventLabel}>{event!.venue}</span>
                         <span className={styles.eventCity}>{event!.city}</span>
                       </>
+                    )}
+                    {isUnavailable && unavailableNote && (
+                      <span className={styles.eventLabel}>{unavailableNote}</span>
                     )}
                   </button>
                 )
@@ -239,6 +249,10 @@ export default function Events() {
             <span className={styles.legendItem}>
               <span className={`${styles.legendDot} ${styles.legendBooked}`} />
               {t('events.legendBooked')}
+            </span>
+            <span className={styles.legendItem}>
+              <span className={`${styles.legendDot} ${styles.legendUnavailable}`} />
+              {t('events.legendUnavailable')}
             </span>
           </div>
           </>
