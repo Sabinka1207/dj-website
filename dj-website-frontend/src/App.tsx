@@ -12,6 +12,7 @@ import Contact from './sections/Contact'
 import Events from './sections/Events'
 import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
+import ScrollToTop from './components/ScrollToTop'
 import SEO from './components/SEO'
 import Impressum from './pages/Impressum'
 import Privacy from './pages/Privacy'
@@ -61,6 +62,7 @@ function Home({ consent, onAccept, onDecline }: {
       </main>
       <Footer />
       {consent === null && <CookieBanner onAccept={onAccept} onDecline={onDecline} />}
+      <ScrollToTop />
     </>
   )
 }

@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './LegalPage.module.css'
 
+const LANGUAGES = [{ code: 'de', label: 'DE' }, { code: 'en', label: 'EN' }, { code: 'ua', label: 'UA' }]
+
 export default function Impressum() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
@@ -12,7 +14,14 @@ export default function Impressum() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <button className={styles.back} onClick={() => navigate('/', { state: { scrollToFooter: true } })}>{t('impressum.back')}</button>
+        <div className={styles.topBar}>
+          <button className={styles.back} onClick={() => navigate('/', { state: { scrollToFooter: true } })}>{t('impressum.back')}</button>
+          <div className={styles.langSwitcher}>
+            {LANGUAGES.map(({ code, label }) => (
+              <button key={code} className={`${styles.langBtn} ${i18n.language === code ? styles.langBtnActive : ''}`} onClick={() => i18n.changeLanguage(code)}>{label}</button>
+            ))}
+          </div>
+        </div>
         <h1 className={styles.title}>{t('impressum.title')}</h1>
 
         <section className={styles.section}>

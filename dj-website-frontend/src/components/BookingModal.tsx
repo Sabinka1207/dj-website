@@ -25,12 +25,9 @@ export default function BookingModal({ date, onClose }: Props) {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    const preventScroll = (e: TouchEvent) => e.preventDefault()
-    document.addEventListener('touchmove', preventScroll, { passive: false })
     firstInputRef.current?.focus()
     return () => {
       document.body.style.overflow = ''
-      document.removeEventListener('touchmove', preventScroll)
     }
   }, [])
 
