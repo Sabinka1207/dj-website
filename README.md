@@ -40,7 +40,7 @@ dj-website/
 │   │   ├── pages/                  ← Impressum, Privacy, admin/*
 │   │   ├── i18n/locales/           ← de / en / ua translation JSON files
 │   │   └── styles/globals.css
-│   ├── vercel.json                 ← API proxy + CSP headers (uses $BACKEND_URL env var)
+│   ├── vercel.json                 ← API proxy + CSP headers (backend URL hardcoded per branch)
 │   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
@@ -148,7 +148,7 @@ Photos are managed through the admin panel (`/admin/photos`) and stored on Cloud
 
 1. Log in to `/admin`
 2. Go to **Photos** tab
-3. Click **+ Upload photos** — upload originals, Cloudinary handles compression automatically
+3. Click the **upload icon** (↑) — upload originals, Cloudinary handles compression automatically
 
 ### Sync existing Cloudinary photos
 
@@ -269,8 +269,6 @@ Render free tier sleeps after 15 min inactivity (cold start ~60s). Set up keep-a
    - `https://dj-website-stage.onrender.com/api/events` (stage)
 3. **Schedule:** every 10 minutes
 4. **Method:** GET → Save
-
-The frontend also shows a spinner and auto-reloads after 75s if the backend doesn't respond in time.
 
 ---
 
