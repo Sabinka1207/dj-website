@@ -3,19 +3,19 @@ import { useTranslation } from 'react-i18next'
 
 const SEO_DATA: Record<string, { title: string; description: string; lang: string }> = {
   de: {
-    title: 'DJ Sabi | Bar · Club · Festival · Radio',
+    title: 'DJ Sabi | Ukraine – Germany | Bar · Club · Festival · Radio',
     description:
       'DJ Sabi – über 15 Jahre Erfahrung, Residentin des Forsage Clubs, internationale Auftritte. Jetzt für Ihre Veranstaltung buchen: Bar, Club, Festival, Radio.',
     lang: 'de',
   },
   en: {
-    title: 'DJ Sabi | Bar · Club · Festival · Radio',
+    title: 'DJ Sabi | Ukraine – Germany | Bar · Club · Festival · Radio',
     description:
       'DJ Sabi – 15+ years experience, Forsage Club resident, international credits including Pacha. Book for your bar, club, festival or radio event in Germany.',
     lang: 'en',
   },
   ua: {
-    title: 'DJ Sabi | Бар · Клуб · Фестиваль · Радіо',
+    title: 'DJ Sabi | Україна – Німеччина | Бар · Клуб · Фестиваль · Радіо',
     description:
       'DJ Sabi – понад 15 років досвіду, резидентка клубу Forsage, виступи на міжнародних майданчиках. Замовте для свого заходу в Німеччині.',
     lang: 'uk',
