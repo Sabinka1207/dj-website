@@ -17,6 +17,12 @@ type Booking = {
   submittedAt: string
 }
 
+const formatDate = (iso: string) => {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 const replyTemplate = (name: string, lang: string) => {
   switch (lang) {
     case 'de': return `Hallo ${name},\n\n\n\nVielen Dank für deine Anfrage! \n\nMit freundlichen Grüßen,\nDJ Sabi / Sabina Abdulaliieva`
@@ -127,7 +133,7 @@ export default function AdminBookings() {
                     <td className={styles.nowrap}>
                       <div className={styles.dateRow}>
                         {b.status === 'new' && <span className={styles.unreadDot} />}
-                        {b.submittedAt}
+                        {formatDate(b.submittedAt)}
                       </div>
                       <div className={styles.badgeStack}>
                         {b.source && (
@@ -171,7 +177,7 @@ export default function AdminBookings() {
                 <div className={styles.mobileCardHeader}>
                   <div className={styles.mobileCardMeta}>
                     {b.status === 'new' && <span className={styles.unreadDot} />}
-                    <span className={styles.mobileCardDate}>{b.submittedAt}</span>
+                    <span className={styles.mobileCardDate}>{formatDate(b.submittedAt)}</span>
                     <div className={styles.badgeStack}>
                       {b.source && (
                         <span className={b.source === 'calendar' ? styles.badgeCalendar : styles.badgeContact}>
@@ -289,7 +295,7 @@ function BookingModal({
         <button className={styles.modalClose} onClick={onClose} aria-label="Close">✕</button>
 
         <p className={styles.modalMeta}>
-          {booking.submittedAt} · {booking.source || 'direct'}
+          {formatDate(booking.submittedAt)} · {booking.source || 'direct'}
           {booking.language && <> · lang: {booking.language.toUpperCase()}</>}
           {booking.status === 'answered' && (
             <span className={styles.badgeAnsweredWrap} style={{ marginLeft: 10 }}>

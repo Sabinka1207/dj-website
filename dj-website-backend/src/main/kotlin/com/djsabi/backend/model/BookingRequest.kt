@@ -2,6 +2,7 @@ package com.djsabi.backend.model
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Entity
 @Table(name = "booking_requests")
@@ -19,5 +20,5 @@ class BookingRequest(
     var status: String = "new",  // "new" | "read" | "answered"
     @Column(columnDefinition = "TEXT")
     var reply: String? = null,
-    val submittedAt: LocalDateTime = LocalDateTime.now()
+    val submittedAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/Berlin"))
 )
