@@ -243,18 +243,18 @@ function BookingModal({
     setReply(replyTemplate(booking.name, lang))
   }
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const modalBoxRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const scrollY = window.scrollY
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
-    return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, scrollY)
+    const backdrop = backdropRef.current
+    const modal = modalBoxRef.current
+    if (!backdrop || !modal) return
+    const prevent = (e: TouchEvent) => {
+      if (!modal.contains(e.target as Node)) e.preventDefault()
     }
+    backdrop.addEventListener('touchmove', prevent, { passive: false })
+    return () => backdrop.removeEventListener('touchmove', prevent)
   }, [])
 
   useEffect(() => {
@@ -284,8 +284,8 @@ function BookingModal({
   }
 
   return (
-    <div className={styles.modalBackdrop} onClick={handleBackdrop}>
-      <div className={styles.modalBox}>
+    <div ref={backdropRef} className={styles.modalBackdrop} onClick={handleBackdrop}>
+      <div ref={modalBoxRef} className={styles.modalBox}>
         <button className={styles.modalClose} onClick={onClose} aria-label="Close">✕</button>
 
         <p className={styles.modalMeta}>

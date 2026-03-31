@@ -17,6 +17,8 @@ export default function BookingModal({ date, onClose }: Props) {
   const [status, setStatus] = useState<Status>('idle')
   const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '', source: 'calendar', language: i18n.language })
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(
     getLocale(i18n.language),
@@ -24,17 +26,15 @@ export default function BookingModal({ date, onClose }: Props) {
   )
 
   useEffect(() => {
-    const scrollY = window.scrollY
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
     firstInputRef.current?.focus()
-    return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, scrollY)
+    const backdrop = backdropRef.current
+    const modal = modalRef.current
+    if (!backdrop || !modal) return
+    const prevent = (e: TouchEvent) => {
+      if (!modal.contains(e.target as Node)) e.preventDefault()
     }
+    backdrop.addEventListener('touchmove', prevent, { passive: false })
+    return () => backdrop.removeEventListener('touchmove', prevent)
   }, [])
 
   useEffect(() => {
@@ -67,8 +67,8 @@ export default function BookingModal({ date, onClose }: Props) {
   }
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdrop} role="dialog" aria-modal="true">
-      <div className={styles.modal}>
+    <div ref={backdropRef} className={styles.backdrop} onClick={handleBackdrop} role="dialog" aria-modal="true">
+      <div ref={modalRef} className={styles.modal}>
         <button className={styles.closeBtn} onClick={onClose} aria-label={t('modal.close')}>
           ✕
         </button>
