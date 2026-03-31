@@ -837,107 +837,91 @@
   }
 }
 
-/* Mobile helpers */
-.mobileName {
-  display: block;
-}
-
-.mobileEmail,
-.mobileDate {
+/* Mobile card list — hidden on desktop */
+.mobileCardList {
   display: none;
 }
 
-/* ── Bookings table → card list on mobile ──────────────────────────────────── */
+/* Desktop table — hidden on mobile */
+.desktopOnly {
+  display: block;
+}
+
+/* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .tableWrap {
-    overflow-x: visible;
-  }
-
-  .table,
-  .table tbody {
-    display: block;
-  }
-
-  .table thead {
+  .desktopOnly {
     display: none;
   }
 
-  .table tr {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-    gap: 4px 8px;
+  .mobileCardList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobileCard {
     background: #0d0d0d;
     border: 1px solid #1a1a1a;
-    border-radius: 4px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
+    border-radius: 6px;
+    padding: 14px;
     cursor: pointer;
+    position: relative;
   }
 
-  .table tr:hover td {
-    background: transparent;
+  .mobileCardUnread {
+    border-left: 3px solid var(--color-accent);
   }
 
-  .table td {
-    display: block;
-    padding: 0;
-    border: none;
+  .mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
-  /* Hide desktop-only columns */
-  .tdEmail,
-  .tdEvent,
-  .tdDate,
-  .tdMessage {
-    display: none;
+  .mobileCardMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* Received column: top-left */
-  .tdReceived {
-    grid-column: 1;
-    grid-row: 1;
-    font-size: 0.78rem;
-    white-space: normal;
+  .mobileCardDate {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
   }
 
-  /* Name column: bottom-left — show name + email + date inline */
-  .tdName {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .mobileName {
-    display: block;
-    font-size: 0.95rem;
+  .mobileCardName {
+    font-size: 1rem;
     font-weight: 600;
     color: var(--color-text);
+    margin-bottom: 2px;
   }
 
-  .mobileEmail {
-    display: block;
-    font-size: 0.8rem;
+  .mobileCardEmail {
+    font-size: 0.82rem;
     color: var(--color-accent);
-    margin-top: 2px;
+    margin-bottom: 2px;
   }
 
-  .mobileDate {
-    display: block;
+  .mobileCardRequestedDate {
     font-size: 0.78rem;
     color: var(--color-text-muted);
-    margin-top: 2px;
+    margin-bottom: 6px;
   }
 
-  /* Delete button: right side, spanning both rows */
-  .table td:last-child {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .mobileCardMsg {
+    font-size: 0.83rem;
+    color: var(--color-text-muted);
+    margin-top: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  /* Booking detail modal */
+  /* Booking detail modal — bottom sheet */
   .modalBackdrop {
     padding: 0;
     align-items: flex-end;

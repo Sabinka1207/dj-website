@@ -101,74 +101,102 @@ export default function AdminBookings() {
       ) : bookings.length === 0 ? (
         <p className={styles.empty}>No booking requests yet.</p>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Received</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Event / Venue</th>
-                <th>Requested Date</th>
-                <th style={{ width: '40%' }}>Message</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr
-                  key={b.id}
-                  className={b.status === 'new' ? styles.unreadRow : ''}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleOpen(b)}
-                >
-                  <td className={`${styles.nowrap} ${styles.tdReceived}`}>
-                    <div className={styles.dateRow}>
-                      {b.status === 'new' && <span className={styles.unreadDot} />}
-                      {b.submittedAt}
-                    </div>
+        <>
+          {/* Desktop table */}
+          <div className={`${styles.tableWrap} ${styles.desktopOnly}`}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Received</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Event / Venue</th>
+                  <th>Requested Date</th>
+                  <th style={{ width: '40%' }}>Message</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map((b) => (
+                  <tr
+                    key={b.id}
+                    className={b.status === 'new' ? styles.unreadRow : ''}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handleOpen(b)}
+                  >
+                    <td className={styles.nowrap}>
+                      <div className={styles.dateRow}>
+                        {b.status === 'new' && <span className={styles.unreadDot} />}
+                        {b.submittedAt}
+                      </div>
+                      <div className={styles.badgeStack}>
+                        {b.source && (
+                          <span className={b.source === 'calendar' ? styles.badgeCalendar : styles.badgeContact}>
+                            {b.source}
+                          </span>
+                        )}
+                        {b.status === 'answered' && (
+                          <span className={styles.badgeAnswered}>answered</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{b.name}</td>
+                    <td>
+                      <a href={`mailto:${b.email}`} className={styles.emailLink} onClick={e => e.stopPropagation()}>
+                        {b.email}
+                      </a>
+                    </td>
+                    <td>{b.event}</td>
+                    <td className={styles.nowrap}>{b.date}</td>
+                    <td className={styles.msgCellWide}>{b.message}</td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={() => handleDelete(b.id)} title="Delete">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile card list */}
+          <div className={styles.mobileCardList}>
+            {bookings.map((b) => (
+              <div
+                key={b.id}
+                className={`${styles.mobileCard} ${b.status === 'new' ? styles.mobileCardUnread : ''}`}
+                onClick={() => handleOpen(b)}
+              >
+                <div className={styles.mobileCardHeader}>
+                  <div className={styles.mobileCardMeta}>
+                    {b.status === 'new' && <span className={styles.unreadDot} />}
+                    <span className={styles.mobileCardDate}>{b.submittedAt}</span>
                     <div className={styles.badgeStack}>
                       {b.source && (
                         <span className={b.source === 'calendar' ? styles.badgeCalendar : styles.badgeContact}>
                           {b.source}
                         </span>
                       )}
-                      {b.status === 'answered' && (
-                        <span className={styles.badgeAnswered}>answered</span>
-                      )}
+                      {b.status === 'answered' && <span className={styles.badgeAnswered}>answered</span>}
                     </div>
-                  </td>
-                  <td className={styles.tdName}>
-                    <div className={styles.mobileName}>{b.name}</div>
-                    <div className={styles.mobileEmail}>{b.email}</div>
-                    {b.date && <div className={styles.mobileDate}>{b.date}</div>}
-                  </td>
-                  <td className={styles.tdEmail}>
-                    <a
-                      href={`mailto:${b.email}`}
-                      className={styles.emailLink}
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {b.email}
-                    </a>
-                  </td>
-                  <td className={styles.tdEvent}>{b.event}</td>
-                  <td className={`${styles.nowrap} ${styles.tdDate}`}>{b.date}</td>
-                  <td className={`${styles.msgCellWide} ${styles.tdMessage}`}>{b.message}</td>
-                  <td onClick={e => e.stopPropagation()}>
-                    <button
-                      className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-                      onClick={() => handleDelete(b.id)}
-                      title="Delete"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <button
+                    className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                    onClick={e => { e.stopPropagation(); handleDelete(b.id) }}
+                    title="Delete"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  </button>
+                </div>
+                <div className={styles.mobileCardName}>{b.name}</div>
+                <div className={styles.mobileCardEmail}>{b.email}</div>
+                {b.date && <div className={styles.mobileCardRequestedDate}>{b.date}</div>}
+                {b.message && <div className={styles.mobileCardMsg}>{b.message}</div>}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {selected && (
