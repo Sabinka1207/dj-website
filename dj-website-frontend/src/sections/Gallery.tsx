@@ -34,10 +34,12 @@ export default function Gallery() {
   const [page, setPage] = useState(1)
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showWarmup, setShowWarmup] = useState(false)
   const [showReload, setShowReload] = useState(false)
 
   const prevPage = useRef(page)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -72,9 +74,11 @@ export default function Gallery() {
 
   useEffect(() => {
     fetchPhotos()
-    reloadTimerRef.current = setTimeout(() => setShowReload(true), 20000)
+    warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 8000)
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 70000)
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current)
+      if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
       if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
     }
   }, [fetchPhotos])
@@ -118,6 +122,7 @@ export default function Gallery() {
         {loading && photos.length === 0 ? (
           <div className={styles.loadingRow}>
             <span className={styles.spinner} />
+            {showWarmup && <span className={styles.warmupHint}>Server warming up…</span>}
             {showReload && (
               <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
                 Reload

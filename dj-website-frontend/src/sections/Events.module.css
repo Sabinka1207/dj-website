@@ -461,6 +461,12 @@
   to { transform: rotate(360deg); }
 }
 
+.warmupHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}
+
 .reloadBtn {
   font-size: 0.75rem;
   letter-spacing: 0.12em;

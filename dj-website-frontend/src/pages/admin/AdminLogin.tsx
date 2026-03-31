@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGoogleLogin } from '@react-oauth/google'
 import { setToken } from '../../utils/adminAuth'
@@ -9,6 +9,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showWarmup, setShowWarmup] = useState(false)
+  const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleGoogleLogin = useGoogleLogin({
     scope: 'openid email profile',
@@ -31,6 +33,8 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setError(false)
+    setShowWarmup(false)
+    warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 8000)
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
@@ -45,8 +49,12 @@ export default function AdminLogin() {
       setError(true)
     } finally {
       setLoading(false)
+      setShowWarmup(false)
+      if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
     }
   }
+
+  useEffect(() => () => { if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current) }, [])
 
   return (
     <div className={styles.loginWrap}>
@@ -61,6 +69,7 @@ export default function AdminLogin() {
           autoFocus
         />
         {error && <p className={styles.error}>Wrong password</p>}
+        {showWarmup && <p className={styles.warmupHint}>Server warming up…</p>}
         <button className={styles.btn} type="submit" disabled={loading}>
           {loading ? '...' : 'Login'}
         </button>
