@@ -105,6 +105,12 @@
   resize: vertical;
 }
 
+.textarea::placeholder {
+  font-size: 0.78rem;
+  color: #555;
+  font-style: italic;
+}
+
 .submit {
   align-self: flex-start;
   padding: 12px 40px;

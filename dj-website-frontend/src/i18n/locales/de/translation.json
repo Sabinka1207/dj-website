@@ -32,7 +32,9 @@
     "message": "Nachricht",
     "send": "Senden",
     "success": "Danke! Ich melde mich bald.",
-    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "required": "Pflichtfelder",
+    "messagePlaceholder": "Fragen, Dauer, Musikwünsche..."
   },
   "events": {
     "title": "Termin anfragen",

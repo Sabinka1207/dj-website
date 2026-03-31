@@ -121,6 +121,7 @@ export default function BookingModal({ date, onClose }: Props) {
                 name="message"
                 value={form.message}
                 onChange={handleChange}
+                placeholder={t('contact.messagePlaceholder')}
                 rows={4}
                 required
               />

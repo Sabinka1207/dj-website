@@ -39,22 +39,24 @@ export default function Contact() {
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.row}>
               <div className={styles.field}>
-                <label className={styles.label}>{t('contact.name')}</label>
+                <label className={styles.label}>{t('contact.name')} <span className={styles.required}>*</span></label>
                 <input
                   className={styles.input}
                   type="text"
                   name="name"
+                  autoComplete="name"
                   value={form.name}
                   onChange={handleChange}
                   required
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>{t('contact.email')}</label>
+                <label className={styles.label}>{t('contact.email')} <span className={styles.required}>*</span></label>
                 <input
                   className={styles.input}
                   type="email"
                   name="email"
+                  autoComplete="email"
                   value={form.email}
                   onChange={handleChange}
                   required
@@ -71,7 +73,6 @@ export default function Contact() {
                   name="event"
                   value={form.event}
                   onChange={handleChange}
-                  required
                 />
               </div>
               <div className={styles.field}>
@@ -87,7 +88,7 @@ export default function Contact() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>{t('contact.message')}</label>
+              <label className={styles.label}>{t('contact.message')} <span className={styles.required}>*</span></label>
               <textarea
                 className={styles.textarea}
                 name="message"
@@ -97,6 +98,7 @@ export default function Contact() {
                 required
               />
             </div>
+            <p className={styles.requiredNote}><span className={styles.required}>*</span> {t('contact.required')}</p>
 
             {status === 'error' && (
               <p className={styles.errorMsg}>{t('contact.error')}</p>
