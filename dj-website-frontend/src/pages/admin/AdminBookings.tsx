@@ -29,13 +29,16 @@ export default function AdminBookings() {
   const navigate = useNavigate()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [selected, setSelected] = useState<Booking | null>(null)
 
-  const load = async () => {
+  const load = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true)
     const res = await fetch('/api/admin/bookings', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setBookings(await res.json())
     setLoading(false)
+    setRefreshing(false)
   }
 
   useEffect(() => { load() }, [])
@@ -82,6 +85,15 @@ export default function AdminBookings() {
     <>
       <div className={styles.panelHeader}>
         <h1 className={styles.panelTitle}>Booking Requests</h1>
+        <button
+          className={styles.iconBtn}
+          onClick={() => load(true)}
+          disabled={refreshing}
+          title="Refresh"
+          style={{ opacity: refreshing ? 0.4 : undefined }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
       </div>
 
       {loading ? (

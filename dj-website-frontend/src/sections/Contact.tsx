@@ -22,7 +22,13 @@ export default function Contact() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      setStatus(res.ok ? 'success' : 'error')
+      if (res.ok) {
+        setStatus('success')
+        setForm({ name: '', email: '', event: '', date: '', message: '', source: 'contact', language: i18n.language })
+        setTimeout(() => setStatus('idle'), 4000)
+      } else {
+        setStatus('error')
+      }
     } catch {
       setStatus('error')
     }

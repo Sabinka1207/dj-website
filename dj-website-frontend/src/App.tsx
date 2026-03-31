@@ -70,12 +70,6 @@ function Home({ consent, onAccept, onDecline }: {
 function App() {
   const [consent, setConsent] = useState<Consent>(getStoredConsent)
 
-  useEffect(() => {
-    const timer = setTimeout(() => window.location.reload(), 75000)
-    const cancel = () => clearTimeout(timer)
-    window.addEventListener('backend-alive', cancel)
-    return () => { clearTimeout(timer); window.removeEventListener('backend-alive', cancel) }
-  }, [])
 
   const handleAccept = () => {
     localStorage.setItem('cookieConsent', 'accepted')
