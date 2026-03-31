@@ -132,6 +132,19 @@
   gap: 8px;
 }
 
+.panelTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panelActionsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
 /* Form */
 .form {
   background: #0d0d0d;

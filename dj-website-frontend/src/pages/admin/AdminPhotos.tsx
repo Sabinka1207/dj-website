@@ -117,13 +117,15 @@ export default function AdminPhotos() {
   return (
     <div>
       <div className={styles.panelHeader}>
-        <h1 className={styles.panelTitle}>Photos</h1>
-        <div className={styles.panelActions}>
+        <div className={styles.panelTitleGroup}>
+          <h1 className={styles.panelTitle}>Photos</h1>
+          <button className={styles.iconBtn} onClick={handleSync} title="Sync from Cloudinary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+        <div className={styles.panelActionsColumn}>
           <button className={styles.btn} onClick={() => fileRef.current?.click()} disabled={uploading}>
             {uploading ? 'Uploading…' : '+ Upload photos'}
-          </button>
-          <button className={styles.iconBtn} onClick={handleSync} title="Sync from Cloudinary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
           {photos.length > 0 && (
             <button className={`${styles.btn} ${styles.btnDanger}`} onClick={handleDeleteAll}>
