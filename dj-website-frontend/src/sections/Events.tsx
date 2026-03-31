@@ -54,8 +54,10 @@ export default function Events() {
   const baseMonth = today.getMonth()
 
   const [loading, setLoading] = useState(true)
+  const [showWarmup, setShowWarmup] = useState(false)
   const [showReload, setShowReload] = useState(false)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -73,9 +75,11 @@ export default function Events() {
         .catch(() => { retryRef.current = setTimeout(fetchEvents, 5000) })
     }
     fetchEvents()
-    reloadTimerRef.current = setTimeout(() => setShowReload(true), 20000)
+    warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 8000)
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 70000)
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current)
+      if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
       if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
     }
   }, [])
@@ -131,6 +135,7 @@ export default function Events() {
           {loading ? (
             <div className={styles.loadingRow}>
               <span className={styles.spinner} />
+              {showWarmup && <span className={styles.warmupHint}>Server warming up…</span>}
               {showReload && (
                 <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
                   Reload

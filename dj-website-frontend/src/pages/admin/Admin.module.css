@@ -338,6 +338,12 @@
   color: #cc4444;
 }
 
+.warmupHint {
+  font-size: 0.75rem;
+  color: #888;
+  text-align: center;
+}
+
 .optional {
   font-size: 0.65rem;
   opacity: 0.5;
