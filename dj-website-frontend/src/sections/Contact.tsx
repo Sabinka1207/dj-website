@@ -83,13 +83,23 @@ export default function Contact() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>{t('contact.date')}</label>
-                <input
-                  className={styles.input}
-                  type="date"
-                  name="date"
-                  value={form.date}
-                  onChange={handleChange}
-                />
+                <div className={styles.dateWrap}>
+                  <input
+                    className={styles.input}
+                    type="date"
+                    name="date"
+                    value={form.date}
+                    onChange={handleChange}
+                  />
+                  {form.date && (
+                    <button
+                      type="button"
+                      className={styles.dateClear}
+                      onClick={() => setForm(f => ({ ...f, date: '' }))}
+                      aria-label="Clear date"
+                    >✕</button>
+                  )}
+                </div>
               </div>
             </div>
 

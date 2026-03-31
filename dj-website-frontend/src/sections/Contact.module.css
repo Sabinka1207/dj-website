@@ -76,10 +76,41 @@
 }
 
 /* Style the date picker to match dark theme */
+.input[type='date'] {
+  max-width: 100%;
+}
+
 .input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(1);
   opacity: 0.5;
   cursor: pointer;
+}
+
+.dateWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dateWrap .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.dateClear {
+  position: absolute;
+  right: 36px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.dateClear:hover {
+  color: var(--color-text);
 }
 
 .submit {
