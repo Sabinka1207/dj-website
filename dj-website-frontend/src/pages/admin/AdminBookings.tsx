@@ -65,7 +65,7 @@ export default function AdminBookings() {
   const handleMarkAnswered = async (id: number) => {
     await fetch(`/api/admin/bookings/${id}/answered`, { method: 'PATCH', headers: authHeaders() })
     setBookings(prev => prev.map(x => x.id === id ? { ...x, status: 'answered' } : x))
-    setSelected(prev => prev ? { ...prev, status: 'answered' } : prev)
+    setSelected(null)
   }
 
   const handleUnmarkAnswered = async (id: number) => {
