@@ -261,14 +261,15 @@ This merges all changes from `stage` except `vercel.json`, which stays pointing 
 
 ### Keeping the backend alive (free)
 
-Render free tier sleeps after 15 min inactivity (cold start ~60s). Set up keep-alive pings on [cron-job.org](https://cron-job.org) (free):
+Render free tier sleeps after 15 min inactivity (cold start ~60s). Use [UptimeRobot](https://uptimerobot.com) (free, up to 50 monitors, 5-min interval):
 
-1. Sign up → **Create cronjob**
-2. Create one job per backend:
-   - `https://dj-website-e09j.onrender.com/api/events` (production)
-   - `https://dj-website-stage.onrender.com/api/events` (stage)
-3. **Schedule:** every 10 minutes
-4. **Method:** GET → Save
+1. Sign up → **Add New Monitor** → type **HTTP(s)**
+2. Add one monitor per backend:
+   - `https://dj-website-e09j.onrender.com/api/health` (production)
+   - `https://dj-website-stage.onrender.com/api/health` (stage)
+3. **Monitoring Interval:** 5 minutes → Save
+
+Use `/api/health` (returns `{"status":"ok"}`) — not `/api/events`, which can return a large response that confuses some monitoring tools.
 
 ---
 
