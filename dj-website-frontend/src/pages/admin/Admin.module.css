@@ -931,14 +931,16 @@
   .modalBackdrop {
     padding: 0;
     align-items: flex-end;
+    height: 100dvh;
   }
 
   .modalBox {
     width: 100%;
     max-width: 100%;
-    max-height: 92vh;
+    max-height: 85dvh;
     border-radius: 12px 12px 0 0;
-    padding: 24px 20px 32px;
+    padding: 24px 20px env(safe-area-inset-bottom, 32px);
+    padding-top: 24px;
   }
 
   .replyLabelRow {
