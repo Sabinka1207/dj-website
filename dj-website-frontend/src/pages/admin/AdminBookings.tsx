@@ -19,9 +19,9 @@ type Booking = {
 
 const replyTemplate = (name: string, lang: string) => {
   switch (lang) {
-    case 'de': return `Hallo ${name},\n\nVielen Dank für deine Anfrage! \n\nMit freundlichen Grüßen,\nDJ Sabi / Sabina Abdulaliieva`
-    case 'ua': return `Привіт ${name},\n\nДякую за твій запит! \n\nЗ повагою,\nDJ Sabi / Сабіна Абдулалієва`
-    default:   return `Hi ${name},\n\nThank you for your inquiry! \n\nBest regards,\nDJ Sabi / Sabina Abdulaliieva`
+    case 'de': return `Hallo ${name},\n\n\n\nVielen Dank für deine Anfrage! \n\nMit freundlichen Grüßen,\nDJ Sabi / Sabina Abdulaliieva`
+    case 'ua': return `Привіт ${name},\n\n\n\nДякую за твій запит! \n\nЗ повагою,\nDJ Sabi / Сабіна Абдулалієва`
+    default:   return `Hi ${name},\n\n\n\nThank you for your inquiry! \n\nBest regards,\nDJ Sabi / Sabina Abdulaliieva`
   }
 }
 
