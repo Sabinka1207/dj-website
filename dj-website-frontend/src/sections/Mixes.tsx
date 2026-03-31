@@ -12,8 +12,8 @@ const soundcloudTracks = [
 ]
 
 const mixcloudMixes = [
-  'https://www.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Fsabi-live-playtv-29042015%2F',
-  'https://www.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Ffav-songz-mistery-edition%2F',
+  'https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Fsabi-live-playtv-29042015%2F',
+  'https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Ffav-songz-mistery-edition%2F',
 ]
 
 interface Props {

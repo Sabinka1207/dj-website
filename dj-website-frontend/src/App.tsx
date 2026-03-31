@@ -12,6 +12,7 @@ import Contact from './sections/Contact'
 import Events from './sections/Events'
 import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
+import ScrollToTop from './components/ScrollToTop'
 import SEO from './components/SEO'
 import Impressum from './pages/Impressum'
 import Privacy from './pages/Privacy'
@@ -19,6 +20,8 @@ import AdminLogin from './pages/admin/AdminLogin'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminEvents from './pages/admin/AdminEvents'
 import AdminPhotos from './pages/admin/AdminPhotos'
+import AdminBookings from './pages/admin/AdminBookings'
+import AdminAvailability from './pages/admin/AdminAvailability'
 import ProtectedRoute from './components/ProtectedRoute'
 
 type Consent = 'accepted' | 'declined' | null
@@ -59,6 +62,7 @@ function Home({ consent, onAccept, onDecline }: {
       </main>
       <Footer />
       {consent === null && <CookieBanner onAccept={onAccept} onDecline={onDecline} />}
+      <ScrollToTop />
     </>
   )
 }
@@ -66,12 +70,6 @@ function Home({ consent, onAccept, onDecline }: {
 function App() {
   const [consent, setConsent] = useState<Consent>(getStoredConsent)
 
-  useEffect(() => {
-    const timer = setTimeout(() => window.location.reload(), 75000)
-    const cancel = () => clearTimeout(timer)
-    window.addEventListener('backend-alive', cancel)
-    return () => { clearTimeout(timer); window.removeEventListener('backend-alive', cancel) }
-  }, [])
 
   const handleAccept = () => {
     localStorage.setItem('cookieConsent', 'accepted')
@@ -108,6 +106,8 @@ function App() {
           <Route index element={<Navigate to="/admin/events" replace />} />
           <Route path="events" element={<AdminEvents />} />
           <Route path="photos" element={<AdminPhotos />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="availability" element={<AdminAvailability />} />
         </Route>
       </Routes>
       <Analytics />

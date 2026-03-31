@@ -32,13 +32,16 @@
     "message": "Message",
     "send": "Send",
     "success": "Thank you! I will be in touch soon.",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "required": "required fields",
+    "messagePlaceholder": "Questions, hours, music preferences..."
   },
   "events": {
     "title": "Book a Date",
     "subtitle": "Click any available day to send a booking request.",
     "legendAvailable": "Available",
-    "legendBooked": "Booked"
+    "legendBooked": "Booked",
+    "legendUnavailable": "Unavailable"
   },
   "modal": {
     "title": "Booking Request",

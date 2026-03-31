@@ -40,20 +40,21 @@ dj-website/
 │   │   ├── pages/                  ← Impressum, Privacy, admin/*
 │   │   ├── i18n/locales/           ← de / en / ua translation JSON files
 │   │   └── styles/globals.css
-│   ├── vercel.json                 ← API proxy (differs per branch — see vercel *.json.example)
-│   ├── vercel prod.json.example    ← reference config for production branch
-│   ├── vercel stage.json.example   ← reference config for stage branch
+│   ├── vercel.json                 ← API proxy + CSP headers (backend URL hardcoded per branch)
 │   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
-    │   ├── model/                  ← Event.kt, Photo.kt
-    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt
+    │   ├── model/                  ← Event.kt, Photo.kt, BookingRequest.kt, UnavailableDate.kt
+    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt
     │   ├── DjWebsiteBackendApplication.kt
     │   ├── ContactController.kt
     │   ├── EventController.kt
     │   ├── AdminEventController.kt
     │   ├── PhotoController.kt
     │   ├── AdminPhotoController.kt
+    │   ├── AdminBookingController.kt
+    │   ├── AdminUnavailableDateController.kt
+    │   ├── UnavailableDateController.kt
     │   ├── AdminAuthController.kt
     │   ├── AdminAuthService.kt
     │   ├── CloudinaryConfig.kt
@@ -83,13 +84,14 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `DB_USERNAME`        | `postgres.your-project-ref` (from Supabase session pooler connection string) |
 | `DB_PASSWORD`        | Supabase database password                   |
 | `DB_DRIVER`          | `org.postgresql.Driver`                      |
+| `DB_DIALECT`         | `org.hibernate.dialect.PostgreSQLDialect`    |
 | `ADMIN_PASSWORD`     | Password for admin login at `/admin`         |
 | `ADMIN_GOOGLE_EMAIL` | Gmail address allowed to log in via Google   |
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)     |
 | `CLOUDINARY_API_KEY`    | Cloudinary API key                        |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret                     |
 
-### Frontend (Vercel / Render build env vars)
+### Frontend (Vercel env vars — set in Vercel dashboard)
 
 | Variable              | Description                                  |
 | --------------------- | -------------------------------------------- |
@@ -146,7 +148,7 @@ Photos are managed through the admin panel (`/admin/photos`) and stored on Cloud
 
 1. Log in to `/admin`
 2. Go to **Photos** tab
-3. Click **+ Upload photos** — upload originals, Cloudinary handles compression automatically
+3. Click the **upload icon** (↑) — upload originals, Cloudinary handles compression automatically
 
 ### Sync existing Cloudinary photos
 
@@ -174,8 +176,10 @@ Language switcher is in the Navbar.
 
 Available at `/admin`. Login with password or Google Sign-In. Session expires after 1 hour.
 
-Left sidebar navigation with two tabs:
+Left sidebar navigation:
+- **Bookings** (`/admin/bookings`) — view all booking inquiries submitted via the contact/calendar form. New requests are highlighted and counted in the sidebar badge. Open a request to read, reply by email, mark as answered, or delete.
 - **Events** (`/admin/events`) — create, edit, delete gig bookings
+- **Availability** (`/admin/availability`) — block specific dates so they appear greyed-out and non-clickable in the public events calendar
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
 
 ### Google Sign-In setup
@@ -226,7 +230,7 @@ In Supabase → Connect → Session pooler tab, copy the host (e.g. `aws-1-eu-no
 | Backend (prod)     | `main`  | Render   | https://dj-website-e09j.onrender.com                                   |
 | Backend (staging)  | `stage` | Render   | https://dj-website-stage.onrender.com                                  |
 
-Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
+Vercel rewrites `/api/*` to the Render backend — no CORS issues.
 
 ### Branches
 
@@ -243,7 +247,7 @@ Vercel rewrites `/api/*` to the Render backend URL — no CORS issues.
 
 ### Merging stage → main
 
-`vercel.json` differs between branches (different backend URLs), so never let it overwrite production. Always merge like this:
+`vercel.json` differs between branches (stage points to stage backend, main to prod backend), so never let it overwrite production. Always merge like this:
 
 ```bash
 git checkout main
@@ -266,8 +270,6 @@ Render free tier sleeps after 15 min inactivity (cold start ~60s). Set up keep-a
 3. **Schedule:** every 10 minutes
 4. **Method:** GET → Save
 
-The frontend also shows a spinner and auto-reloads after 75s if the backend doesn't respond in time.
-
 ---
 
 ### Step 1 — Deploy backend to Render
@@ -282,13 +284,11 @@ The frontend also shows a spinner and auto-reloads after 75s if the backend does
 
 ### Step 2 — Configure frontend
 
-`dj-website-frontend/vercel.json` already points to the Render backend:
+`dj-website-frontend/vercel.json` has the backend URL hardcoded per branch:
+- `stage` branch → `https://dj-website-stage.onrender.com`
+- `main` branch → `https://dj-website-e09j.onrender.com`
 
-```json
-"destination": "https://dj-website-e09j.onrender.com/api/:path*"
-```
-
-If you redeploy the backend and get a new URL, update this file and push.
+If you redeploy the backend and get a new URL, update `vercel.json` and push.
 
 ---
 
@@ -342,42 +342,36 @@ cd dj-website-backend
 
 ### Public
 
-| Method | Endpoint     | Description         |
-| ------ | ------------ | ------------------- |
-| GET    | /api/events  | List all events     |
-| GET    | /api/photos  | List gallery photos (sorted by display order) |
-| POST   | /api/contact | Submit booking form |
+| Method | Endpoint                  | Description                                      |
+| ------ | ------------------------- | ------------------------------------------------ |
+| GET    | /api/events               | List all events                                  |
+| GET    | /api/photos               | List gallery photos (sorted by display order)    |
+| POST   | /api/contact              | Submit booking form (saves to DB + sends email/Telegram) |
+| GET    | /api/unavailable-dates    | List blocked dates for the calendar              |
 
 ### Admin (requires `Authorization: Bearer <token>`)
 
-| Method | Endpoint                    | Description                        |
-| ------ | --------------------------- | ---------------------------------- |
-| POST   | /api/admin/login            | Password login                     |
-| POST   | /api/admin/google-login     | Google Sign-In login               |
-| GET    | /api/admin/events           | List all events                    |
-| POST   | /api/admin/events           | Create event                       |
-| PUT    | /api/admin/events/:id       | Update event                       |
-| DELETE | /api/admin/events/:id       | Delete event                       |
-| GET    | /api/admin/photos           | List all photos                    |
-| POST   | /api/admin/photos/upload    | Upload photo (multipart) → Cloudinary |
-| POST   | /api/admin/photos/sync      | Import existing Cloudinary photos from `dj-sabi/gallery` |
-| DELETE | /api/admin/photos/:id       | Delete photo from Cloudinary + DB  |
-| DELETE | /api/admin/photos           | Delete all photos from Cloudinary + DB |
-| PUT    | /api/admin/photos/reorder   | Bulk update display order          |
-
-### Request body
-
-```json
-{
-  "name": "Max Mustermann",
-  "email": "max@example.com",
-  "event": "Club night at Berghain",
-  "date": "2025-08-15",
-  "message": "We would love to book you for..."
-}
-```
-
-### Response
-
-- `200 OK` — email and Telegram notification sent
-- `500` — server error
+| Method | Endpoint                          | Description                                        |
+| ------ | --------------------------------- | -------------------------------------------------- |
+| POST   | /api/admin/login                  | Password login                                     |
+| POST   | /api/admin/google-login           | Google Sign-In login                               |
+| GET    | /api/admin/bookings               | List all booking requests                          |
+| GET    | /api/admin/bookings/unread-count  | Count of unread (new) booking requests             |
+| PATCH  | /api/admin/bookings/:id/read      | Mark booking as read                               |
+| PATCH  | /api/admin/bookings/:id/unread    | Mark booking as new (unread)                       |
+| PATCH  | /api/admin/bookings/:id/answered  | Mark booking as answered (no email sent)           |
+| POST   | /api/admin/bookings/:id/reply     | Send email reply + mark as answered                |
+| DELETE | /api/admin/bookings/:id           | Delete booking request                             |
+| GET    | /api/admin/events                 | List all events                                    |
+| POST   | /api/admin/events                 | Create event                                       |
+| PUT    | /api/admin/events/:id             | Update event                                       |
+| DELETE | /api/admin/events/:id             | Delete event                                       |
+| GET    | /api/admin/photos                 | List all photos                                    |
+| POST   | /api/admin/photos/upload          | Upload photo (multipart) → Cloudinary              |
+| POST   | /api/admin/photos/sync            | Import existing Cloudinary photos from `dj-sabi/gallery` |
+| DELETE | /api/admin/photos/:id             | Delete photo from Cloudinary + DB                  |
+| DELETE | /api/admin/photos                 | Delete all photos from Cloudinary + DB             |
+| PUT    | /api/admin/photos/reorder         | Bulk update display order                          |
+| GET    | /api/admin/unavailable-dates      | List blocked dates (with id and note)              |
+| POST   | /api/admin/unavailable-dates      | Block a date `{ date, note? }`                     |
+| DELETE | /api/admin/unavailable-dates/:id  | Remove a blocked date                              |

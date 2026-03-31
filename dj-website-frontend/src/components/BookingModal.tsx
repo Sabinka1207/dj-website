@@ -15,8 +15,10 @@ const getLocale = (lang: string) =>
 export default function BookingModal({ date, onClose }: Props) {
   const { t, i18n } = useTranslation()
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '' })
+  const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '', source: 'calendar', language: i18n.language })
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(
     getLocale(i18n.language),
@@ -24,14 +26,15 @@ export default function BookingModal({ date, onClose }: Props) {
   )
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    const preventScroll = (e: TouchEvent) => e.preventDefault()
-    document.addEventListener('touchmove', preventScroll, { passive: false })
     firstInputRef.current?.focus()
-    return () => {
-      document.body.style.overflow = ''
-      document.removeEventListener('touchmove', preventScroll)
+    const backdrop = backdropRef.current
+    const modal = modalRef.current
+    if (!backdrop || !modal) return
+    const prevent = (e: TouchEvent) => {
+      if (!modal.contains(e.target as Node)) e.preventDefault()
     }
+    backdrop.addEventListener('touchmove', prevent, { passive: false })
+    return () => backdrop.removeEventListener('touchmove', prevent)
   }, [])
 
   useEffect(() => {
@@ -64,8 +67,8 @@ export default function BookingModal({ date, onClose }: Props) {
   }
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdrop} role="dialog" aria-modal="true">
-      <div className={styles.modal}>
+    <div ref={backdropRef} className={styles.backdrop} onClick={handleBackdrop} role="dialog" aria-modal="true">
+      <div ref={modalRef} className={styles.modal}>
         <button className={styles.closeBtn} onClick={onClose} aria-label={t('modal.close')}>
           ✕
         </button>
@@ -124,6 +127,7 @@ export default function BookingModal({ date, onClose }: Props) {
                 name="message"
                 value={form.message}
                 onChange={handleChange}
+                placeholder={t('contact.messagePlaceholder')}
                 rows={4}
                 required
               />

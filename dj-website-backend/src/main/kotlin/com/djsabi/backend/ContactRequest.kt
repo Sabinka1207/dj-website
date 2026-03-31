@@ -6,4 +6,6 @@ data class ContactRequest(
     val event: String,
     val date: String,
     val message: String,
+    val source: String = "",
+    val language: String = "",
 )

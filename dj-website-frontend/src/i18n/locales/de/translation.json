@@ -32,13 +32,16 @@
     "message": "Nachricht",
     "send": "Senden",
     "success": "Danke! Ich melde mich bald.",
-    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "required": "Pflichtfelder",
+    "messagePlaceholder": "Fragen, Dauer, Musikwünsche..."
   },
   "events": {
     "title": "Termin anfragen",
     "subtitle": "Klicke auf einen verfügbaren Tag, um eine Buchungsanfrage zu senden.",
     "legendAvailable": "Verfügbar",
-    "legendBooked": "Gebucht"
+    "legendBooked": "Gebucht",
+    "legendUnavailable": "Nicht verfügbar"
   },
   "modal": {
     "title": "Buchungsanfrage",

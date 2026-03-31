@@ -5,9 +5,9 @@ import styles from './Contact.module.css'
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 export default function Contact() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', event: '', date: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', event: '', date: '', message: '', source: 'contact', language: i18n.language })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
@@ -22,7 +22,13 @@ export default function Contact() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      setStatus(res.ok ? 'success' : 'error')
+      if (res.ok) {
+        setStatus('success')
+        setForm({ name: '', email: '', event: '', date: '', message: '', source: 'contact', language: i18n.language })
+        setTimeout(() => setStatus('idle'), 4000)
+      } else {
+        setStatus('error')
+      }
     } catch {
       setStatus('error')
     }
@@ -39,22 +45,24 @@ export default function Contact() {
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.row}>
               <div className={styles.field}>
-                <label className={styles.label}>{t('contact.name')}</label>
+                <label className={styles.label}>{t('contact.name')} <span className={styles.required}>*</span></label>
                 <input
                   className={styles.input}
                   type="text"
                   name="name"
+                  autoComplete="name"
                   value={form.name}
                   onChange={handleChange}
                   required
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>{t('contact.email')}</label>
+                <label className={styles.label}>{t('contact.email')} <span className={styles.required}>*</span></label>
                 <input
                   className={styles.input}
                   type="email"
                   name="email"
+                  autoComplete="email"
                   value={form.email}
                   onChange={handleChange}
                   required
@@ -71,23 +79,32 @@ export default function Contact() {
                   name="event"
                   value={form.event}
                   onChange={handleChange}
-                  required
                 />
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>{t('contact.date')}</label>
-                <input
-                  className={styles.input}
-                  type="date"
-                  name="date"
-                  value={form.date}
-                  onChange={handleChange}
-                />
+                <div className={styles.dateWrap}>
+                  <input
+                    className={styles.input}
+                    type="date"
+                    name="date"
+                    value={form.date}
+                    onChange={handleChange}
+                  />
+                  {form.date && (
+                    <button
+                      type="button"
+                      className={styles.dateClear}
+                      onClick={() => setForm(f => ({ ...f, date: '' }))}
+                      aria-label="Clear date"
+                    >✕</button>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>{t('contact.message')}</label>
+              <label className={styles.label}>{t('contact.message')} <span className={styles.required}>*</span></label>
               <textarea
                 className={styles.textarea}
                 name="message"
@@ -97,6 +114,7 @@ export default function Contact() {
                 required
               />
             </div>
+            <p className={styles.requiredNote}><span className={styles.required}>*</span> {t('contact.required')}</p>
 
             {status === 'error' && (
               <p className={styles.errorMsg}>{t('contact.error')}</p>

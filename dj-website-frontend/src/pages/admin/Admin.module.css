@@ -72,6 +72,23 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+.navBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 99px;
+  margin-left: 6px;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
 .sidebarFooter {
   padding: 16px 12px 24px;
 }
@@ -79,7 +96,8 @@
 .adminContent {
   flex: 1;
   padding: 48px 40px 64px;
-  max-width: 1000px;
+  max-width: 1400px;
+  min-width: 0;
 }
 
 /* Panel (legacy, kept for compatibility) */
@@ -95,8 +113,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   margin-bottom: 32px;
-  gap: 16px;
+  gap: 12px;
 }
 
 .panelTitle {
@@ -109,8 +128,10 @@
 
 .panelActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
+
 
 /* Form */
 .form {
@@ -264,6 +285,47 @@
   white-space: nowrap;
 }
 
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.iconBtnPrimary {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.iconBtnPrimary:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.iconBtnDanger {
+  border-color: #551111;
+  color: #cc4444;
+}
+
+.iconBtnDanger:hover {
+  background: rgba(204, 68, 68, 0.1);
+  border-color: #cc4444;
+}
+
 .empty {
   text-align: center;
   color: var(--color-text-muted);
@@ -290,7 +352,7 @@
 /* Photo grid */
 .photoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 12px;
   margin-top: 8px;
 }
@@ -344,8 +406,371 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* ── Mobile ─────────────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
+/* Booking requests / availability extras */
+.badge {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.emailLink {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.emailLink:hover {
+  text-decoration: underline;
+}
+
+.msgCell {
+  max-width: 280px;
+  word-break: break-word;
+}
+
+.msgCellWide {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.sourceLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unreadDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.badgeStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.badgeCalendar {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: #ffffff;
+  color: var(--color-accent);
+}
+
+.badgeContact {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: #888;
+  color: var(--color-accent);
+}
+
+.badgeLang {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 99px;
+  background: #1a1a1a;
+  color: var(--color-text-muted);
+  border: 1px solid #2a2a2a;
+}
+
+.badgeAnsweredWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.badgeRemoveBtn {
+  background: none;
+  border: none;
+  color: #4caf50;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 4px 6px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.badgeRemoveBtn:hover {
+  opacity: 1;
+}
+
+.badgeAnswered {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.availabilityForm {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.availabilityDates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.availabilityDates .input {
+  max-width: 160px;
+}
+
+.dateSep {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Unread row */
+.unreadRow td {
+  background: rgba(0, 102, 255, 0.07);
+}
+
+.unreadRow td:first-child {
+  position: relative;
+}
+
+.unreadRow td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.unreadRow:hover td {
+  background: rgba(0, 102, 255, 0.13) !important;
+}
+
+/* Booking detail modal */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modalBox {
+  position: relative;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 3px;
+  padding: 48px;
+  width: 80%;
+  max-width: 1120px;
+  max-height: 90vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.modalClose:hover {
+  color: var(--color-text);
+}
+
+.modalMeta {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 12px;
+}
+
+.modalName {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.modalEmail {
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+.modalFields {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modalFieldLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.modalMessage {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 20px;
+  margin-bottom: 28px;
+  white-space: pre-wrap;
+}
+
+.modalSentReply {
+  border-top: 1px solid #1a1a1a;
+  padding-top: 20px;
+  margin-bottom: 8px;
+}
+
+.modalReply {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 24px;
+}
+
+.replyLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.langSwitcher {
+  display: flex;
+  gap: 4px;
+}
+
+.langBtn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.langBtn:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.langBtnActive {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.modalReplyTextarea {
+  resize: vertical;
+  min-height: 200px;
+}
+
+.modalSent {
+  font-size: 0.88rem;
+  color: #4caf50;
+  padding: 12px 0;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modalActionsGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Hamburger toggle — hidden on desktop */
+.menuToggle {
+  display: none;
+}
+
+/* ── Mobile / landscape phone ────────────────────────────────────────────────── */
+@media (max-width: 960px) {
   /* Layout: sidebar becomes top nav bar */
   .adminLayout {
     flex-direction: column;
@@ -360,17 +785,42 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     padding: 0 12px;
   }
 
+  /* Hamburger button */
+  .menuToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 14px 4px;
+    font-family: inherit;
+  }
+
+  /* Nav hidden by default on mobile */
   .sidebarNav {
-    flex-direction: row;
-    padding: 0;
-    gap: 4px;
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    padding: 8px 0 12px;
+    gap: 2px;
+    border-top: 1px solid #1a1a1a;
+  }
+
+  /* Nav visible when open */
+  .sidebarNavOpen {
+    display: flex;
   }
 
   .navItem {
-    padding: 14px 12px;
+    padding: 12px 16px;
   }
 
   .sidebarFooter {
@@ -394,8 +844,121 @@
     font-size: 1.2rem;
   }
 
-  /* Photo grid: 2 columns on mobile */
+  /* Photo grid: 4 columns on tablet/landscape, 2 on small phones */
+  .photoGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
   .photoGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile card list — hidden on desktop */
+.mobileCardList {
+  display: none;
+}
+
+/* Desktop table — hidden on mobile */
+.desktopOnly {
+  display: block;
+}
+
+/* ── Mobile ────────────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileCardList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobileCard {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 6px;
+    padding: 14px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .mobileCardUnread {
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .mobileCardMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobileCardDate {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .mobileCardName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 2px;
+  }
+
+  .mobileCardEmail {
+    font-size: 0.82rem;
+    color: var(--color-accent);
+    margin-bottom: 2px;
+  }
+
+  .mobileCardRequestedDate {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+  }
+
+  .mobileCardMsg {
+    font-size: 0.83rem;
+    color: var(--color-text-muted);
+    margin-top: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Booking detail modal — bottom sheet */
+  .modalBackdrop {
+    padding: 0;
+    align-items: flex-end;
+    height: 100dvh;
+  }
+
+  .modalBox {
+    width: 100%;
+    max-width: 100%;
+    max-height: 85dvh;
+    border-radius: 12px 12px 0 0;
+    padding: 24px 20px env(safe-area-inset-bottom, 32px);
+    padding-top: 24px;
+  }
+
+  .replyLabelRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

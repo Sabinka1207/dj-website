@@ -42,4 +42,19 @@ class EmailService(
         }
         rest.postForObject("https://api.resend.com/emails", HttpEntity(body, headers), String::class.java)
     }
+
+    fun sendReply(toEmail: String, toName: String, message: String) {
+        val body = mapOf(
+            "from" to "DJ Sabi <noreply@dj-sabi.com>",
+            "to" to listOf(toEmail),
+            "reply_to" to recipient,
+            "subject" to "Re: Your booking inquiry",
+            "text" to message
+        )
+        val headers = HttpHeaders().apply {
+            contentType = MediaType.APPLICATION_JSON
+            setBearerAuth(apiKey)
+        }
+        rest.postForObject("https://api.resend.com/emails", HttpEntity(body, headers), String::class.java)
+    }
 }

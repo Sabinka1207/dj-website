@@ -1,9 +1,33 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { clearToken } from '../../utils/adminAuth'
+import { useEffect, useState } from 'react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  const fetchUnreadCount = () => {
+    fetch('/api/admin/bookings/unread-count', { headers: authHeaders() })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setUnreadCount(data.count) })
+      .catch(() => {})
+  }
+
+  useEffect(() => { fetchUnreadCount() }, [location.pathname])
+
+  useEffect(() => {
+    const onRead = () => setUnreadCount(n => Math.max(0, n - 1))
+    const onUnread = () => setUnreadCount(n => n + 1)
+    window.addEventListener('booking-marked-read', onRead)
+    window.addEventListener('booking-marked-unread', onUnread)
+    return () => {
+      window.removeEventListener('booking-marked-read', onRead)
+      window.removeEventListener('booking-marked-unread', onUnread)
+    }
+  }, [])
 
   const handleLogout = () => {
     if (!window.confirm('Are you sure you want to logout?')) return
@@ -11,21 +35,50 @@ export default function AdminLayout() {
     navigate('/admin/login')
   }
 
+  const closeMenu = () => setMenuOpen(false)
+
   return (
     <div className={styles.adminLayout}>
       <aside className={styles.sidebar}>
-        <nav className={styles.sidebarNav}>
+        <button
+          className={styles.menuToggle}
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? '✕' : '≡'}
+        </button>
+        <nav className={`${styles.sidebarNav} ${menuOpen ? styles.sidebarNavOpen : ''}`}>
           <NavLink
             to="/admin/events"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
           >
             Events
           </NavLink>
           <NavLink
             to="/admin/photos"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
           >
             Photos
+          </NavLink>
+          <NavLink
+            to="/admin/bookings"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Bookings
+            {unreadCount > 0 && (
+              <span className={styles.navBadge}>{unreadCount}</span>
+            )}
+          </NavLink>
+          <NavLink
+            to="/admin/availability"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Availability
           </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>

@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary
 import com.djsabi.backend.model.Photo
 import com.djsabi.backend.repository.PhotoRepository
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -62,6 +63,7 @@ class AdminPhotoController(
         return ResponseEntity.noContent().build()
     }
 
+    @Transactional
     @PutMapping("/reorder")
     fun reorder(
         @RequestBody items: List<ReorderItem>,
