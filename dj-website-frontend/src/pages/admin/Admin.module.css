@@ -836,3 +836,130 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Mobile helpers — always hidden */
+.mobileName,
+.mobileEmail,
+.mobileDate {
+  display: none;
+}
+
+/* ── Bookings table → card list on mobile ──────────────────────────────────── */
+@media (max-width: 700px) {
+  .tableWrap {
+    overflow-x: visible;
+  }
+
+  .table,
+  .table tbody {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px 8px;
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  .table tr:hover td {
+    background: transparent;
+  }
+
+  .table td {
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  /* Hide desktop-only columns */
+  .tdEmail,
+  .tdEvent,
+  .tdDate,
+  .tdMessage {
+    display: none;
+  }
+
+  /* Received column: top-left */
+  .tdReceived {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 0.78rem;
+    white-space: normal;
+  }
+
+  /* Name column: bottom-left — show name + email + date inline */
+  .tdName {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .mobileName {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .mobileEmail {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    margin-top: 2px;
+  }
+
+  .mobileDate {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+
+  /* Delete button: right side, spanning both rows */
+  .table td:last-child {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Booking detail modal */
+  .modalBackdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modalBox {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 12px 12px 0 0;
+    padding: 24px 20px 32px;
+  }
+
+  .modalActions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modalDeleteBtn {
+    margin-left: 0;
+  }
+
+  .replyLabelRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

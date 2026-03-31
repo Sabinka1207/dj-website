@@ -122,7 +122,7 @@ export default function AdminBookings() {
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleOpen(b)}
                 >
-                  <td className={styles.nowrap}>
+                  <td className={`${styles.nowrap} ${styles.tdReceived}`}>
                     <div className={styles.dateRow}>
                       {b.status === 'new' && <span className={styles.unreadDot} />}
                       {b.submittedAt}
@@ -138,8 +138,12 @@ export default function AdminBookings() {
                       )}
                     </div>
                   </td>
-                  <td>{b.name}</td>
-                  <td>
+                  <td className={styles.tdName}>
+                    <div className={styles.mobileName}>{b.name}</div>
+                    <div className={styles.mobileEmail}>{b.email}</div>
+                    {b.date && <div className={styles.mobileDate}>{b.date}</div>}
+                  </td>
+                  <td className={styles.tdEmail}>
                     <a
                       href={`mailto:${b.email}`}
                       className={styles.emailLink}
@@ -148,9 +152,9 @@ export default function AdminBookings() {
                       {b.email}
                     </a>
                   </td>
-                  <td>{b.event}</td>
-                  <td className={styles.nowrap}>{b.date}</td>
-                  <td className={styles.msgCellWide}>{b.message}</td>
+                  <td className={styles.tdEvent}>{b.event}</td>
+                  <td className={`${styles.nowrap} ${styles.tdDate}`}>{b.date}</td>
+                  <td className={`${styles.msgCellWide} ${styles.tdMessage}`}>{b.message}</td>
                   <td onClick={e => e.stopPropagation()}>
                     <button
                       className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
