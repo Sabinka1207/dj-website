@@ -837,8 +837,11 @@
   }
 }
 
-/* Mobile helpers — always hidden */
-.mobileName,
+/* Mobile helpers */
+.mobileName {
+  display: block;
+}
+
 .mobileEmail,
 .mobileDate {
   display: none;
