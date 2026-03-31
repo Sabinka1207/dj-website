@@ -507,9 +507,9 @@
   border: none;
   color: #4caf50;
   cursor: pointer;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   line-height: 1;
-  padding: 0 2px;
+  padding: 4px 6px;
   opacity: 0.6;
   transition: opacity 0.15s;
 }
@@ -611,12 +611,12 @@
   background: none;
   border: none;
   color: var(--color-text-muted);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   cursor: pointer;
   transition: color 0.2s;
   padding: 0;
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
