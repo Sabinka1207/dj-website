@@ -346,7 +346,7 @@ function BookingModal({
                 className={`${styles.input} ${styles.modalReplyTextarea}`}
                 value={reply}
                 onChange={e => setReply(e.target.value)}
-                rows={5}
+                rows={8}
                 placeholder={`Hi ${booking.name},\n\nThank you for your inquiry...`}
                 disabled={replyStatus === 'sending'}
               />
