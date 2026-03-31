@@ -600,6 +600,8 @@
   max-width: 1120px;
   max-height: 90vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modalClose {
@@ -737,12 +739,16 @@
 
 .modalActions {
   display: flex;
-  gap: 8px;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.modalDeleteBtn {
-  margin-left: auto;
+.modalActionsGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 /* Hamburger toggle — hidden on desktop */
@@ -933,15 +939,6 @@
     max-height: 92vh;
     border-radius: 12px 12px 0 0;
     padding: 24px 20px 32px;
-  }
-
-  .modalActions {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .modalDeleteBtn {
-    margin-left: 0;
   }
 
   .replyLabelRow {

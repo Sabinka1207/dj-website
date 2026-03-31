@@ -245,8 +245,16 @@ function BookingModal({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
+    }
   }, [])
 
   useEffect(() => {
@@ -354,29 +362,31 @@ function BookingModal({
                 <p className={styles.error}>Failed to send. Check email settings.</p>
               )}
               <div className={styles.modalActions}>
-                <button
-                  className={styles.btn}
-                  onClick={handleSend}
-                  disabled={!reply.trim() || replyStatus === 'sending'}
-                >
-                  {replyStatus === 'sending' ? 'Sending…' : 'Send reply'}
-                </button>
-                {booking.status !== 'answered' && (
+                <div className={styles.modalActionsGroup}>
+                  <button
+                    className={styles.btn}
+                    onClick={handleSend}
+                    disabled={!reply.trim() || replyStatus === 'sending'}
+                  >
+                    {replyStatus === 'sending' ? 'Sending…' : 'Send reply'}
+                  </button>
+                  {booking.status !== 'answered' && (
+                    <button
+                      className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm}`}
+                      onClick={() => onMarkAnswered(booking.id)}
+                    >
+                      Mark as answered
+                    </button>
+                  )}
                   <button
                     className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm}`}
-                    onClick={() => onMarkAnswered(booking.id)}
+                    onClick={() => onMarkNew(booking.id)}
                   >
-                    Mark as answered
+                    Mark as new
                   </button>
-                )}
+                </div>
                 <button
-                  className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm}`}
-                  onClick={() => onMarkNew(booking.id)}
-                >
-                  Mark as new
-                </button>
-                <button
-                  className={`${styles.iconBtn} ${styles.iconBtnDanger} ${styles.modalDeleteBtn}`}
+                  className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
                   onClick={() => onDelete(booking.id)}
                   title="Delete"
                 >
