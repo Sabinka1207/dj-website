@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import * as Sentry from '@sentry/react'
 
+console.log('[Sentry debug] PROD:', import.meta.env.PROD, 'DSN:', import.meta.env.VITE_SENTRY_DSN)
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   enabled: import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN,
