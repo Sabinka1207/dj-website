@@ -11,6 +11,8 @@
   },
   "about": {
     "title": "Über mich",
+    "downloadPressKit": "↓ Pressekit herunterladen",
+    "forOrganisers": "Für Veranstalter →",
     "bio": "DJ SABI (Sabina Abdulaliieva) ist eine DJ mit über 15 Jahren Erfahrung, die ihre Karriere in der Ukraine begann und in Deutschland fortsetzte.\n\nSeit 2015 ist sie Residentin des legendären Kiewer Clubs Forsage und Teilnehmerin der Projekte RnB BooM und Latino Fiesta. Anfangs in den Genres RnB und Hip-Hop tätig, entwickelte sie mit der Zeit einen vielseitigen Stil, der kommerzielle Musik, 80er/90er, House und Techno vereint.\n\nNach ihrem Umzug nach Deutschland im Jahr 2022 integrierte sie sich schnell in die lokale Szene und trat in einer der aktivsten Bars Frankfurts auf — der Zar Vodka Bar — wo sie für ein internationales Publikum mit unterschiedlichen Musikgeschmäckern spielte.\n\nSpäter wurde sie zu einer der wichtigsten DJs der ukrainischen Partys in Deutschland, füllte Tanzflächen und brachte Menschen durch Musik in einer schwierigen Zeit zusammen. Heute ist DJ SABI eine vielseitige Künstlerin, die gleichermaßen souverän mit Themenevents, kommerziellen Venues, Clubs und Festivals umgeht."
   },
   "mixes": {
@@ -24,6 +26,14 @@
     "downloadPromo": "Werbematerial herunterladen"
   },
   "contact": {
+    "questionTitle": "Fragen?",
+    "questionLabel": "Deine Frage",
+    "errorName": "Bitte gib deinen Namen ein (mind. 2 Zeichen).",
+    "errorEvent": "Bitte gib den Event-Typ oder den Veranstaltungsort an.",
+    "errorEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "errorMessage": "Bitte schreib eine Nachricht (mind. 10 Zeichen).",
+    "errorQuestion": "Bitte formuliere deine Frage (mind. 5 Zeichen).",
+    "errorTooMany": "Zu viele Anfragen. Bitte versuche es später erneut.",
     "title": "Kontakt",
     "name": "Name",
     "email": "E-Mail",
@@ -48,9 +58,42 @@
     "close": "Schließen"
   },
   "footer": {
-    "promoKit": "Werbematerial",
+    "forOrganisers": "Für Veranstalter",
     "impressum": "Impressum",
     "privacy": "Datenschutz"
+  },
+  "organisers": {
+    "title": "Für Veranstalter",
+    "subtitle": "Alles, was du für die Planung deines Events mit DJ Sabi brauchst.",
+    "allFilesText": "Hier findest du alle Dateien auf einen Blick. Weitere Materialien können hier ebenfalls abgelegt werden.",
+    "allFiles": "Google Drive öffnen →",
+    "pressKit": "Pressekit",
+    "pressKitDesc": "Offizielle DJ-Biografie von DJ Sabi – für Promotion und Medienanfragen.",
+    "downloadDe": "↓ Deutsch",
+    "downloadEn": "↓ Englisch",
+    "downloadUa": "↓ Ukrainisch",
+    "photos": "Pressefotos",
+    "photosDesc": "Hochauflösende Fotos für Flyer, Poster und Pressemitteilungen.",
+    "logo": "Logo",
+    "logoDesc": "DJ Sabi Logo zum Herunterladen – JPG und PNG.",
+    "logoJpg": "↓ JPG",
+    "logoPng": "↓ PNG",
+    "liveVideos": "Live-Videos & Beispiele",
+    "liveVideosDesc": "Aufnahmen von Sets und Auftritten als Referenz.",
+    "hospitalityRider": "Hospitality Rider",
+    "hospitalityRiderDesc": "Anforderungen an Unterkunft und Verpflegung.",
+    "rider": "Technical Rider",
+    "riderDesc": "Technische Anforderungen an Bühne und Sound.",
+    "invoice": "Rechnungsvorlage",
+    "invoiceDesc": "Einfache Rechnungsvorlage für die Buchung.",
+    "contract": "Vertrag",
+    "contractDesc": "Buchungsvertrag – bitte vor der Zusammenarbeit lesen.",
+    "openLink": "Öffnen →",
+    "comingSoon": "Demnächst verfügbar",
+    "langSoon": "bald",
+    "contactTitle": "Fragen zur Buchung?",
+    "contactText": "Schreib mir direkt – ich antworte so schnell wie möglich.",
+    "contactLink": "Kontakt aufnehmen"
   },
   "impressum": {
     "back": "← Zurück",

@@ -3,6 +3,7 @@ package com.djsabi.backend
 import com.djsabi.backend.model.BookingRequest
 import com.djsabi.backend.repository.BookingRequestRepository
 import org.slf4j.LoggerFactory
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -19,7 +20,7 @@ class ContactController(
     private val log = LoggerFactory.getLogger(ContactController::class.java)
 
     @PostMapping("/contact")
-    fun contact(@RequestBody req: ContactRequest): ResponseEntity<Void> {
+    fun contact(@Valid @RequestBody req: ContactRequest): ResponseEntity<Void> {
         try {
             bookingRequestRepository.save(
                 BookingRequest(name = req.name, email = req.email, event = req.event, date = req.date, message = req.message, source = req.source, language = req.language)

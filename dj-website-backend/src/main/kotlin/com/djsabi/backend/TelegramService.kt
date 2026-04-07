@@ -22,8 +22,14 @@ class TelegramService(
 
     fun sendNotification(req: ContactRequest) {
         val receivedAt = ZonedDateTime.now(berlin).format(fmt)
+        val header = when (req.source) {
+            "organisers" -> "❓ Question from organiser zone"
+            "calendar"   -> "📅 Booking request (calendar)"
+            "contact"    -> "💬 Question / Contact"
+            else         -> "📩 New inquiry"
+        }
         val lines = mutableListOf(
-            "📩 New booking inquiry — $receivedAt",
+            "$header — $receivedAt",
             "",
             "👤 ${req.name}",
             "✉️ ${req.email}",

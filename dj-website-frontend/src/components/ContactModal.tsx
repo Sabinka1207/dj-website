@@ -3,31 +3,22 @@ import { useTranslation } from 'react-i18next'
 import styles from './BookingModal.module.css'
 
 type Status = 'idle' | 'loading' | 'success' | 'error' | 'tooMany'
-type Errors = { name?: string; email?: string; event?: string; message?: string }
+type Errors = { name?: string; email?: string; message?: string }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const getLocale = (lang: string) =>
-  lang === 'ua' ? 'uk-UA' : lang === 'de' ? 'de-DE' : 'en-GB'
-
 interface Props {
-  date: string
   onClose: () => void
 }
 
-export default function BookingModal({ date, onClose }: Props) {
+export default function ContactModal({ onClose }: Props) {
   const { t, i18n } = useTranslation()
   const [status, setStatus] = useState<Status>('idle')
-  const [form, setForm] = useState({ name: '', email: '', event: '', date, message: '', source: 'calendar', language: i18n.language })
+  const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [errors, setErrors] = useState<Errors>({})
   const firstInputRef = useRef<HTMLInputElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
-
-  const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(
-    getLocale(i18n.language),
-    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
-  )
 
   useEffect(() => {
     firstInputRef.current?.focus()
@@ -51,8 +42,7 @@ export default function BookingModal({ date, onClose }: Props) {
     const e: Errors = {}
     if (form.name.trim().length < 2) e.name = t('contact.errorName')
     if (!EMAIL_RE.test(form.email.trim())) e.email = t('contact.errorEmail')
-    if (form.event.trim().length < 1) e.event = t('contact.errorEvent')
-    if (form.message.trim().length < 10) e.message = t('contact.errorMessage')
+    if (form.message.trim().length < 5) e.message = t('contact.errorQuestion')
     return e
   }
 
@@ -71,7 +61,7 @@ export default function BookingModal({ date, onClose }: Props) {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, source: 'organisers', language: i18n.language }),
       })
       if (res.ok) setStatus('success')
       else if (res.status === 429) setStatus('tooMany')
@@ -90,8 +80,7 @@ export default function BookingModal({ date, onClose }: Props) {
       <div ref={modalRef} className={styles.modal}>
         <button className={styles.closeBtn} onClick={onClose} aria-label={t('modal.close')}>✕</button>
 
-        <h2 className={styles.title}>{t('modal.title')}</h2>
-        <p className={styles.dateLabel}>{formattedDate}</p>
+        <h2 className={styles.title}>{t('contact.questionTitle')}</h2>
 
         {status === 'success' ? (
           <p className={styles.successMsg}>{t('contact.success')}</p>
@@ -126,26 +115,13 @@ export default function BookingModal({ date, onClose }: Props) {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>{t('contact.event')} *</label>
-              <input
-                className={`${styles.input} ${errors.event ? styles.inputError : ''}`}
-                type="text"
-                name="event"
-                value={form.event}
-                onChange={handleChange}
-              />
-              {errors.event && <span className={styles.fieldError}>{errors.event}</span>}
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>{t('contact.message')} *</label>
+              <label className={styles.label}>{t('contact.questionLabel')} *</label>
               <textarea
                 className={`${styles.textarea} ${errors.message ? styles.inputError : ''}`}
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                placeholder={t('contact.messagePlaceholder')}
-                rows={4}
+                rows={9}
               />
               {errors.message && <span className={styles.fieldError}>{errors.message}</span>}
             </div>

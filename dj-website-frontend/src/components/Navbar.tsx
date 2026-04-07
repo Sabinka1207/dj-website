@@ -51,7 +51,7 @@ export default function Navbar() {
             <button
               key={code}
               className={`${styles.langBtn} ${i18n.language === code ? styles.activeLang : ''}`}
-              onClick={() => i18n.changeLanguage(code)}
+              onClick={() => { localStorage.setItem('lang', code); i18n.changeLanguage(code) }}
             >
               {label}
             </button>
