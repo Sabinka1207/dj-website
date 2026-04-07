@@ -8,6 +8,8 @@ Sentry.init({
   tracesSampleRate: 0.1,
 })
 
+Sentry.captureException(new Error('Sentry test — delete me'))
+
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 
 import { createRoot } from 'react-dom/client'
