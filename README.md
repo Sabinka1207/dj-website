@@ -7,17 +7,21 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 
 ## Tech Stack
 
-| Layer    | Technology                              |
-| -------- | --------------------------------------- |
-| Frontend | React 19, TypeScript, Vite, CSS Modules |
-| i18n     | react-i18next (DE / EN / UA)            |
-| Routing  | React Router v7                         |
-| Backend  | Spring Boot 3.4, Kotlin, Spring Data JPA |
-| Database | PostgreSQL (Supabase) — H2 in-memory for local dev |
-| Auth     | Password + Google Sign-In (admin panel) |
-| Email    | Resend API                              |
-| Notify   | Telegram Bot API                        |
-| Deploy   | Vercel (frontend) + Render (backend)    |
+| Layer        | Technology                                          |
+| ------------ | --------------------------------------------------- |
+| Frontend     | React 19, TypeScript, Vite, CSS Modules             |
+| i18n         | react-i18next (DE / EN / UA), browser lang detection, localStorage persistence |
+| Routing      | React Router v7                                     |
+| Backend      | Spring Boot 3.4, Kotlin, Spring Data JPA            |
+| Validation   | Jakarta Bean Validation (`@Valid`), Bucket4j rate limiting (5 req/hour/IP) |
+| Database     | PostgreSQL (Supabase) — H2 in-memory for local dev  |
+| Migrations   | Flyway (`db/migration/`)                            |
+| Auth         | Password + Google Sign-In (admin panel)             |
+| Email        | Resend API                                          |
+| Notify       | Telegram Bot API                                    |
+| Monitoring   | Sentry (frontend + backend), UptimeRobot            |
+| CI           | GitHub Actions (test + build on every push)         |
+| Deploy       | Vercel (frontend) + Render (backend)                |
 
 ---
 
@@ -25,6 +29,7 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 
 ```
 dj-website/
+├── .github/workflows/ci.yml       ← GitHub Actions CI
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
@@ -36,8 +41,8 @@ dj-website/
 │   │   │   │   └── *.webp          ← about photo
 │   │   │   └── video/              ← hero background video
 │   │   ├── sections/               ← Hero, About, Mixes, Gallery, Events, Contact
-│   │   ├── components/             ← Navbar, Footer, CookieBanner, BookingModal, ProtectedRoute, SEO
-│   │   ├── pages/                  ← Impressum, Privacy, admin/*
+│   │   ├── components/             ← Navbar, Footer, CookieBanner, BookingModal, ContactModal, ProtectedRoute, SEO
+│   │   ├── pages/                  ← Impressum, Privacy, ForOrganisers, admin/*
 │   │   ├── i18n/locales/           ← de / en / ua translation JSON files
 │   │   └── styles/globals.css
 │   ├── vercel.json                 ← API proxy + CSP headers (backend URL hardcoded per branch)
@@ -48,6 +53,10 @@ dj-website/
     │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt
     │   ├── DjWebsiteBackendApplication.kt
     │   ├── ContactController.kt
+    │   ├── ContactRequest.kt
+    │   ├── GlobalExceptionHandler.kt   ← returns 400 with field errors on validation failure
+    │   ├── RateLimitInterceptor.kt     ← Bucket4j, 5 req/hour/IP
+    │   ├── WebConfig.kt
     │   ├── EventController.kt
     │   ├── AdminEventController.kt
     │   ├── PhotoController.kt
@@ -61,7 +70,10 @@ dj-website/
     │   ├── CorsConfig.kt
     │   ├── EmailService.kt
     │   └── TelegramService.kt
-    ├── src/main/resources/application.properties
+    ├── src/main/resources/
+    │   ├── application.properties
+    │   └── db/migration/
+    │       └── V1__create_tables.sql   ← Flyway baseline migration
     └── Dockerfile
 ```
 
@@ -73,29 +85,33 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 
 ### Backend (Render env vars)
 
-| Variable             | Description                                  |
-| -------------------- | -------------------------------------------- |
-| `RESEND_API_KEY`     | Resend API key (from resend.com)             |
-| `CONTACT_EMAIL`      | Where booking emails are delivered           |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather           |
-| `TELEGRAM_CHAT_ID`   | Your Telegram user/chat ID                   |
-| `VERCEL_URL`         | Vercel domain (set in Render env vars only)  |
-| `DATABASE_URL`       | `jdbc:postgresql://aws-1-*.pooler.supabase.com:5432/postgres?sslmode=require` — use session pooler URL |
-| `DB_USERNAME`        | `postgres.your-project-ref` (from Supabase session pooler connection string) |
-| `DB_PASSWORD`        | Supabase database password                   |
-| `DB_DRIVER`          | `org.postgresql.Driver`                      |
-| `DB_DIALECT`         | `org.hibernate.dialect.PostgreSQLDialect`    |
-| `ADMIN_PASSWORD`     | Password for admin login at `/admin`         |
-| `ADMIN_GOOGLE_EMAIL` | Gmail address allowed to log in via Google   |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)     |
-| `CLOUDINARY_API_KEY`    | Cloudinary API key                        |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret                     |
+| Variable                | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| `RESEND_API_KEY`        | Resend API key (from resend.com)             |
+| `CONTACT_EMAIL`         | Where booking emails are delivered           |
+| `TELEGRAM_BOT_TOKEN`    | Telegram bot token from @BotFather           |
+| `TELEGRAM_CHAT_ID`      | Your Telegram user/chat ID                   |
+| `VERCEL_URL`            | Vercel domain (set in Render env vars only)  |
+| `DATABASE_URL`          | `jdbc:postgresql://aws-1-*.pooler.supabase.com:5432/postgres?sslmode=require` — use session pooler URL |
+| `DB_USERNAME`           | `postgres.your-project-ref` (from Supabase session pooler connection string) |
+| `DB_PASSWORD`           | Supabase database password                   |
+| `DB_DRIVER`             | `org.postgresql.Driver`                      |
+| `DB_DIALECT`            | `org.hibernate.dialect.PostgreSQLDialect`    |
+| `ADMIN_PASSWORD`        | Password for admin login at `/admin`         |
+| `ADMIN_GOOGLE_EMAIL`    | Gmail address allowed to log in via Google   |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)        |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key                           |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret                        |
+| `SENTRY_DSN`            | Sentry DSN for backend error tracking        |
+| `SENTRY_ENVIRONMENT`    | `staging` or `production`                    |
 
 ### Frontend (Vercel env vars — set in Vercel dashboard)
 
-| Variable              | Description                                  |
-| --------------------- | -------------------------------------------- |
-| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID (see Admin panel setup below) |
+| Variable                   | Description                                             |
+| -------------------------- | ------------------------------------------------------- |
+| `VITE_GOOGLE_CLIENT_ID`    | Google OAuth Client ID                                  |
+| `VITE_SENTRY_DSN`          | Sentry DSN for frontend error tracking                  |
+| `VITE_SENTRY_ENVIRONMENT`  | `staging` (Preview) or `production` (Production)        |
 
 ### Get Telegram chat ID
 
@@ -117,7 +133,7 @@ npm run dev
 
 ### Backend
 
-Uses H2 in-memory database locally — no setup needed. On first boot it seeds events from `src/main/resources/events.json`.
+Uses H2 in-memory database locally — no setup needed. Flyway runs migrations automatically on startup. On first boot it seeds events from `src/main/resources/events.json`.
 
 ```bash
 # Set environment variables first (minimum for local dev)
@@ -168,7 +184,19 @@ Translation files are in `dj-website-frontend/src/i18n/locales/`:
 - `en/translation.json` — English
 - `ua/translation.json` — Ukrainian
 
-Language switcher is in the Navbar.
+Language switcher is in the Navbar. The selected language is saved to `localStorage` and restored on next visit. On first visit, browser language is detected automatically (DE → German, UK/RU → Ukrainian, everything else → English).
+
+---
+
+## For Organisers page
+
+Available at `/for-organisers`. Contains:
+- Press kit downloads (language-aware PDF per DE/EN/UA)
+- Press photos (Google Drive link)
+- Logo downloads (JPG / PNG)
+- Live videos & examples
+- Hospitality Rider, Technical Rider, Contract (language variants planned)
+- Contact modal for quick questions
 
 ---
 
@@ -191,7 +219,7 @@ Left sidebar navigation:
    - `https://dj-sabi.com`
    - `https://dj-website-peach.vercel.app` (staging)
 4. Set env vars:
-   - `VITE_GOOGLE_CLIENT_ID` — on frontend (Vercel / Render build)
+   - `VITE_GOOGLE_CLIENT_ID` — on frontend (Vercel)
    - `ADMIN_GOOGLE_EMAIL` — on backend (Render)
 
 ---
@@ -208,7 +236,7 @@ The public gallery falls back to static bundled images if the API returns nothin
 
 ## Database (Supabase)
 
-Free PostgreSQL hosted on Supabase. On first backend boot, existing events are auto-seeded from `events.json`.
+Free PostgreSQL hosted on Supabase. Schema is managed by Flyway — migrations live in `dj-website-backend/src/main/resources/db/migration/`. On first backend boot, existing events are auto-seeded from `events.json`.
 
 Use the **Session Mode pooler** connection string (not the direct connection) — Render's free tier is IPv4 only, but Supabase direct connections are IPv6. The pooler supports both.
 
@@ -216,6 +244,41 @@ In Supabase → Connect → Session pooler tab, copy the host (e.g. `aws-1-eu-no
 - `DATABASE_URL` = `jdbc:postgresql://<pooler-host>:5432/postgres?sslmode=require`
 - `DB_USERNAME` = `postgres.<project-ref>` (shown in the pooler connection string)
 - `DB_PASSWORD` = your Supabase password
+
+### Adding schema changes
+
+Never modify `application.properties` DDL settings. Instead, create a new migration file:
+
+```
+src/main/resources/db/migration/V2__your_description.sql
+```
+
+Flyway runs it automatically on next startup.
+
+---
+
+## Error Tracking (Sentry)
+
+Sentry captures errors from both frontend and backend automatically in production and staging.
+
+- **Frontend:** initialized in `main.tsx`, only active when `VITE_SENTRY_DSN` is set and `PROD=true`
+- **Backend:** auto-configured by `sentry-spring-boot-starter-jakarta` when `SENTRY_DSN` is set
+- **Environments:** tagged as `staging` or `production` via `SENTRY_ENVIRONMENT` / `VITE_SENTRY_ENVIRONMENT`
+
+View issues at [sentry.io](https://sentry.io) → your project → Issues.
+
+---
+
+## CI (GitHub Actions)
+
+On every push, two parallel jobs run:
+
+| Job      | Steps                                        |
+| -------- | -------------------------------------------- |
+| Backend  | Java 17 → Gradle cache → `./gradlew test` → `./gradlew bootJar` |
+| Frontend | Node 20 → `npm ci` → `npm run lint` → `npm run build` |
+
+Workflow file: `.github/workflows/ci.yml`
 
 ---
 
@@ -268,8 +331,6 @@ Render free tier sleeps after 15 min inactivity (cold start ~60s). Use [UptimeRo
    - `https://dj-website-e09j.onrender.com/api/health` (production)
    - `https://dj-website-stage.onrender.com/api/health` (stage)
 3. **Monitoring Interval:** 5 minutes → Save
-
-Use `/api/health` (returns `{"status":"ok"}`) — not `/api/events`, which can return a large response that confuses some monitoring tools.
 
 ---
 
@@ -347,8 +408,9 @@ cd dj-website-backend
 | ------ | ------------------------- | ------------------------------------------------ |
 | GET    | /api/events               | List all events                                  |
 | GET    | /api/photos               | List gallery photos (sorted by display order)    |
-| POST   | /api/contact              | Submit booking form (saves to DB + sends email/Telegram) |
+| POST   | /api/contact              | Submit booking form (saves to DB + sends email/Telegram). Rate limited: 5 req/hour/IP. |
 | GET    | /api/unavailable-dates    | List blocked dates for the calendar              |
+| GET    | /api/health               | Health check — returns `{"status":"ok"}`         |
 
 ### Admin (requires `Authorization: Bearer <token>`)
 
