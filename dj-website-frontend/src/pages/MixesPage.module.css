@@ -22,7 +22,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .empty {
@@ -30,15 +30,50 @@
   font-size: 0.9rem;
 }
 
-/* Embed card — same dark card as MixPlayer */
-.embedCard {
+/* ── Embed row — mirrors MixPlayer card exactly ── */
+.embedRow {
   background: #111;
   border: 1px solid #222;
   border-radius: 8px;
-  padding: 16px 20px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.embedRow.embedRowOpen {
+  border-color: var(--color-accent);
+}
+
+.embedTop {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+/* Same size/style as MixPlayer play button */
+.expandBtn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.expandBtn:hover {
+  background: #0052cc;
+  transform: scale(1.05);
+}
+
+.embedInfo {
+  flex: 1;
+  min-width: 0;
 }
 
 .embedMeta {
@@ -51,6 +86,9 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .embedTags {
@@ -75,10 +113,17 @@
   font-weight: 500;
 }
 
+/* ── Expandable embed body ── */
+.embedBody {
+  padding: 0 20px 16px;
+}
+
 /* YouTube 16:9 */
 .videoWrapper {
   position: relative;
   aspect-ratio: 16 / 9;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .videoWrapper iframe {
@@ -87,7 +132,6 @@
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 4px;
 }
 
 /* SoundCloud */
@@ -96,6 +140,7 @@
   height: 166px;
   border: none;
   border-radius: 4px;
+  display: block;
 }
 
 /* Mixcloud */
@@ -104,18 +149,16 @@
   height: 120px;
   border: none;
   border-radius: 4px;
+  display: block;
 }
 
 .cookieNotice {
-  padding: 24px;
-  border: 1px solid #1a1a1a;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.cookieNotice p {
   font-size: 0.85rem;
   color: var(--color-text-muted);
+  text-align: center;
+  padding: 16px;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
 }
 
 @media (max-width: 600px) {
@@ -123,7 +166,17 @@
     padding: 80px 16px 60px;
   }
 
-  .embedCard {
+  .expandBtn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .embedTop {
     padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .embedBody {
+    padding: 0 14px 12px;
   }
 }

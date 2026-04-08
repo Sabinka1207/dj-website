@@ -88,13 +88,6 @@ export default function AdminLayout() {
             Mixes
           </NavLink>
           <NavLink
-            to="/admin/external-mixes"
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-            onClick={closeMenu}
-          >
-            Ext. Mixes
-          </NavLink>
-          <NavLink
             to="/admin/tools"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
