@@ -1,12 +1,65 @@
 .page {
   min-height: 100vh;
-  padding: 100px 24px 80px;
+  padding: 48px 24px 80px;
   background: var(--color-bg);
 }
 
 .container {
   max-width: 900px;
   margin: 0 auto;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+
+.back {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s;
+}
+
+.back:hover {
+  color: var(--color-text);
+}
+
+.langSwitcher {
+  display: flex;
+  gap: 6px;
+}
+
+.langBtn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.langBtn:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.langBtnActive {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .title {
@@ -163,7 +216,7 @@
 
 @media (max-width: 600px) {
   .page {
-    padding: 80px 16px 60px;
+    padding: 32px 16px 60px;
   }
 
   .expandBtn {

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import MixPlayer from '../components/MixPlayer'
 import styles from './MixesPage.module.css'
+
+const LANGUAGES = [{ code: 'de', label: 'DE' }, { code: 'en', label: 'EN' }, { code: 'ua', label: 'UA' }]
 
 interface HostedMix {
   id: number
@@ -106,12 +109,18 @@ function EmbedCard({ mix, cookiesAccepted }: { mix: ExternalMix; cookiesAccepted
 }
 
 export default function MixesPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
   const [playingId, setPlayingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const cookiesAccepted = localStorage.getItem('cookieConsent') === 'accepted'
+
+  const changeLanguage = (code: string) => {
+    localStorage.setItem('lang', code)
+    i18n.changeLanguage(code)
+  }
 
   useEffect(() => {
     Promise.all([
@@ -131,6 +140,21 @@ export default function MixesPage() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
+        <div className={styles.topBar}>
+          <button className={styles.back} onClick={() => navigate('/')}>← DJ Sabi</button>
+          <div className={styles.langSwitcher}>
+            {LANGUAGES.map(({ code, label }) => (
+              <button
+                key={code}
+                className={`${styles.langBtn} ${i18n.language === code ? styles.langBtnActive : ''}`}
+                onClick={() => changeLanguage(code)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <h1 className={styles.title}>{t('mixesPage.title')}</h1>
 
         {loading && <p className={styles.empty}>...</p>}
