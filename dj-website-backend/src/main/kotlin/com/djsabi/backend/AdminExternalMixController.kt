@@ -36,7 +36,7 @@ class AdminExternalMixController(
     }
 
     private fun toResponse(m: ExternalMix) =
-        ExternalMixResponse(m.id, m.embedUrl, m.embedType, m.title, m.year, m.style, m.event, m.city)
+        ExternalMixResponse(m.id, m.embedUrl, m.embedType, m.title, m.year, m.style, m.event, m.city, m.homeFeatured)
 
     @GetMapping
     fun list(req: HttpServletRequest): ResponseEntity<List<ExternalMixResponse>> {
@@ -72,6 +72,14 @@ class AdminExternalMixController(
         mix.style = body.style.trim()
         mix.event = body.event.trim()
         mix.city = body.city.trim()
+        return ResponseEntity.ok(toResponse(repo.save(mix)))
+    }
+
+    @PatchMapping("/{id}/featured")
+    fun toggleFeatured(@PathVariable id: Long, req: HttpServletRequest): ResponseEntity<ExternalMixResponse> {
+        if (!authorized(req)) return ResponseEntity.status(401).build()
+        val mix = repo.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
+        mix.homeFeatured = !mix.homeFeatured
         return ResponseEntity.ok(toResponse(repo.save(mix)))
     }
 

@@ -1,0 +1,1 @@
+ALTER TABLE external_mixes ADD COLUMN home_featured BOOLEAN NOT NULL DEFAULT FALSE;
