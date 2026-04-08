@@ -5,7 +5,7 @@
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -23,6 +23,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 48px;
 }
 
 .empty {
@@ -30,8 +31,69 @@
   font-size: 0.9rem;
 }
 
-@media (max-width: 600px) {
+/* YouTube: 2-column 16:9 grid */
+.videoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.videoWrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+}
+
+.videoWrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 2px;
+}
+
+/* SoundCloud + Mixcloud: 2-column audio grid */
+.audioGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.scPlayer {
+  width: 100%;
+  height: 166px;
+  border: none;
+  border-radius: 2px;
+}
+
+.mcPlayer {
+  width: 100%;
+  height: 120px;
+  border: none;
+  border-radius: 2px;
+}
+
+.cookieNotice {
+  padding: 48px;
+  border: 1px solid #1a1a1a;
+  border-radius: 2px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.cookieNotice p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
   .page {
     padding: 80px 16px 60px;
+  }
+
+  .videoGrid,
+  .audioGrid {
+    grid-template-columns: 1fr;
   }
 }

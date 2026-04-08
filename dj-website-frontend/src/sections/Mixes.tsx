@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import styles from './Mixes.module.css'
 
 const youtubeVideos = [
@@ -68,6 +69,10 @@ export default function Mixes({ cookiesAccepted }: Props) {
             <p>{t('cookies.message')}</p>
           </div>
         )}
+
+        <div className={styles.viewAll}>
+          <Link to="/mixes" className={styles.viewAllBtn}>{t('mixes.viewAll')}</Link>
+        </div>
       </div>
     </section>
   )
