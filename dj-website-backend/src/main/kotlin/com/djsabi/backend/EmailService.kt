@@ -18,23 +18,36 @@ class EmailService(
 
     fun sendContactEmail(req: ContactRequest) {
         val receivedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+        val subject = when (req.source) {
+            "organisers" -> "Question from organiser zone — ${req.name}"
+            "calendar"   -> "Booking request (calendar) — ${req.name}"
+            "contact"    -> "Question / Contact — ${req.name}"
+            else         -> "New inquiry — ${req.name}"
+        }
+        val sourceLabel = when (req.source) {
+            "organisers" -> "Organiser zone"
+            "calendar"   -> "Calendar"
+            "contact"    -> "Contact form"
+            else         -> "Website"
+        }
         val body = mapOf(
             "from" to "DJ Sabi Website <noreply@dj-sabi.com>",
             "to" to listOf(recipient),
             "reply_to" to req.email,
-            "subject" to "New booking request from ${req.name}",
-            "text" to """
-                New booking inquiry received via dj-sabi.com
-                Received: $receivedAt
-
-                Name:    ${req.name}
-                Email:   ${req.email}
-                Event:   ${req.event}
-                Date:    ${req.date.ifBlank { "—" }}
-
-                Message:
-                ${req.message}
-            """.trimIndent()
+            "subject" to subject,
+            "text" to buildString {
+                appendLine("Received: $receivedAt  |  Source: $sourceLabel")
+                appendLine()
+                appendLine("Name:    ${req.name}")
+                appendLine("Email:   ${req.email}")
+                if (req.event.isNotBlank()) appendLine("Event:   ${req.event}")
+                if (req.date.isNotBlank())  appendLine("Date:    ${req.date}")
+                if (req.message.isNotBlank()) {
+                    appendLine()
+                    appendLine("Message:")
+                    appendLine(req.message)
+                }
+            }
         )
         val headers = HttpHeaders().apply {
             contentType = MediaType.APPLICATION_JSON
