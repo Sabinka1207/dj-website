@@ -3,21 +3,21 @@ import { useTranslation } from 'react-i18next'
 
 const SEO_DATA: Record<string, { title: string; description: string; lang: string }> = {
   de: {
-    title: 'DJ Sabi | Ukraine – Germany | Bar · Club · Festival · Radio',
+    title: 'DJ Sabi Frankfurt | DJ buchen – Bar · Club · Festival · Radio',
     description:
-      'DJ Sabi – über 15 Jahre Erfahrung, Residentin des Forsage Clubs, internationale Auftritte. Jetzt für Ihre Veranstaltung buchen: Bar, Club, Festival, Radio.',
+      'DJ Sabi – DJ in Frankfurt & Deutschland, über 15 Jahre Erfahrung, Residentin des Forsage Clubs Kiew. Bar, Club, Festival, Radio – jetzt Termin anfragen.',
     lang: 'de',
   },
   en: {
-    title: 'DJ Sabi | Ukraine – Germany | Bar · Club · Festival · Radio',
+    title: 'DJ Sabi Frankfurt | Book a DJ – Bar · Club · Festival · Radio',
     description:
-      'DJ Sabi – 15+ years experience, Forsage Club resident, international credits including Pacha. Book for your bar, club, festival or radio event in Germany.',
+      'DJ Sabi – Frankfurt-based DJ with 15+ years experience, Forsage Club resident, international credits. Available for bars, clubs, festivals and radio in Germany.',
     lang: 'en',
   },
   ua: {
-    title: 'DJ Sabi | Україна – Німеччина | Бар · Клуб · Фестиваль · Радіо',
+    title: 'DJ Sabi Франкфурт | Запросити DJ – Бар · Клуб · Фестиваль · Радіо',
     description:
-      'DJ Sabi – понад 15 років досвіду, резидентка клубу Forsage, виступи на міжнародних майданчиках. Замовте для свого заходу в Німеччині.',
+      'DJ Sabi – діджейка у Франкфурті та Німеччині, понад 15 років досвіду, резидентка клубу Forsage. Бар, клуб, фестиваль, радіо – надішліть запит.',
     lang: 'uk',
   },
 }
@@ -33,7 +33,12 @@ const JSON_LD = JSON.stringify({
       name: 'Sabina Abdulaliieva',
       alternateName: 'DJ Sabi',
       url: SITE_URL,
-      sameAs: [],
+      sameAs: [
+        'https://www.instagram.com/sabinka_djsabi/',
+        'https://www.youtube.com/@Sabinka1207',
+        'https://soundcloud.com/dj_sabi',
+        'https://www.mixcloud.com/sabiabdulalieva/',
+      ],
       jobTitle: 'DJ',
       description:
         'DJ with 15+ years of experience, Forsage Club resident, performing in Germany and internationally.',
@@ -42,7 +47,7 @@ const JSON_LD = JSON.stringify({
       '@type': 'MusicGroup',
       name: 'DJ Sabi',
       url: SITE_URL,
-      genre: ['Electronic', 'Commercial', 'House', 'Techno', 'RnB', 'Hip-Hop'],
+      genre: ['Electronic', 'Commercial', 'House', 'Techno', 'RnB', 'Hip-Hop', 'Ukrainian Music'],
       member: { '@type': 'Person', name: 'Sabina Abdulaliieva' },
     },
   ],
