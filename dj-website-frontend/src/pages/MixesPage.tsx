@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import MixPlayer from '../components/MixPlayer'
 import styles from './MixesPage.module.css'
 
-interface Mix {
+interface HostedMix {
   id: number
   url: string
   title: string
@@ -12,103 +12,123 @@ interface Mix {
   event: string
   city: string
   durationSeconds: number
-  displayOrder: number
 }
 
-const youtubeVideos = [
-  'https://www.youtube.com/embed/3pKeGlxPikk',
-  'https://www.youtube.com/embed/slIsj_NFgG0',
-]
+interface ExternalMix {
+  id: number
+  embedUrl: string
+  embedType: string
+  title: string
+  year: number
+  style: string
+  event: string
+  city: string
+}
 
-const soundcloudTracks = [
-  'https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dj_sabi/proudtobeukrainian&color=%230066ff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false',
-  'https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/dj_sabi/ahmix&color=%230066ff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false',
-]
+type UnifiedMix =
+  | { kind: 'hosted'; data: HostedMix }
+  | { kind: 'embed'; data: ExternalMix }
 
-const mixcloudMixes = [
-  'https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Fsabi-live-playtv-29042015%2F',
-  'https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&feed=%2Fsabiabdulalieva%2Ffav-songz-mistery-edition%2F',
-]
+function EmbedCard({ mix, cookiesAccepted }: { mix: ExternalMix; cookiesAccepted: boolean }) {
+  const { t } = useTranslation()
+  const location = [mix.event, mix.city].filter(Boolean).join(' · ')
+
+  return (
+    <div className={styles.embedCard}>
+      <div className={styles.embedMeta}>
+        <span className={styles.embedTitle}>{mix.title}</span>
+        <div className={styles.embedTags}>
+          {mix.style && <span className={styles.tag}>{mix.style}</span>}
+          {location && <span className={styles.tag}>{location}</span>}
+          {mix.year > 0 && <span className={styles.year}>{mix.year}</span>}
+        </div>
+      </div>
+
+      {cookiesAccepted ? (
+        mix.embedType === 'youtube' ? (
+          <div className={styles.videoWrapper}>
+            <iframe
+              src={mix.embedUrl}
+              title={mix.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : mix.embedType === 'soundcloud' ? (
+          <iframe
+            className={styles.scPlayer}
+            src={mix.embedUrl}
+            title={mix.title}
+            allow="autoplay"
+          />
+        ) : (
+          <iframe
+            className={styles.mcPlayer}
+            src={mix.embedUrl}
+            title={mix.title}
+          />
+        )
+      ) : (
+        <div className={styles.cookieNotice}>
+          <p>{t('cookies.message')}</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function MixesPage() {
   const { t } = useTranslation()
-  const [mixes, setMixes] = useState<Mix[]>([])
+  const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
+  const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
   const [playingId, setPlayingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const cookiesAccepted = localStorage.getItem('cookieConsent') === 'accepted'
 
   useEffect(() => {
-    fetch('/api/mixes')
-      .then(r => r.json())
-      .then(data => setMixes(data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch('/api/mixes').then(r => r.json()).catch(() => []),
+      fetch('/api/external-mixes').then(r => r.json()).catch(() => []),
+    ]).then(([hosted, external]) => {
+      setHostedMixes(hosted)
+      setExternalMixes(external)
+    }).finally(() => setLoading(false))
   }, [])
 
-  const handlePlay = (id: number) => {
-    setPlayingId(prev => (prev === id ? null : id))
-  }
+  const allMixes: UnifiedMix[] = [
+    ...hostedMixes.map(m => ({ kind: 'hosted' as const, data: m })),
+    ...externalMixes.map(m => ({ kind: 'embed' as const, data: m })),
+  ].sort((a, b) => (b.data.year || 0) - (a.data.year || 0))
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <h1 className={styles.title}>{t('mixesPage.title')}</h1>
 
-        {/* Self-hosted mixes */}
         {loading && <p className={styles.empty}>...</p>}
 
-        {!loading && mixes.length > 0 && (
-          <div className={styles.list}>
-            {mixes.map(mix => (
-              <MixPlayer
-                key={mix.id}
-                mix={mix}
-                isPlaying={playingId === mix.id}
-                onPlay={() => handlePlay(mix.id)}
-              />
-            ))}
-          </div>
+        {!loading && allMixes.length === 0 && (
+          <p className={styles.empty}>{t('mixesPage.empty')}</p>
         )}
 
-        {/* Embedded mixes (YouTube + SoundCloud + Mixcloud) */}
-        {cookiesAccepted ? (
-          <>
-            <div className={styles.videoGrid}>
-              {youtubeVideos.map((src) => (
-                <div key={src} className={styles.videoWrapper}>
-                  <iframe
-                    src={src}
-                    title="YouTube video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.audioGrid}>
-              {soundcloudTracks.map((src) => (
-                <iframe
-                  key={src}
-                  className={styles.scPlayer}
-                  src={src}
-                  title="SoundCloud track"
-                  allow="autoplay"
+        {!loading && allMixes.length > 0 && (
+          <div className={styles.list}>
+            {allMixes.map(item =>
+              item.kind === 'hosted' ? (
+                <MixPlayer
+                  key={`hosted-${item.data.id}`}
+                  mix={item.data}
+                  isPlaying={playingId === item.data.id}
+                  onPlay={() => setPlayingId(prev => prev === item.data.id ? null : item.data.id)}
                 />
-              ))}
-              {mixcloudMixes.map((src) => (
-                <iframe
-                  key={src}
-                  className={styles.mcPlayer}
-                  src={src}
-                  title="Mixcloud mix"
+              ) : (
+                <EmbedCard
+                  key={`embed-${item.data.id}`}
+                  mix={item.data}
+                  cookiesAccepted={cookiesAccepted}
                 />
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className={styles.cookieNotice}>
-            <p>{t('cookies.message')}</p>
+              )
+            )}
           </div>
         )}
       </div>
