@@ -15,7 +15,7 @@ const SEO_DATA: Record<string, { title: string; description: string; lang: strin
     lang: 'en',
   },
   ua: {
-    title: 'DJ Sabi Франкфурт | Запросити DJ – Бар · Клуб · Фестиваль · Радіо',
+    title: 'DJ Sabi Франкфурт | Забронювати DJ – Бар · Клуб · Фестиваль · Радіо',
     description:
       'DJ Sabi – діджейка у Франкфурті та Німеччині, понад 15 років досвіду, резидентка клубу Forsage. Бар, клуб, фестиваль, радіо – надішліть запит.',
     lang: 'uk',
