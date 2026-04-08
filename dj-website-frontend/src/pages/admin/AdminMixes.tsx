@@ -223,8 +223,12 @@ export default function AdminMixes() {
       </div>
 
       {/* ── Add / Edit form ── */}
-      <div className={styles.form}>
-        <h3 className={styles.formTitle}>{editing ? 'Edit Mix' : 'Add Mix'}</h3>
+      <div className={`${styles.form} ${editing ? styles.formEdit : ''}`}>
+        <h3 className={styles.formTitle}>
+          {editing ? (
+            <span>Edit Mix <span style={{ color: 'var(--color-accent)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>— {form.title || '…'}</span></span>
+          ) : 'Add Mix'}
+        </h3>
 
         {/* Source toggle (only when not editing) */}
         {!editing && (
@@ -363,7 +367,7 @@ export default function AdminMixes() {
                   </td>
                   <td>{mix.title}</td>
                   <td>{mix.year || '—'}</td>
-                  <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mix.style || '—'}</td>
+                  <td style={{ maxWidth: 240, wordBreak: 'break-word', lineHeight: '1.4' }}>{mix.style || '—'}</td>
                   <td>{mix.event || '—'}</td>
                   <td>{mix.city || '—'}</td>
                   <td>{mix.kind === 'hosted' ? formatTime(mix.durationSeconds) : '—'}</td>
