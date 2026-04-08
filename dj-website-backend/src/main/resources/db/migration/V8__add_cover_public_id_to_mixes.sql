@@ -1,0 +1,1 @@
+ALTER TABLE mixes ADD COLUMN cover_public_id VARCHAR(255) NOT NULL DEFAULT '';

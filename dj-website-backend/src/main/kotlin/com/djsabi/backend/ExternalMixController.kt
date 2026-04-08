@@ -12,7 +12,8 @@ data class ExternalMixResponse(
     val style: String,
     val event: String,
     val city: String,
-    val homeFeatured: Boolean
+    val homeFeatured: Boolean,
+    val homeDisplayOrder: Int
 )
 
 @RestController
@@ -20,11 +21,15 @@ data class ExternalMixResponse(
 class ExternalMixController(private val repo: ExternalMixRepository) {
 
     private fun toResponse(m: com.djsabi.backend.model.ExternalMix) =
-        ExternalMixResponse(m.id, m.embedUrl, m.embedType, m.title, m.year, m.style, m.event, m.city, m.homeFeatured)
+        ExternalMixResponse(m.id, m.embedUrl, m.embedType, m.title, m.year, m.style, m.event, m.city, m.homeFeatured, m.homeDisplayOrder)
 
     @GetMapping
     fun list() = repo.findAllByOrderByYearDesc().map { toResponse(it) }
 
     @GetMapping("/featured")
-    fun featured() = repo.findByHomeFeaturedTrueOrderByYearDesc().map { toResponse(it) }
+    fun featured(): List<ExternalMixResponse> {
+        val featured = repo.findByHomeFeaturedTrueOrderByHomeDisplayOrderAsc()
+        if (featured.isNotEmpty()) return featured.map { toResponse(it) }
+        return repo.findByEmbedTypeOrderByYearDesc("youtube").take(2).map { toResponse(it) }
+    }
 }

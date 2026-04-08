@@ -15,5 +15,6 @@ data class ExternalMix(
     var style: String = "",
     var event: String = "",
     var city: String = "",
-    var homeFeatured: Boolean = false
+    var homeFeatured: Boolean = false,
+    var homeDisplayOrder: Int = 0
 )

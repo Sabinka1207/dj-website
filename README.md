@@ -19,7 +19,7 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 | Auth         | Password + Google Sign-In (admin panel)             |
 | Email        | Resend API                                          |
 | Notify       | Telegram Bot API                                    |
-| Monitoring   | Sentry (frontend + backend), UptimeRobot            |
+| Monitoring   | UptimeRobot                                         |
 | CI           | GitHub Actions (test + build on every push)         |
 | Deploy       | Vercel (frontend) + Render (backend)                |
 
@@ -49,8 +49,8 @@ dj-website/
 │   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
-    │   ├── model/                  ← Event.kt, Photo.kt, BookingRequest.kt, UnavailableDate.kt
-    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt
+    │   ├── model/                  ← Event.kt, Photo.kt, BookingRequest.kt, UnavailableDate.kt, Mix.kt, ExternalMix.kt
+    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt, MixRepository.kt, ExternalMixRepository.kt
     │   ├── DjWebsiteBackendApplication.kt
     │   ├── ContactController.kt
     │   ├── ContactRequest.kt
@@ -64,6 +64,10 @@ dj-website/
     │   ├── AdminBookingController.kt
     │   ├── AdminUnavailableDateController.kt
     │   ├── UnavailableDateController.kt
+    │   ├── MixController.kt            ← public hosted mixes + featured endpoint
+    │   ├── AdminMixController.kt       ← upload/edit/delete/reorder hosted mixes + cover management
+    │   ├── ExternalMixController.kt    ← public external mixes + featured endpoint
+    │   ├── AdminExternalMixController.kt ← CRUD for external mixes, auto URL conversion
     │   ├── AdminAuthController.kt
     │   ├── AdminAuthService.kt
     │   ├── CloudinaryConfig.kt
@@ -73,7 +77,14 @@ dj-website/
     ├── src/main/resources/
     │   ├── application.properties
     │   └── db/migration/
-    │       └── V1__create_tables.sql   ← Flyway baseline migration
+    │       ├── V1__create_tables.sql
+    │       ├── V2__create_mixes_table.sql
+    │       ├── V3__create_external_mixes_table.sql
+    │       ├── V4__add_home_featured_to_external_mixes.sql
+    │       ├── V5__add_home_display_order_to_external_mixes.sql
+    │       ├── V6__add_home_featured_to_mixes.sql
+    │       ├── V7__add_cover_url_to_mixes.sql
+    │       └── V8__add_cover_public_id_to_mixes.sql
     └── Dockerfile
 ```
 
@@ -102,16 +113,12 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)        |
 | `CLOUDINARY_API_KEY`    | Cloudinary API key                           |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret                        |
-| `SENTRY_DSN`            | Sentry DSN for backend error tracking        |
-| `SENTRY_ENVIRONMENT`    | `staging` or `production`                    |
 
 ### Frontend (Vercel env vars — set in Vercel dashboard)
 
 | Variable                   | Description                                             |
 | -------------------------- | ------------------------------------------------------- |
 | `VITE_GOOGLE_CLIENT_ID`    | Google OAuth Client ID                                  |
-| `VITE_SENTRY_DSN`          | Sentry DSN for frontend error tracking                  |
-| `VITE_SENTRY_ENVIRONMENT`  | `staging` (Preview) or `production` (Production)        |
 
 ### Get Telegram chat ID
 
@@ -209,6 +216,8 @@ Left sidebar navigation:
 - **Events** (`/admin/events`) — create, edit, delete gig bookings
 - **Availability** (`/admin/availability`) — block specific dates so they appear greyed-out and non-clickable in the public events calendar
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
+- **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudinary), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from Cloudinary too), drag to reorder. Toggle which mixes appear on the home page and set their display order.
+- **External Mixes** (`/admin/external-mixes`) — add YouTube, Mixcloud, or SoundCloud mixes by pasting any direct URL (auto-converted to embed URL server-side). Edit metadata, toggle home page featuring with ordering.
 
 ### Google Sign-In setup
 
@@ -221,6 +230,30 @@ Left sidebar navigation:
 4. Set env vars:
    - `VITE_GOOGLE_CLIENT_ID` — on frontend (Vercel)
    - `ADMIN_GOOGLE_EMAIL` — on backend (Render)
+
+---
+
+## Mixes
+
+The site supports two types of mixes:
+
+### Hosted mixes (MP3 uploaded directly)
+- Upload via `/admin/mixes` — file stored on Cloudinary (`dj-sabi/mixes`, `resource_type: video`)
+- Optional cover image stored on Cloudinary (`dj-sabi/mix-covers`)
+- Cover falls back to the DJ Sabi logo if not set
+- Duration auto-extracted from Cloudinary upload response
+- Rendered with a custom HTML5 audio player (play/pause, seekable progress bar, volume control, download button)
+- Deleting a mix removes both the audio and cover image from Cloudinary
+
+### External mixes (YouTube / Mixcloud / SoundCloud)
+- Add via `/admin/external-mixes` — paste any direct URL, it's auto-converted to the correct embed URL server-side:
+  - `youtube.com/watch?v=...` or `youtu.be/...` → YouTube embed
+  - `mixcloud.com/...` → Mixcloud widget
+  - `soundcloud.com/...` → SoundCloud widget
+- Rendered as iframes
+
+### Home page featuring
+Both types can be featured on the home page. Toggle the home icon in the admin table to show/hide, and set the display order. If nothing is featured, the 2 latest YouTube mixes are shown as fallback.
 
 ---
 
@@ -254,18 +287,6 @@ src/main/resources/db/migration/V2__your_description.sql
 ```
 
 Flyway runs it automatically on next startup.
-
----
-
-## Error Tracking (Sentry)
-
-Sentry captures errors from both frontend and backend automatically in production and staging.
-
-- **Frontend:** initialized in `main.tsx`, only active when `VITE_SENTRY_DSN` is set and `PROD=true`
-- **Backend:** auto-configured by `sentry-spring-boot-starter-jakarta` when `SENTRY_DSN` is set
-- **Environments:** tagged as `staging` or `production` via `SENTRY_ENVIRONMENT` / `VITE_SENTRY_ENVIRONMENT`
-
-View issues at [sentry.io](https://sentry.io) → your project → Issues.
 
 ---
 
@@ -404,37 +425,56 @@ cd dj-website-backend
 
 ### Public
 
-| Method | Endpoint                  | Description                                      |
-| ------ | ------------------------- | ------------------------------------------------ |
-| GET    | /api/events               | List all events                                  |
-| GET    | /api/photos               | List gallery photos (sorted by display order)    |
-| POST   | /api/contact              | Submit booking form (saves to DB + sends email/Telegram). Rate limited: 5 req/hour/IP. |
-| GET    | /api/unavailable-dates    | List blocked dates for the calendar              |
-| GET    | /api/health               | Health check — returns `{"status":"ok"}`         |
+| Method | Endpoint                       | Description                                      |
+| ------ | ------------------------------ | ------------------------------------------------ |
+| GET    | /api/events                    | List all events                                  |
+| GET    | /api/photos                    | List gallery photos (sorted by display order)    |
+| POST   | /api/contact                   | Submit booking form (saves to DB + sends email/Telegram). Rate limited: 5 req/hour/IP. |
+| GET    | /api/unavailable-dates         | List blocked dates for the calendar              |
+| GET    | /api/health                    | Health check — returns `{"status":"ok"}`         |
+| GET    | /api/mixes                     | List all hosted mixes (sorted by display order)  |
+| GET    | /api/mixes/featured            | List home-featured hosted mixes                  |
+| GET    | /api/external-mixes            | List all external mixes (sorted by year desc)    |
+| GET    | /api/external-mixes/featured   | List home-featured external mixes                |
 
 ### Admin (requires `Authorization: Bearer <token>`)
 
-| Method | Endpoint                          | Description                                        |
-| ------ | --------------------------------- | -------------------------------------------------- |
-| POST   | /api/admin/login                  | Password login                                     |
-| POST   | /api/admin/google-login           | Google Sign-In login                               |
-| GET    | /api/admin/bookings               | List all booking requests                          |
-| GET    | /api/admin/bookings/unread-count  | Count of unread (new) booking requests             |
-| PATCH  | /api/admin/bookings/:id/read      | Mark booking as read                               |
-| PATCH  | /api/admin/bookings/:id/unread    | Mark booking as new (unread)                       |
-| PATCH  | /api/admin/bookings/:id/answered  | Mark booking as answered (no email sent)           |
-| POST   | /api/admin/bookings/:id/reply     | Send email reply + mark as answered                |
-| DELETE | /api/admin/bookings/:id           | Delete booking request                             |
-| GET    | /api/admin/events                 | List all events                                    |
-| POST   | /api/admin/events                 | Create event                                       |
-| PUT    | /api/admin/events/:id             | Update event                                       |
-| DELETE | /api/admin/events/:id             | Delete event                                       |
-| GET    | /api/admin/photos                 | List all photos                                    |
-| POST   | /api/admin/photos/upload          | Upload photo (multipart) → Cloudinary              |
-| POST   | /api/admin/photos/sync            | Import existing Cloudinary photos from `dj-sabi/gallery` |
-| DELETE | /api/admin/photos/:id             | Delete photo from Cloudinary + DB                  |
-| DELETE | /api/admin/photos                 | Delete all photos from Cloudinary + DB             |
-| PUT    | /api/admin/photos/reorder         | Bulk update display order                          |
-| GET    | /api/admin/unavailable-dates      | List blocked dates (with id and note)              |
-| POST   | /api/admin/unavailable-dates      | Block a date `{ date, note? }`                     |
-| DELETE | /api/admin/unavailable-dates/:id  | Remove a blocked date                              |
+| Method | Endpoint                               | Description                                        |
+| ------ | -------------------------------------- | -------------------------------------------------- |
+| POST   | /api/admin/login                       | Password login                                     |
+| POST   | /api/admin/google-login                | Google Sign-In login                               |
+| GET    | /api/admin/bookings                    | List all booking requests                          |
+| GET    | /api/admin/bookings/unread-count       | Count of unread (new) booking requests             |
+| PATCH  | /api/admin/bookings/:id/read           | Mark booking as read                               |
+| PATCH  | /api/admin/bookings/:id/unread         | Mark booking as new (unread)                       |
+| PATCH  | /api/admin/bookings/:id/answered       | Mark booking as answered (no email sent)           |
+| POST   | /api/admin/bookings/:id/reply          | Send email reply + mark as answered                |
+| DELETE | /api/admin/bookings/:id                | Delete booking request                             |
+| GET    | /api/admin/events                      | List all events                                    |
+| POST   | /api/admin/events                      | Create event                                       |
+| PUT    | /api/admin/events/:id                  | Update event                                       |
+| DELETE | /api/admin/events/:id                  | Delete event                                       |
+| GET    | /api/admin/photos                      | List all photos                                    |
+| POST   | /api/admin/photos/upload               | Upload photo (multipart) → Cloudinary              |
+| POST   | /api/admin/photos/sync                 | Import existing Cloudinary photos from `dj-sabi/gallery` |
+| DELETE | /api/admin/photos/:id                  | Delete photo from Cloudinary + DB                  |
+| DELETE | /api/admin/photos                      | Delete all photos from Cloudinary + DB             |
+| PUT    | /api/admin/photos/reorder              | Bulk update display order                          |
+| GET    | /api/admin/unavailable-dates           | List blocked dates (with id and note)              |
+| POST   | /api/admin/unavailable-dates           | Block a date `{ date, note? }`                     |
+| DELETE | /api/admin/unavailable-dates/:id       | Remove a blocked date                              |
+| GET    | /api/admin/mixes                       | List all hosted mixes                              |
+| POST   | /api/admin/mixes/upload                | Upload MP3 + optional cover (multipart) → Cloudinary |
+| PUT    | /api/admin/mixes/:id                   | Update mix metadata                                |
+| POST   | /api/admin/mixes/:id/cover             | Replace cover image → Cloudinary                   |
+| DELETE | /api/admin/mixes/:id/cover             | Remove cover image from Cloudinary + DB            |
+| PATCH  | /api/admin/mixes/:id/featured          | Toggle home page featuring                         |
+| PATCH  | /api/admin/mixes/:id/home-order        | Set home display order                             |
+| DELETE | /api/admin/mixes/:id                   | Delete mix + cover from Cloudinary + DB            |
+| PUT    | /api/admin/mixes/reorder               | Bulk update display order                          |
+| GET    | /api/admin/external-mixes              | List all external mixes                            |
+| POST   | /api/admin/external-mixes              | Add external mix (URL auto-converted to embed URL) |
+| PUT    | /api/admin/external-mixes/:id          | Update external mix                                |
+| PATCH  | /api/admin/external-mixes/:id/featured | Toggle home page featuring                         |
+| PATCH  | /api/admin/external-mixes/:id/home-order | Set home display order                           |
+| DELETE | /api/admin/external-mixes/:id          | Delete external mix                                |

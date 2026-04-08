@@ -51,6 +51,10 @@ function Home({ consent, onAccept, onDecline }: {
       const fallback = setTimeout(scroll, 3000)
       window.addEventListener('backend-alive', onAlive, { once: true })
     }
+    if (location.state?.scrollToMixes) {
+      window.history.replaceState({}, '')
+      setTimeout(() => document.getElementById('mixes')?.scrollIntoView({ behavior: 'smooth' }), 50)
+    }
   }, [])
 
   return (

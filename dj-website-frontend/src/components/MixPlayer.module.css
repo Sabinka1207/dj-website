@@ -1,7 +1,9 @@
 .player {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  grid-template-rows: auto auto auto;
+  column-gap: 16px;
+  row-gap: 6px;
   background: #111;
   border: 1px solid #222;
   border-radius: 8px;
@@ -9,8 +11,98 @@
   transition: border-color 0.2s;
 }
 
-.player.active {
+/* dissolve header wrapper — cover and right become direct grid children */
+.header {
+  display: contents;
+}
+
+.right {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressRow {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.volumeRow {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.topSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* dissolve on desktop — play and download become direct flex children of topSection */
+.playStack {
+  display: contents;
+}
+
+.playBtn { order: 0; }
+
+.meta {
+  order: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.downloadBtn { order: 2; }
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.cover {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  width: 140px;
+  height: 140px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+.downloadBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.downloadBtn:hover {
   border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .playBtn {
@@ -34,31 +126,40 @@
 }
 
 .playBtn svg {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
 }
 
-.info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.meta {
+.titleRow {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .title {
+  flex: 1;
+  min-width: 0;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.year {
+  font-size: 0.82rem;
+  color: var(--color-accent);
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.location {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .tags {
@@ -77,16 +178,33 @@
   padding: 2px 8px;
 }
 
-.year {
-  font-size: 0.72rem;
-  color: var(--color-accent);
-  font-weight: 500;
-}
-
-.controls {
+.volumeRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+.muteBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.muteBtn:hover {
+  color: var(--color-text);
+}
+
+.volumeSlider {
+  width: 80px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  height: 4px;
 }
 
 .time {
@@ -151,16 +269,58 @@
 @media (max-width: 600px) {
   .player {
     padding: 12px 14px;
-    gap: 12px;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+
+  .cover {
+    grid-row: 1;
+  }
+
+  .right {
+    grid-row: 1;
+  }
+
+  .progressRow {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .volumeRow {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  /* play stack becomes a real column, download sits right under play */
+  .topSection {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .playStack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .playBtn {
+    order: 0;
     width: 38px;
     height: 38px;
   }
 
+  .downloadBtn {
+    order: 0;
+  }
+
+  .meta {
+    order: 0;
+  }
+
   .playBtn svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
 }

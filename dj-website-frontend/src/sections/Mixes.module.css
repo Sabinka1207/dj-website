@@ -26,12 +26,17 @@
   margin-top: 16px;
 }
 
-/* YouTube: 2-column 16:9 grid */
-.videoGrid {
+/* All featured mixes in order — 2-column grid */
+.featuredGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .featuredGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .videoWrapper {
@@ -45,14 +50,7 @@
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 2px;
-}
-
-/* SoundCloud + Mixcloud: 2-column audio grid */
-.audioGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  border-radius: 4px;
 }
 
 .scPlayer {
@@ -105,9 +103,3 @@
   color: #fff;
 }
 
-@media (max-width: 768px) {
-  .videoGrid,
-  .audioGrid {
-    grid-template-columns: 1fr;
-  }
-}

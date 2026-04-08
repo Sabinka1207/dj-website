@@ -56,6 +56,7 @@ function EmbedCard({ mix, cookiesAccepted }: { mix: ExternalMix; cookiesAccepted
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const location = [mix.event, mix.city].filter(Boolean).join(' · ')
+  const isVideo = mix.embedType === 'youtube'
 
   return (
     <div className={`${styles.embedRow} ${expanded ? styles.embedRowOpen : ''}`}>
@@ -66,21 +67,35 @@ function EmbedCard({ mix, cookiesAccepted }: { mix: ExternalMix; cookiesAccepted
           onClick={() => setExpanded(v => !v)}
           aria-label={expanded ? 'Collapse' : 'Expand'}
         >
-          {expanded
-            ? <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-            : <PlatformIcon type={mix.embedType} />
-          }
+          <svg
+            className={`${styles.chevron} ${expanded ? styles.chevronUp : ''}`}
+            viewBox="0 0 24 24" fill="currentColor" width="20" height="20"
+          >
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
         </button>
 
         <div className={styles.embedInfo}>
           <div className={styles.embedMeta}>
             <span className={styles.embedTitle}>{mix.title}</span>
-            <div className={styles.embedTags}>
-              {mix.style && <span className={styles.tag}>{mix.style}</span>}
-              {location && <span className={styles.tag}>{location}</span>}
-              {mix.year > 0 && <span className={styles.year}>{mix.year}</span>}
-            </div>
+            {(location || mix.year > 0) && (
+              <span className={styles.location}>
+                {[location, mix.year > 0 ? mix.year : ''].filter(Boolean).join(' · ')}
+              </span>
+            )}
+            {mix.style && (
+              <div className={styles.embedTags}>
+                {mix.style.split(',').map(s => s.trim()).filter(Boolean).map(s => (
+                  <span key={s} className={styles.tag}>{s}</span>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
+
+        <div className={styles.typeBadge}>
+          <PlatformIcon type={mix.embedType} />
+          <span>{isVideo ? 'Video' : 'Audio'}</span>
         </div>
       </div>
 
@@ -141,7 +156,7 @@ export default function MixesPage() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.topBar}>
-          <button className={styles.back} onClick={() => navigate('/')}>← DJ Sabi</button>
+          <button className={styles.back} onClick={() => navigate('/', { state: { scrollToMixes: true } })}>← DJ Sabi</button>
           <div className={styles.langSwitcher}>
             {LANGUAGES.map(({ code, label }) => (
               <button

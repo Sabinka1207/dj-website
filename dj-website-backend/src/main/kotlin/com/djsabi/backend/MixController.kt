@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*
 data class MixResponse(
     val id: Long,
     val url: String,
+    val coverUrl: String,
     val title: String,
     val year: Int,
     val style: String,
@@ -19,10 +20,12 @@ data class MixResponse(
 @RequestMapping("/api/mixes")
 class MixController(private val mixRepository: MixRepository) {
 
+    private fun toResponse(m: com.djsabi.backend.model.Mix) =
+        MixResponse(m.id, m.url, m.coverUrl, m.title, m.year, m.style, m.event, m.city, m.durationSeconds, m.displayOrder)
+
     @GetMapping
-    fun list() = mixRepository.findAll()
-        .sortedBy { it.displayOrder }
-        .map {
-            MixResponse(it.id, it.url, it.title, it.year, it.style, it.event, it.city, it.durationSeconds, it.displayOrder)
-        }
+    fun list() = mixRepository.findAll().sortedBy { it.displayOrder }.map { toResponse(it) }
+
+    @GetMapping("/featured")
+    fun featured() = mixRepository.findByHomeFeaturedTrueOrderByHomeDisplayOrderAsc().map { toResponse(it) }
 }

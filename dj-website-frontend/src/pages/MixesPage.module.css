@@ -92,9 +92,6 @@
   transition: border-color 0.2s;
 }
 
-.embedRow.embedRowOpen {
-  border-color: var(--color-accent);
-}
 
 .embedTop {
   display: flex;
@@ -124,6 +121,14 @@
   transform: scale(1.05);
 }
 
+.chevron {
+  transition: transform 0.2s;
+}
+
+.chevronUp {
+  transform: rotate(180deg);
+}
+
 .embedInfo {
   flex: 1;
   min-width: 0;
@@ -132,7 +137,14 @@
 .embedMeta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .embedTitle {
@@ -142,6 +154,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.location {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .embedTags {
@@ -161,9 +180,34 @@
 }
 
 .year {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--color-accent);
-  font-weight: 500;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.typeBadge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 8px;
+  align-self: center;
+}
+
+.typeBadge svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 /* ── Expandable embed body ── */

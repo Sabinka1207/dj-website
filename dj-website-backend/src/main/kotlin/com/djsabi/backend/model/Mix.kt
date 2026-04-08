@@ -15,6 +15,10 @@ data class Mix(
     var style: String = "",
     var event: String = "",
     var city: String = "",
+    var coverUrl: String = "",
+    var coverPublicId: String = "",
     var durationSeconds: Int = 0,
-    var displayOrder: Int = 0
+    var displayOrder: Int = 0,
+    var homeFeatured: Boolean = false,
+    var homeDisplayOrder: Int = 0
 )

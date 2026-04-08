@@ -46,6 +46,37 @@ function detectType(url: string): string {
   return url ? 'other' : ''
 }
 
+function toEmbedUrl(raw: string): string {
+  const url = raw.trim()
+  if (!url) return url
+
+  try {
+    // YouTube watch URL → embed
+    if (url.includes('youtube.com/watch')) {
+      const videoId = new URL(url).searchParams.get('v')
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`
+    }
+    // YouTube short URL → embed
+    if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0]
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`
+    }
+    // Mixcloud direct URL → widget
+    if (url.includes('mixcloud.com') && !url.includes('player-widget') && !url.includes('widget/iframe')) {
+      const path = new URL(url).pathname
+      return `https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&feed=${encodeURIComponent(path)}`
+    }
+    // SoundCloud direct URL → widget
+    if (url.includes('soundcloud.com') && !url.includes('w.soundcloud.com')) {
+      return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`
+    }
+  } catch {
+    // invalid URL — return as-is
+  }
+
+  return url
+}
+
 export default function AdminExternalMixes() {
   const navigate = useNavigate()
   const [mixes, setMixes] = useState<ExternalMix[]>([])
@@ -64,6 +95,9 @@ export default function AdminExternalMixes() {
 
   const handleChange = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [key]: e.target.value }))
+
+  const handleUrlBlur = () =>
+    setForm(f => ({ ...f, embedUrl: toEmbedUrl(f.embedUrl) }))
 
   const handleEdit = (mix: ExternalMix) => {
     setEditingId(mix.id)
@@ -85,7 +119,7 @@ export default function AdminExternalMixes() {
     setSaving(true)
 
     const body = {
-      embedUrl: form.embedUrl.trim(),
+      embedUrl: toEmbedUrl(form.embedUrl),
       title: form.title.trim(),
       year: parseInt(form.year) || 0,
       style: form.style.trim(),
@@ -126,7 +160,7 @@ export default function AdminExternalMixes() {
         <h3 className={styles.formTitle}>{editingId ? 'Edit Mix' : 'Add External Mix'}</h3>
         <div className={styles.formGrid}>
           <label className={`${styles.label} ${styles.fullWidth}`}>
-            Embed URL *
+            URL *
             {detectedType && (
               <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--color-accent)' }}>
                 {detectedType.toUpperCase()}
@@ -136,7 +170,8 @@ export default function AdminExternalMixes() {
               className={styles.input}
               value={form.embedUrl}
               onChange={handleChange('embedUrl')}
-              placeholder="https://www.youtube.com/embed/... or SoundCloud/Mixcloud player URL"
+              onBlur={handleUrlBlur}
+              placeholder="https://www.youtube.com/watch?v=... or mixcloud.com/... or soundcloud.com/..."
             />
           </label>
           <label className={styles.label}>

@@ -16,6 +16,8 @@ type HostedMix = {
   city: string
   durationSeconds: number
   displayOrder: number
+  homeFeatured: boolean
+  homeDisplayOrder: number
 }
 
 type ExternalMix = {
@@ -29,6 +31,7 @@ type ExternalMix = {
   event: string
   city: string
   homeFeatured: boolean
+  homeDisplayOrder: number
 }
 
 type AnyMix = HostedMix | ExternalMix
@@ -118,6 +121,8 @@ function MetaFields({
 export default function AdminMixes() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
+  const coverRef = useRef<HTMLInputElement>(null)
+  const editCoverRef = useRef<HTMLInputElement>(null)
 
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
@@ -126,11 +131,13 @@ export default function AdminMixes() {
   const [addSourceType, setAddSourceType] = useState<'hosted' | 'external'>('hosted')
   const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedCover, setSelectedCover] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [addError, setAddError] = useState('')
 
   // ── Edit form (appears below table when a mix is selected) ──
-  const [editingMix, setEditingMix] = useState<ExternalMix | null>(null)
+  const [editingMix, setEditingMix] = useState<AnyMix | null>(null)
   const [editForm, setEditForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [editError, setEditError] = useState('')
@@ -146,6 +153,7 @@ export default function AdminMixes() {
     const external: Omit<ExternalMix, 'kind'>[] = await r2.json()
     setHostedMixes(hosted.map(m => ({ ...m, kind: 'hosted' })))
     setExternalMixes(external.map(m => ({ ...m, kind: 'external' })))
+    return Promise.resolve()
   }
 
   useEffect(() => { load() }, [])
@@ -157,8 +165,11 @@ export default function AdminMixes() {
   const resetAdd = () => {
     setAddForm(EMPTY_FORM)
     setSelectedFile(null)
+    setSelectedCover(null)
     setAddError('')
+    setUploadProgress(null)
     if (fileRef.current) fileRef.current.value = ''
+    if (coverRef.current) coverRef.current.value = ''
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,23 +177,44 @@ export default function AdminMixes() {
     setAddError('')
   }
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!selectedFile) { setAddError('Please choose a file first'); return }
     if (!addForm.title.trim()) { setAddError('Title is required'); return }
-    setAddError(''); setUploading(true)
+    setAddError(''); setUploading(true); setUploadProgress(0)
+
     const fd = new FormData()
     fd.append('file', selectedFile)
+    if (selectedCover) fd.append('cover', selectedCover)
     fd.append('title', addForm.title.trim())
     fd.append('year', addForm.year || '0')
     fd.append('style', addForm.style.trim())
     fd.append('event', addForm.event.trim())
     fd.append('city', addForm.city.trim())
-    const res = await fetch('/api/admin/mixes/upload', { method: 'POST', headers: authHeaders(false), body: fd })
-    setUploading(false)
-    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
-    if (!res.ok) { setAddError('Upload failed'); return }
-    resetAdd()
-    load()
+
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', '/api/admin/mixes/upload')
+    const headers = authHeaders(false) as Record<string, string>
+    Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v))
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100))
+    }
+
+    xhr.onload = () => {
+      setUploading(false)
+      if (xhr.status === 401) { clearToken(); navigate('/admin/login'); return }
+      if (xhr.status < 200 || xhr.status >= 300) { setAddError('Upload failed'); setUploadProgress(null); return }
+      resetAdd()
+      load()
+    }
+
+    xhr.onerror = () => {
+      setUploading(false)
+      setUploadProgress(null)
+      setAddError('Upload failed')
+    }
+
+    xhr.send(fd)
   }
 
   const handleAddExternal = async () => {
@@ -206,9 +238,12 @@ export default function AdminMixes() {
   const handleEditChange = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setEditForm(f => ({ ...f, [key]: e.target.value }))
 
-  const handleEdit = (mix: ExternalMix) => {
+  const handleEdit = (mix: AnyMix) => {
     setEditingMix(mix)
-    setEditForm({ embedUrl: mix.embedUrl, title: mix.title, year: mix.year.toString(), style: mix.style, event: mix.event, city: mix.city })
+    setEditForm({
+      embedUrl: mix.kind === 'external' ? mix.embedUrl : '',
+      title: mix.title, year: mix.year.toString(), style: mix.style, event: mix.event, city: mix.city,
+    })
     setEditError('')
   }
 
@@ -220,15 +255,25 @@ export default function AdminMixes() {
 
   const handleSaveEdit = async () => {
     if (!editingMix) return
-    if (!editForm.embedUrl.trim()) { setEditError('Embed URL is required'); return }
     if (!editForm.title.trim()) { setEditError('Title is required'); return }
+    if (editingMix.kind === 'external' && !editForm.embedUrl.trim()) { setEditError('Embed URL is required'); return }
     setEditError(''); setSaving(true)
-    const body = {
-      embedUrl: editForm.embedUrl.trim(), title: editForm.title.trim(),
-      year: parseInt(editForm.year) || 0, style: editForm.style.trim(),
-      event: editForm.event.trim(), city: editForm.city.trim(),
+
+    let res: Response
+    if (editingMix.kind === 'hosted') {
+      const body = {
+        title: editForm.title.trim(), year: parseInt(editForm.year) || 0,
+        style: editForm.style.trim(), event: editForm.event.trim(), city: editForm.city.trim(),
+      }
+      res = await fetch(`/api/admin/mixes/${editingMix.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) })
+    } else {
+      const body = {
+        embedUrl: editForm.embedUrl.trim(), title: editForm.title.trim(),
+        year: parseInt(editForm.year) || 0, style: editForm.style.trim(),
+        event: editForm.event.trim(), city: editForm.city.trim(),
+      }
+      res = await fetch(`/api/admin/external-mixes/${editingMix.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) })
     }
-    const res = await fetch(`/api/admin/external-mixes/${editingMix.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) })
     setSaving(false)
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     if (!res.ok) { setEditError('Failed to save'); return }
@@ -236,11 +281,67 @@ export default function AdminMixes() {
     load()
   }
 
-  // ── Toggle featured ──
-  const handleToggleFeatured = async (mix: ExternalMix) => {
-    const res = await fetch(`/api/admin/external-mixes/${mix.id}/featured`, { method: 'PATCH', headers: authHeaders() })
+  // ── Cover image (hosted mixes) ──
+  const handleUpdateCover = async (mix: HostedMix, file: File) => {
+    const fd = new FormData()
+    fd.append('cover', file)
+    const res = await fetch(`/api/admin/mixes/${mix.id}/cover`, { method: 'POST', headers: authHeaders(false), body: fd })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     load()
+  }
+
+  const handleRemoveCover = async (mix: HostedMix) => {
+    if (!confirm('Remove cover image?')) return
+    const res = await fetch(`/api/admin/mixes/${mix.id}/cover`, { method: 'DELETE', headers: authHeaders() })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    load()
+  }
+
+  // ── Toggle featured ──
+  const handleToggleFeatured = async (mix: AnyMix) => {
+    const toggleUrl = mix.kind === 'hosted'
+      ? `/api/admin/mixes/${mix.id}/featured`
+      : `/api/admin/external-mixes/${mix.id}/featured`
+    const res = await fetch(toggleUrl, { method: 'PATCH', headers: authHeaders() })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+
+    if (!mix.homeFeatured) {
+      // Enabling: assign next position using current count
+      const nextPos = allFeatured.length + 1
+      const orderUrl = mix.kind === 'hosted'
+        ? `/api/admin/mixes/${mix.id}/home-order`
+        : `/api/admin/external-mixes/${mix.id}/home-order`
+      await fetch(orderUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ order: nextPos }) })
+    } else {
+      // Disabling: fetch fresh data, then renumber remaining featured mixes 1..N
+      const [r1, r2] = await Promise.all([
+        fetch('/api/admin/mixes', { headers: authHeaders() }).then(r => r.json()),
+        fetch('/api/admin/external-mixes', { headers: authHeaders() }).then(r => r.json()),
+      ])
+      const remaining: AnyMix[] = [
+        ...r1.map((m: any) => ({ ...m, kind: 'hosted' as const })),
+        ...r2.map((m: any) => ({ ...m, kind: 'external' as const })),
+      ]
+        .filter((m: AnyMix) => m.homeFeatured)
+        .sort((a: AnyMix, b: AnyMix) => (a.homeDisplayOrder || 0) - (b.homeDisplayOrder || 0))
+
+      await Promise.all(remaining.map((m, i) => {
+        const orderUrl = m.kind === 'hosted'
+          ? `/api/admin/mixes/${m.id}/home-order`
+          : `/api/admin/external-mixes/${m.id}/home-order`
+        return fetch(orderUrl, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ order: i + 1 }) })
+      }))
+    }
+    await load()
+  }
+
+  // ── Set home display order ──
+  const handleSetHomeOrder = async (mix: AnyMix, order: number) => {
+    const url = mix.kind === 'hosted'
+      ? `/api/admin/mixes/${mix.id}/home-order`
+      : `/api/admin/external-mixes/${mix.id}/home-order`
+    await fetch(url, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ order }) })
+    await load()
   }
 
   // ── Delete ──
@@ -254,8 +355,8 @@ export default function AdminMixes() {
   }
 
   const allMixes: AnyMix[] = [...hostedMixes, ...externalMixes].sort((a, b) => (b.year || 0) - (a.year || 0))
-  const featuredVideos = externalMixes.filter(m => m.homeFeatured && m.embedType === 'youtube').length
-  const featuredAudio = externalMixes.filter(m => m.homeFeatured && m.embedType !== 'youtube').length
+  const allFeatured = allMixes.filter(m => m.homeFeatured)
+  const usedOrders = new Set(allFeatured.map(m => m.homeDisplayOrder))
   const addDetectedType = detectType(addForm.embedUrl)
   const editDetectedType = detectType(editForm.embedUrl)
 
@@ -313,13 +414,30 @@ export default function AdminMixes() {
           {addSourceType === 'hosted' ? (
             <>
               <input ref={fileRef} type="file" accept=".mp3,audio/*" hidden onChange={handleFileSelect} />
+              <input ref={coverRef} type="file" accept="image/*" hidden onChange={e => setSelectedCover(e.target.files?.[0] ?? null)} />
               <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => fileRef.current?.click()}>
-                Choose file
+                Choose MP3
               </button>
               <span style={{ fontSize: '0.85rem', color: selectedFile ? 'var(--color-text)' : 'var(--color-text-muted)', alignSelf: 'center' }}>
                 {selectedFile ? selectedFile.name : 'No file chosen'}
               </span>
-              <button className={styles.btn} onClick={handleUpload} disabled={!selectedFile || uploading} style={{ marginLeft: 'auto' }}>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => coverRef.current?.click()} style={{ marginLeft: 8 }}>
+                Cover image
+              </button>
+              <span style={{ fontSize: '0.85rem', color: selectedCover ? 'var(--color-text)' : 'var(--color-text-muted)', alignSelf: 'center' }}>
+                {selectedCover ? selectedCover.name : 'Optional'}
+              </span>
+              {uploadProgress !== null && (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ flex: 1, height: 6, background: '#2a2a2a', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--color-accent)', borderRadius: 3, transition: 'width 0.2s' }} />
+                  </div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums', minWidth: 36 }}>
+                    {uploadProgress}%
+                  </span>
+                </div>
+              )}
+              <button className={styles.btn} onClick={handleUpload} disabled={!selectedFile || uploading} style={{ marginLeft: uploadProgress !== null ? 0 : 'auto' }}>
                 {uploading ? 'Uploading…' : '↑ Upload'}
               </button>
             </>
@@ -333,8 +451,8 @@ export default function AdminMixes() {
 
       {/* ══ ZONE 2: Mixes table ══════════════════════════ */}
       <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-        Home page: <strong style={{ color: 'var(--color-accent)' }}>{featuredVideos}</strong> video{featuredVideos !== 1 ? 's' : ''} · <strong style={{ color: 'var(--color-accent)' }}>{featuredAudio}</strong> audio mix{featuredAudio !== 1 ? 'es' : ''} featured
-        <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle)</span>
+        Home page: <strong style={{ color: 'var(--color-accent)' }}>{allFeatured.length}</strong> mixes featured
+        <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle, then set position)</span>
       </div>
 
       {allMixes.length === 0 ? (
@@ -350,7 +468,6 @@ export default function AdminMixes() {
                 <th>Style</th>
                 <th>Event</th>
                 <th>City</th>
-                <th>Duration</th>
                 <th title="Show on home page">Home</th>
                 <th></th>
               </tr>
@@ -369,9 +486,8 @@ export default function AdminMixes() {
                     <td style={{ maxWidth: 240, wordBreak: 'break-word', lineHeight: '1.4' }}>{mix.style || '—'}</td>
                     <td>{mix.event || '—'}</td>
                     <td>{mix.city || '—'}</td>
-                    <td>{mix.kind === 'hosted' ? formatTime(mix.durationSeconds) : '—'}</td>
                     <td>
-                      {mix.kind === 'external' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <button
                           className={styles.iconBtn}
                           style={{ color: mix.homeFeatured ? 'var(--color-accent)' : undefined }}
@@ -380,18 +496,30 @@ export default function AdminMixes() {
                         >
                           <HomeIcon filled={mix.homeFeatured} />
                         </button>
-                      ) : (
-                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>—</span>
-                      )}
+                        {mix.homeFeatured && (
+                          <select
+                            value={mix.homeDisplayOrder || 1}
+                            title="Position on home page"
+                            style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4, color: 'var(--color-accent)', fontSize: '0.8rem', padding: '2px 4px' }}
+                            onChange={e => handleSetHomeOrder(mix, parseInt(e.target.value))}
+                          >
+                            {Array.from({ length: allFeatured.length }, (_, i) => i + 1).map(n => (
+                              <option key={n} value={n} disabled={usedOrders.has(n) && mix.homeDisplayOrder !== n}>
+                                #{n}{usedOrders.has(n) && mix.homeDisplayOrder !== n ? ' ✕' : ''}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <div className={styles.rowActions}>
-                        {mix.kind === 'external' && (
+                        {(mix.kind === 'external' || mix.kind === 'hosted') && (
                           <button
                             className={styles.iconBtn}
-                            style={{ color: editingMix?.id === mix.id ? 'var(--color-accent)' : undefined }}
-                            onClick={() => editingMix?.id === mix.id ? handleCancelEdit() : handleEdit(mix)}
-                            title={editingMix?.id === mix.id ? 'Close editor' : 'Edit'}
+                            style={{ color: editingMix?.id === mix.id && editingMix?.kind === mix.kind ? 'var(--color-accent)' : undefined }}
+                            onClick={() => editingMix?.id === mix.id && editingMix?.kind === mix.kind ? handleCancelEdit() : handleEdit(mix)}
+                            title={editingMix?.id === mix.id && editingMix?.kind === mix.kind ? 'Close editor' : 'Edit'}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -412,10 +540,11 @@ export default function AdminMixes() {
                   </tr>
 
                   {/* Inline edit row — appears directly under the selected mix */}
-                  {editingMix?.id === mix.id && mix.kind === 'external' && (
+                  {editingMix?.id === mix.id && editingMix?.kind === mix.kind && (
                     <tr key={`edit-${mix.id}`}>
                       <td colSpan={9} style={{ padding: 0, borderTop: '2px solid var(--color-accent)' }}>
                         <div style={{ background: '#0d0d0d', padding: '20px 24px' }}>
+                          {mix.kind === 'external' && (
                           <div style={{ marginBottom: 16 }}>
                             <label className={`${styles.label} ${styles.fullWidth}`}>
                               Embed URL
@@ -431,7 +560,27 @@ export default function AdminMixes() {
                               />
                             </label>
                           </div>
+                          )}
                           <MetaFields form={editForm} onChange={handleEditChange} />
+
+                          {mix.kind === 'hosted' && (
+                            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                              {mix.coverUrl && (
+                                <img src={mix.coverUrl} alt="cover" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4, border: '1px solid #2a2a2a' }} />
+                              )}
+                              <input ref={editCoverRef} type="file" accept="image/*" hidden
+                                onChange={e => { const f = e.target.files?.[0]; if (f) handleUpdateCover(mix as HostedMix, f) }} />
+                              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => editCoverRef.current?.click()} style={{ fontSize: '0.82rem' }}>
+                                {mix.coverUrl ? 'Replace cover' : 'Add cover'}
+                              </button>
+                              {mix.coverUrl && (
+                                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => handleRemoveCover(mix as HostedMix)} style={{ fontSize: '0.82rem', color: 'var(--color-danger, #e55)' }}>
+                                  Remove cover
+                                </button>
+                              )}
+                            </div>
+                          )}
+
                           {editError && <p className={styles.errorMsg}>{editError}</p>}
                           <div className={styles.formFooter}>
                             <button className={styles.btn} onClick={handleSaveEdit} disabled={saving}>
