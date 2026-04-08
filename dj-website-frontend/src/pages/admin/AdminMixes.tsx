@@ -67,14 +67,9 @@ function detectType(url: string): string {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  hosted: 'MP3',
-  youtube: 'YT',
-  soundcloud: 'SC',
-  mixcloud: 'MC',
-  other: '?',
+  hosted: 'MP3', youtube: 'YT', soundcloud: 'SC', mixcloud: 'MC', other: '?',
 }
 
-// ── Home icon for featured toggle ────────────────────────
 function HomeIcon({ filled }: { filled: boolean }) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'}
@@ -85,22 +80,61 @@ function HomeIcon({ filled }: { filled: boolean }) {
   )
 }
 
+// ── Shared metadata fields ───────────────────────────────
+function MetaFields({
+  form,
+  onChange,
+}: {
+  form: FormState
+  onChange: (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <div className={styles.formGrid}>
+      <label className={styles.label}>
+        Title *
+        <input className={styles.input} value={form.title} onChange={onChange('title')} placeholder="Live Mix @ Club" />
+      </label>
+      <label className={styles.label}>
+        Year
+        <input className={styles.input} type="number" value={form.year} onChange={onChange('year')} placeholder="2024" />
+      </label>
+      <label className={styles.label}>
+        Style / Genre
+        <input className={styles.input} value={form.style} onChange={onChange('style')} placeholder="RnB, Hip-Hop, House…" />
+      </label>
+      <label className={styles.label}>
+        Event
+        <input className={styles.input} value={form.event} onChange={onChange('event')} placeholder="Festival, Club Night…" />
+      </label>
+      <label className={styles.label}>
+        City
+        <input className={styles.input} value={form.city} onChange={onChange('city')} placeholder="Frankfurt" />
+      </label>
+    </div>
+  )
+}
+
 // ── Component ────────────────────────────────────────────
 export default function AdminMixes() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
+  const editRef = useRef<HTMLDivElement>(null)
 
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
 
-  const [sourceType, setSourceType] = useState<'hosted' | 'external'>('hosted')
-  const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  // ── Add form (always visible) ──
+  const [addSourceType, setAddSourceType] = useState<'hosted' | 'external'>('hosted')
+  const [addForm, setAddForm] = useState<FormState>(EMPTY_FORM)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [editing, setEditing] = useState<{ id: number } | null>(null)
-
   const [uploading, setUploading] = useState(false)
+  const [addError, setAddError] = useState('')
+
+  // ── Edit form (appears below table when a mix is selected) ──
+  const [editingMix, setEditingMix] = useState<ExternalMix | null>(null)
+  const [editForm, setEditForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [editError, setEditError] = useState('')
 
   // ── Load ──
   const load = async () => {
@@ -117,77 +151,94 @@ export default function AdminMixes() {
 
   useEffect(() => { load() }, [])
 
-  // ── Form helpers ──
-  const handleChange = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, [key]: e.target.value }))
+  // ── Add form handlers ──
+  const handleAddChange = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setAddForm(f => ({ ...f, [key]: e.target.value }))
 
-  const resetForm = () => {
-    setForm(EMPTY_FORM)
-    setEditing(null)
+  const resetAdd = () => {
+    setAddForm(EMPTY_FORM)
     setSelectedFile(null)
-    setError('')
+    setAddError('')
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const handleEdit = (mix: ExternalMix) => {
-    setEditing({ id: mix.id })
-    setSourceType('external')
-    setForm({ embedUrl: mix.embedUrl, title: mix.title, year: mix.year.toString(), style: mix.style, event: mix.event, city: mix.city })
-    setError('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  // ── File selection (no upload yet) ──
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
-    setSelectedFile(file)
-    setError('')
+    setSelectedFile(e.target.files?.[0] ?? null)
+    setAddError('')
   }
 
-  // ── Upload MP3 ──
   const handleUpload = async () => {
-    if (!selectedFile) { setError('Please choose a file first'); return }
-    if (!form.title.trim()) { setError('Title is required'); return }
-    setError(''); setUploading(true)
+    if (!selectedFile) { setAddError('Please choose a file first'); return }
+    if (!addForm.title.trim()) { setAddError('Title is required'); return }
+    setAddError(''); setUploading(true)
     const fd = new FormData()
     fd.append('file', selectedFile)
-    fd.append('title', form.title.trim())
-    fd.append('year', form.year || '0')
-    fd.append('style', form.style.trim())
-    fd.append('event', form.event.trim())
-    fd.append('city', form.city.trim())
+    fd.append('title', addForm.title.trim())
+    fd.append('year', addForm.year || '0')
+    fd.append('style', addForm.style.trim())
+    fd.append('event', addForm.event.trim())
+    fd.append('city', addForm.city.trim())
     const res = await fetch('/api/admin/mixes/upload', { method: 'POST', headers: authHeaders(false), body: fd })
     setUploading(false)
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
-    if (!res.ok) { setError('Upload failed'); return }
-    resetForm()
+    if (!res.ok) { setAddError('Upload failed'); return }
+    resetAdd()
     load()
   }
 
-  // ── Save external ──
-  const handleSaveExternal = async () => {
-    if (!form.embedUrl.trim()) { setError('Embed URL is required'); return }
-    if (!form.title.trim()) { setError('Title is required'); return }
-    setError(''); setSaving(true)
+  const handleAddExternal = async () => {
+    if (!addForm.embedUrl.trim()) { setAddError('Embed URL is required'); return }
+    if (!addForm.title.trim()) { setAddError('Title is required'); return }
+    setAddError(''); setUploading(true)
     const body = {
-      embedUrl: form.embedUrl.trim(),
-      title: form.title.trim(),
-      year: parseInt(form.year) || 0,
-      style: form.style.trim(),
-      event: form.event.trim(),
-      city: form.city.trim(),
+      embedUrl: addForm.embedUrl.trim(), title: addForm.title.trim(),
+      year: parseInt(addForm.year) || 0, style: addForm.style.trim(),
+      event: addForm.event.trim(), city: addForm.city.trim(),
     }
-    const url = editing ? `/api/admin/external-mixes/${editing.id}` : '/api/admin/external-mixes'
-    const method = editing ? 'PUT' : 'POST'
-    const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) })
+    const res = await fetch('/api/admin/external-mixes', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) })
+    setUploading(false)
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    if (!res.ok) { setAddError('Failed to save'); return }
+    resetAdd()
+    load()
+  }
+
+  // ── Edit form handlers ──
+  const handleEditChange = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEditForm(f => ({ ...f, [key]: e.target.value }))
+
+  const handleEdit = (mix: ExternalMix) => {
+    setEditingMix(mix)
+    setEditForm({ embedUrl: mix.embedUrl, title: mix.title, year: mix.year.toString(), style: mix.style, event: mix.event, city: mix.city })
+    setEditError('')
+    setTimeout(() => editRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingMix(null)
+    setEditForm(EMPTY_FORM)
+    setEditError('')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingMix) return
+    if (!editForm.embedUrl.trim()) { setEditError('Embed URL is required'); return }
+    if (!editForm.title.trim()) { setEditError('Title is required'); return }
+    setEditError(''); setSaving(true)
+    const body = {
+      embedUrl: editForm.embedUrl.trim(), title: editForm.title.trim(),
+      year: parseInt(editForm.year) || 0, style: editForm.style.trim(),
+      event: editForm.event.trim(), city: editForm.city.trim(),
+    }
+    const res = await fetch(`/api/admin/external-mixes/${editingMix.id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) })
     setSaving(false)
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
-    if (!res.ok) { setError('Failed to save'); return }
-    resetForm()
+    if (!res.ok) { setEditError('Failed to save'); return }
+    handleCancelEdit()
     load()
   }
 
-  // ── Toggle featured on home ──
+  // ── Toggle featured ──
   const handleToggleFeatured = async (mix: ExternalMix) => {
     const res = await fetch(`/api/admin/external-mixes/${mix.id}/featured`, { method: 'PATCH', headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
@@ -197,24 +248,18 @@ export default function AdminMixes() {
   // ── Delete ──
   const handleDelete = async (mix: AnyMix) => {
     if (!confirm('Delete this mix?')) return
-    const url = mix.kind === 'hosted'
-      ? `/api/admin/mixes/${mix.id}`
-      : `/api/admin/external-mixes/${mix.id}`
+    const url = mix.kind === 'hosted' ? `/api/admin/mixes/${mix.id}` : `/api/admin/external-mixes/${mix.id}`
     const res = await fetch(url, { method: 'DELETE', headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
-    if (editing && mix.kind === 'external' && editing.id === mix.id) resetForm()
+    if (editingMix?.id === (mix as ExternalMix).id) handleCancelEdit()
     load()
   }
 
-  // ── Combined list sorted by year desc ──
-  const allMixes: AnyMix[] = [
-    ...hostedMixes,
-    ...externalMixes,
-  ].sort((a, b) => (b.year || 0) - (a.year || 0))
-
+  const allMixes: AnyMix[] = [...hostedMixes, ...externalMixes].sort((a, b) => (b.year || 0) - (a.year || 0))
   const featuredVideos = externalMixes.filter(m => m.homeFeatured && m.embedType === 'youtube').length
   const featuredAudio = externalMixes.filter(m => m.homeFeatured && m.embedType !== 'youtube').length
-  const detectedType = detectType(form.embedUrl)
+  const addDetectedType = detectType(addForm.embedUrl)
+  const editDetectedType = detectType(editForm.embedUrl)
 
   return (
     <div>
@@ -222,84 +267,53 @@ export default function AdminMixes() {
         <h2 className={styles.panelTitle}>Mixes</h2>
       </div>
 
-      {/* ── Add / Edit form ── */}
-      <div className={`${styles.form} ${editing ? styles.formEdit : ''}`}>
-        <h3 className={styles.formTitle}>
-          {editing ? (
-            <span>Edit Mix <span style={{ color: 'var(--color-accent)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>— {form.title || '…'}</span></span>
-          ) : 'Add Mix'}
-        </h3>
+      {/* ══ ZONE 1: Add Mix ══════════════════════════════ */}
+      <div className={styles.form}>
+        <h3 className={styles.formTitle}>Add Mix</h3>
 
-        {/* Source toggle (only when not editing) */}
-        {!editing && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            <button
-              className={`${styles.btn} ${sourceType === 'hosted' ? '' : styles.btnGhost}`}
-              onClick={() => { setSourceType('hosted'); setError('') }}
-              style={{ fontSize: '0.85rem' }}
-            >
-              ↑ Upload MP3
-            </button>
-            <button
-              className={`${styles.btn} ${sourceType === 'external' ? '' : styles.btnGhost}`}
-              onClick={() => { setSourceType('external'); setError('') }}
-              style={{ fontSize: '0.85rem' }}
-            >
-              🔗 External Link
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <button
+            className={`${styles.btn} ${addSourceType === 'hosted' ? '' : styles.btnGhost}`}
+            onClick={() => { setAddSourceType('hosted'); setAddError('') }}
+            style={{ fontSize: '0.85rem' }}
+          >
+            ↑ Upload MP3
+          </button>
+          <button
+            className={`${styles.btn} ${addSourceType === 'external' ? '' : styles.btnGhost}`}
+            onClick={() => { setAddSourceType('external'); setAddError('') }}
+            style={{ fontSize: '0.85rem' }}
+          >
+            🔗 External Link
+          </button>
+        </div>
 
-        {/* External URL */}
-        {sourceType === 'external' && (
+        {addSourceType === 'external' && (
           <div style={{ marginBottom: 16 }}>
             <label className={`${styles.label} ${styles.fullWidth}`}>
               Embed URL *
-              {detectedType && (
+              {addDetectedType && (
                 <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--color-accent)' }}>
-                  {detectedType.toUpperCase()}
+                  {addDetectedType.toUpperCase()}
                 </span>
               )}
               <input
                 className={styles.input}
-                value={form.embedUrl}
-                onChange={handleChange('embedUrl')}
+                value={addForm.embedUrl}
+                onChange={handleAddChange('embedUrl')}
                 placeholder="https://www.youtube.com/embed/… or SoundCloud / Mixcloud player URL"
               />
             </label>
           </div>
         )}
 
-        {/* Common metadata */}
-        <div className={styles.formGrid}>
-          <label className={styles.label}>
-            Title *
-            <input className={styles.input} value={form.title} onChange={handleChange('title')} placeholder="Live Mix @ Club" />
-          </label>
-          <label className={styles.label}>
-            Year
-            <input className={styles.input} type="number" value={form.year} onChange={handleChange('year')} placeholder="2024" />
-          </label>
-          <label className={styles.label}>
-            Style / Genre
-            <input className={styles.input} value={form.style} onChange={handleChange('style')} placeholder="RnB, Hip-Hop, House…" />
-          </label>
-          <label className={styles.label}>
-            Event
-            <input className={styles.input} value={form.event} onChange={handleChange('event')} placeholder="Festival, Club Night…" />
-          </label>
-          <label className={styles.label}>
-            City
-            <input className={styles.input} value={form.city} onChange={handleChange('city')} placeholder="Frankfurt" />
-          </label>
-        </div>
+        <MetaFields form={addForm} onChange={handleAddChange} />
 
-        {error && <p className={styles.errorMsg}>{error}</p>}
+        {addError && <p className={styles.errorMsg}>{addError}</p>}
 
         <div className={styles.formFooter}>
-          {sourceType === 'hosted' && !editing ? (
+          {addSourceType === 'hosted' ? (
             <>
-              {/* Step 1: choose file */}
               <input ref={fileRef} type="file" accept=".mp3,audio/*" hidden onChange={handleFileSelect} />
               <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => fileRef.current?.click()}>
                 Choose file
@@ -307,42 +321,28 @@ export default function AdminMixes() {
               <span style={{ fontSize: '0.85rem', color: selectedFile ? 'var(--color-text)' : 'var(--color-text-muted)', alignSelf: 'center' }}>
                 {selectedFile ? selectedFile.name : 'No file chosen'}
               </span>
-              {/* Step 2: upload */}
-              <button
-                className={styles.btn}
-                onClick={handleUpload}
-                disabled={!selectedFile || uploading}
-                style={{ marginLeft: 'auto' }}
-              >
+              <button className={styles.btn} onClick={handleUpload} disabled={!selectedFile || uploading} style={{ marginLeft: 'auto' }}>
                 {uploading ? 'Uploading…' : '↑ Upload'}
               </button>
             </>
           ) : (
-            <>
-              <button className={styles.btn} onClick={handleSaveExternal} disabled={saving}>
-                {saving ? 'Saving…' : editing ? '✓ Update' : '+ Add Mix'}
-              </button>
-              {editing && (
-                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={resetForm}>
-                  Cancel
-                </button>
-              )}
-            </>
+            <button className={styles.btn} onClick={handleAddExternal} disabled={uploading}>
+              {uploading ? 'Saving…' : '+ Add Mix'}
+            </button>
           )}
         </div>
       </div>
 
-      {/* ── Home page featured summary ── */}
-      <div style={{ marginBottom: 16, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+      {/* ══ ZONE 2: Mixes table ══════════════════════════ */}
+      <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
         Home page: <strong style={{ color: 'var(--color-accent)' }}>{featuredVideos}</strong> video{featuredVideos !== 1 ? 's' : ''} · <strong style={{ color: 'var(--color-accent)' }}>{featuredAudio}</strong> audio mix{featuredAudio !== 1 ? 'es' : ''} featured
-        <span style={{ marginLeft: 8, opacity: 0.7 }}>(click <HomeIcon filled={true} /> to toggle)</span>
+        <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle)</span>
       </div>
 
-      {/* ── Combined list ── */}
       {allMixes.length === 0 ? (
         <p className={styles.empty}>No mixes yet.</p>
       ) : (
-        <div className={styles.tableWrap}>
+        <div className={styles.tableWrap} style={{ marginBottom: editingMix ? 32 : 0 }}>
           <table className={styles.table}>
             <thead>
               <tr>
@@ -359,7 +359,10 @@ export default function AdminMixes() {
             </thead>
             <tbody>
               {allMixes.map(mix => (
-                <tr key={`${mix.kind}-${mix.id}`} style={{ opacity: editing && mix.kind === 'external' && editing.id === mix.id ? 0.5 : 1 }}>
+                <tr
+                  key={`${mix.kind}-${mix.id}`}
+                  style={{ background: editingMix?.id === (mix as ExternalMix).id && mix.kind === 'external' ? '#0a1a0a' : undefined }}
+                >
                   <td>
                     <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.05em' }}>
                       {mix.kind === 'hosted' ? 'MP3' : (TYPE_LABEL[mix.embedType] ?? '?')}
@@ -388,7 +391,12 @@ export default function AdminMixes() {
                   <td>
                     <div className={styles.rowActions}>
                       {mix.kind === 'external' && (
-                        <button className={styles.iconBtn} onClick={() => handleEdit(mix)} title="Edit">
+                        <button
+                          className={styles.iconBtn}
+                          style={{ color: editingMix?.id === mix.id ? 'var(--color-accent)' : undefined }}
+                          onClick={() => editingMix?.id === mix.id ? handleCancelEdit() : handleEdit(mix)}
+                          title={editingMix?.id === mix.id ? 'Close editor' : 'Edit'}
+                        >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -409,6 +417,47 @@ export default function AdminMixes() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ══ ZONE 3: Edit Mix (below table, only when editing) ════ */}
+      {editingMix && (
+        <div ref={editRef} className={`${styles.form} ${styles.formEdit}`}>
+          <h3 className={styles.formTitle}>
+            Edit Mix —{' '}
+            <span style={{ color: 'var(--color-accent)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
+              {editingMix.title}
+            </span>
+          </h3>
+
+          <div style={{ marginBottom: 16 }}>
+            <label className={`${styles.label} ${styles.fullWidth}`}>
+              Embed URL
+              {editDetectedType && (
+                <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--color-accent)' }}>
+                  {editDetectedType.toUpperCase()}
+                </span>
+              )}
+              <input
+                className={styles.input}
+                value={editForm.embedUrl}
+                onChange={handleEditChange('embedUrl')}
+              />
+            </label>
+          </div>
+
+          <MetaFields form={editForm} onChange={handleEditChange} />
+
+          {editError && <p className={styles.errorMsg}>{editError}</p>}
+
+          <div className={styles.formFooter}>
+            <button className={styles.btn} onClick={handleSaveEdit} disabled={saving}>
+              {saving ? 'Saving…' : '✓ Update'}
+            </button>
+            <button className={`${styles.btn} ${styles.btnGhost}`} onClick={handleCancelEdit}>
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>
