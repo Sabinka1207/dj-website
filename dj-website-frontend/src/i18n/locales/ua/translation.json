@@ -18,6 +18,10 @@
   "mixes": {
     "title": "Мікси"
   },
+  "mixesPage": {
+    "title": "Мікси",
+    "empty": "Міксів ще не завантажено."
+  },
   "gallery": {
     "title": "Галерея",
     "pressPhotos": "Прес-фото",

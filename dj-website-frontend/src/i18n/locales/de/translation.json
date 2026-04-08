@@ -18,6 +18,10 @@
   "mixes": {
     "title": "Mixes"
   },
+  "mixesPage": {
+    "title": "Mixes",
+    "empty": "Noch keine Mixes hochgeladen."
+  },
   "gallery": {
     "title": "Galerie",
     "pressPhotos": "Pressefotos",

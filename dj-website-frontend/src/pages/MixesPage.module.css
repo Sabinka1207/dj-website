@@ -1,0 +1,37 @@
+.page {
+  min-height: 100vh;
+  padding: 100px 24px 80px;
+  background: var(--color-bg);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 48px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-accent);
+  display: inline-block;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 80px 16px 60px;
+  }
+}
