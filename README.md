@@ -73,6 +73,7 @@ dj-website/
     │   ├── AdminAuthController.kt
     │   ├── AdminAuthService.kt
     │   ├── CloudinaryConfig.kt
+    │   ├── R2Config.kt                 ← Cloudflare R2 S3Client bean (mix audio storage)
     │   ├── CorsConfig.kt
     │   ├── EmailService.kt
     │   └── TelegramService.kt
@@ -113,9 +114,14 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `DB_DIALECT`            | `org.hibernate.dialect.PostgreSQLDialect`    |
 | `ADMIN_PASSWORD`        | Password for admin login at `/admin`         |
 | `ADMIN_GOOGLE_EMAIL`    | Gmail address allowed to log in via Google   |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (photo storage)        |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (cover images)         |
 | `CLOUDINARY_API_KEY`    | Cloudinary API key                           |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret                        |
+| `R2_ACCOUNT_ID`         | Cloudflare account ID                        |
+| `R2_ACCESS_KEY_ID`      | R2 API token access key (mix audio)          |
+| `R2_SECRET_ACCESS_KEY`  | R2 API token secret                          |
+| `R2_BUCKET_NAME`        | R2 bucket name (e.g. `dj-sabi-mixes`)       |
+| `R2_PUBLIC_URL`         | Public bucket URL (e.g. `https://pub-xxx.r2.dev`) |
 
 ### Frontend (Vercel env vars — set in Vercel dashboard)
 
@@ -242,12 +248,12 @@ Left sidebar navigation:
 The site supports two types of mixes:
 
 ### Hosted mixes (MP3 uploaded directly)
-- Upload via `/admin/mixes` — file stored on Cloudinary (`dj-sabi/mixes`, `resource_type: video`)
-- Optional cover image stored on Cloudinary (`dj-sabi/mix-covers`)
+- Upload via `/admin/mixes` — audio file stored on **Cloudflare R2** (zero egress cost, S3-compatible)
+- Optional cover image stored on **Cloudinary** (`dj-sabi/mix-covers`)
 - Cover falls back to the DJ Sabi logo if not set
-- Duration auto-extracted from Cloudinary upload response
+- Duration measured client-side (browser `<audio>` element) before upload
 - Rendered with a custom HTML5 audio player (play/pause, seekable progress bar, volume control, download button)
-- Deleting a mix removes both the audio and cover image from Cloudinary
+- Deleting a mix removes audio from R2 and cover image from Cloudinary
 
 ### External mixes (YouTube / Mixcloud / SoundCloud)
 - Add via `/admin/external-mixes` — paste any direct URL, it's auto-converted to the correct embed URL server-side:

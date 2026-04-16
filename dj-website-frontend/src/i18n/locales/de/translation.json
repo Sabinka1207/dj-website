@@ -144,5 +144,8 @@
     "message": "Diese Website verwendet Cookies für eingebettete Inhalte.",
     "accept": "Akzeptieren",
     "decline": "Ablehnen"
+  },
+  "common": {
+    "warmup": "Server startet… dies kann bis zu 90 Sekunden dauern"
   }
 }
