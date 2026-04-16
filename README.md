@@ -66,8 +66,10 @@ dj-website/
     │   ├── UnavailableDateController.kt
     │   ├── MixController.kt            ← public hosted mixes + featured endpoint
     │   ├── AdminMixController.kt       ← upload/edit/delete/reorder hosted mixes + cover management
+    │   ├── AdminCloudinaryController.kt ← GET /api/admin/cloudinary-usage (storage/bandwidth stats)
     │   ├── ExternalMixController.kt    ← public external mixes + featured endpoint
     │   ├── AdminExternalMixController.kt ← CRUD for external mixes, auto URL conversion
+    │   ├── ClientErrorController.kt    ← POST /api/client-error (frontend JS crash reporting → Telegram)
     │   ├── AdminAuthController.kt
     │   ├── AdminAuthService.kt
     │   ├── CloudinaryConfig.kt
@@ -102,6 +104,7 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `CONTACT_EMAIL`         | Where booking emails are delivered           |
 | `TELEGRAM_BOT_TOKEN`    | Telegram bot token from @BotFather           |
 | `TELEGRAM_CHAT_ID`      | Your Telegram user/chat ID                   |
+| `APP_ENV`               | Environment tag in error alerts: `prod` or `stage` (default: `prod`) |
 | `VERCEL_URL`            | Vercel domain (set in Render env vars only)  |
 | `DATABASE_URL`          | `jdbc:postgresql://aws-1-*.pooler.supabase.com:5432/postgres?sslmode=require` — use session pooler URL |
 | `DB_USERNAME`           | `postgres.your-project-ref` (from Supabase session pooler connection string) |
@@ -216,8 +219,9 @@ Left sidebar navigation:
 - **Events** (`/admin/events`) — create, edit, delete gig bookings
 - **Availability** (`/admin/availability`) — block specific dates so they appear greyed-out and non-clickable in the public events calendar
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
-- **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudinary), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from Cloudinary too), drag to reorder. Toggle which mixes appear on the home page and set their display order.
+- **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudinary), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from Cloudinary too). Click any column header (Type, Title, Year, Style, Event, City, Home) to sort. Toggle which mixes appear on the home page and set their display order.
 - **External Mixes** (`/admin/external-mixes`) — add YouTube, Mixcloud, or SoundCloud mixes by pasting any direct URL (auto-converted to embed URL server-side). Edit metadata, toggle home page featuring with ordering.
+- **Tools** (`/admin/tools`) — quick links to all services (Vercel, Render, Supabase, Cloudinary, etc.) plus a live Cloudinary storage/bandwidth/objects usage panel fetched from the Cloudinary Admin API.
 
 ### Google Sign-In setup
 
@@ -478,3 +482,5 @@ cd dj-website-backend
 | PATCH  | /api/admin/external-mixes/:id/featured | Toggle home page featuring                         |
 | PATCH  | /api/admin/external-mixes/:id/home-order | Set home display order                           |
 | DELETE | /api/admin/external-mixes/:id          | Delete external mix                                |
+| GET    | /api/admin/cloudinary-usage            | Cloudinary storage, bandwidth, objects usage stats |
+| POST   | /api/client-error                      | Report frontend JS error → Telegram (rate-limited) |
