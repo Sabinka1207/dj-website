@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
 type Tool = {
@@ -27,7 +30,48 @@ const TOOLS: Tool[] = [
 
 const CATEGORIES = [...new Set(TOOLS.map(t => t.category))]
 
+type CloudinaryUsage = {
+  storageBytesUsed: number
+  storageBytesLimit: number
+  storagePercent: number
+  objectCount: number
+  bandwidthBytesUsed: number
+  bandwidthBytesLimit: number
+  plan: string
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return `${(bytes / Math.pow(1024, i)).toFixed(i >= 2 ? 1 : 0)} ${units[i]}`
+}
+
+function UsageBar({ percent }: { percent: number }) {
+  const color = percent > 80 ? '#e55' : percent > 50 ? 'var(--color-accent)' : '#4a9'
+  return (
+    <div style={{ height: 4, background: '#2a2a2a', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
+      <div style={{ width: `${Math.min(percent, 100)}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.4s ease' }} />
+    </div>
+  )
+}
+
 export default function AdminTools() {
+  const navigate = useNavigate()
+  const [usage, setUsage] = useState<CloudinaryUsage | null>(null)
+  const [usageError, setUsageError] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/admin/cloudinary-usage', { headers: authHeaders() })
+      .then(res => {
+        if (res.status === 401) { clearToken(); navigate('/admin/login'); return null }
+        if (!res.ok) { setUsageError(true); return null }
+        return res.json()
+      })
+      .then(data => { if (data) setUsage(data) })
+      .catch(() => setUsageError(true))
+  }, [])
+
   return (
     <>
       <div className={styles.panelHeader}>
@@ -36,6 +80,46 @@ export default function AdminTools() {
       <p className={styles.muted} style={{ marginBottom: 32, fontSize: '0.85rem' }}>
         Quick access to all services used by this website.
       </p>
+
+      {/* Cloudinary storage usage */}
+      <div style={{ marginBottom: 40 }}>
+        <p className={styles.sectionLabel}>Cloudinary Storage</p>
+        {usageError ? (
+          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Could not load usage data.</p>
+        ) : !usage ? (
+          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Loading…</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+            <div className={styles.toolCard} style={{ cursor: 'default' }}>
+              <span className={styles.toolName}>Storage</span>
+              <span className={styles.toolDesc}>
+                {formatBytes(usage.storageBytesUsed)} / {formatBytes(usage.storageBytesLimit)}
+              </span>
+              <UsageBar percent={usage.storagePercent} />
+              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
+                {usage.storagePercent.toFixed(1)}% used
+              </span>
+            </div>
+            <div className={styles.toolCard} style={{ cursor: 'default' }}>
+              <span className={styles.toolName}>Objects</span>
+              <span className={styles.toolDesc}>{usage.objectCount.toLocaleString()} files</span>
+            </div>
+            <div className={styles.toolCard} style={{ cursor: 'default' }}>
+              <span className={styles.toolName}>Bandwidth</span>
+              <span className={styles.toolDesc}>
+                {formatBytes(usage.bandwidthBytesUsed)} / {formatBytes(usage.bandwidthBytesLimit)}
+              </span>
+              <UsageBar percent={(usage.bandwidthBytesUsed / usage.bandwidthBytesLimit) * 100} />
+            </div>
+            {usage.plan && (
+              <div className={styles.toolCard} style={{ cursor: 'default' }}>
+                <span className={styles.toolName}>Plan</span>
+                <span className={styles.toolDesc}>{usage.plan}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {CATEGORIES.map(category => (
         <div key={category} style={{ marginBottom: 36 }}>
