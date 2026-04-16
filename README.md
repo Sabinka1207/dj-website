@@ -267,13 +267,26 @@ Both types can be featured on the home page. Toggle the home icon in the admin t
 
 ---
 
-## Photo storage (Cloudinary)
+## Media storage
 
-Gallery photos are stored on Cloudinary (free tier: 25 GB storage, 25 GB/month bandwidth). Upload originals — Cloudinary auto-compresses and optimizes.
+### Gallery photos & mix covers — Cloudinary
+
+Gallery photos and mix cover images are stored on Cloudinary (free tier: 25 GB storage, 25 GB/month bandwidth). Upload originals — Cloudinary auto-compresses and optimizes.
 
 Setup: cloudinary.com → free account → Dashboard → copy Cloud name, API Key, API Secret → set as `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` on the backend.
 
 The public gallery falls back to static bundled images if the API returns nothing (useful during local dev without Cloudinary configured).
+
+### Mix audio files — Cloudflare R2
+
+MP3 files are stored on Cloudflare R2 (S3-compatible, zero egress cost — no charge when visitors stream).
+
+Setup:
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → R2 → Create bucket (e.g. `dj-sabi-mixes`)
+2. Bucket Settings → Enable **Public Access** → copy the `pub-xxx.r2.dev` URL → set as `R2_PUBLIC_URL`
+3. R2 → Manage R2 API Tokens → Create API Token → Object Read & Write on your bucket
+4. Copy Access Key ID and Secret Access Key → set as `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`
+5. Set `R2_ACCOUNT_ID` (Cloudflare account ID from the dashboard URL) and `R2_BUCKET_NAME`
 
 ---
 
