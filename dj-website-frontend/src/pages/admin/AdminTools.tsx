@@ -40,6 +40,10 @@ type CloudinaryUsage = {
   plan: string
 }
 
+// Cloudinary Free plan limits (API does not return them reliably)
+const FREE_STORAGE_BYTES = 25 * 1024 * 1024 * 1024   // 25 GB
+const FREE_BANDWIDTH_BYTES = 25 * 1024 * 1024 * 1024  // 25 GB
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -93,11 +97,11 @@ export default function AdminTools() {
             <div className={styles.toolCard} style={{ cursor: 'default' }}>
               <span className={styles.toolName}>Storage</span>
               <span className={styles.toolDesc}>
-                {formatBytes(usage.storageBytesUsed)} / {formatBytes(usage.storageBytesLimit)}
+                {formatBytes(usage.storageBytesUsed)} / {formatBytes(FREE_STORAGE_BYTES)}
               </span>
-              <UsageBar percent={usage.storagePercent} />
+              <UsageBar percent={(usage.storageBytesUsed / FREE_STORAGE_BYTES) * 100} />
               <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
-                {usage.storagePercent.toFixed(1)}% used
+                {((usage.storageBytesUsed / FREE_STORAGE_BYTES) * 100).toFixed(1)}% used
               </span>
             </div>
             <div className={styles.toolCard} style={{ cursor: 'default' }}>
@@ -107,9 +111,12 @@ export default function AdminTools() {
             <div className={styles.toolCard} style={{ cursor: 'default' }}>
               <span className={styles.toolName}>Bandwidth</span>
               <span className={styles.toolDesc}>
-                {formatBytes(usage.bandwidthBytesUsed)} / {formatBytes(usage.bandwidthBytesLimit)}
+                {formatBytes(usage.bandwidthBytesUsed)} / {formatBytes(FREE_BANDWIDTH_BYTES)}
               </span>
-              <UsageBar percent={(usage.bandwidthBytesUsed / usage.bandwidthBytesLimit) * 100} />
+              <UsageBar percent={(usage.bandwidthBytesUsed / FREE_BANDWIDTH_BYTES) * 100} />
+              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
+                {((usage.bandwidthBytesUsed / FREE_BANDWIDTH_BYTES) * 100).toFixed(1)}% used
+              </span>
             </div>
             {usage.plan && (
               <div className={styles.toolCard} style={{ cursor: 'default' }}>
