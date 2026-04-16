@@ -16,7 +16,8 @@ const TOOLS: Tool[] = [
   { name: 'Render', description: 'Backend hosting & deployments', url: 'https://dashboard.render.com', category: 'Hosting' },
   { name: 'Supabase', description: 'PostgreSQL database', url: 'https://supabase.com/dashboard', category: 'Hosting' },
   // Media & Docs
-  { name: 'Cloudinary', description: 'Photos & media storage', url: 'https://console.cloudinary.com', category: 'Media & Docs' },
+  { name: 'Cloudinary', description: 'Cover images storage', url: 'https://console.cloudinary.com', category: 'Media & Docs' },
+  { name: 'Cloudflare R2', description: 'Mix audio files (zero egress)', url: 'https://dash.cloudflare.com/?to=/:account/r2', category: 'Media & Docs' },
   // Notifications & email
   { name: 'Resend', description: 'Transactional email (booking notifications)', url: 'https://resend.com/emails', category: 'Email & Notifications' },
   { name: 'Telegram Bot', description: 'Bot for booking alerts', url: 'https://t.me/BotFather', category: 'Email & Notifications' },
