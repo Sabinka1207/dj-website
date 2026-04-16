@@ -376,21 +376,36 @@ export default function AdminMixes() {
       <div className={styles.form}>
         <h3 className={styles.formTitle}>Add Mix</h3>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          <button
-            className={`${styles.btn} ${addSourceType === 'hosted' ? '' : styles.btnGhost}`}
-            onClick={() => { setAddSourceType('hosted'); setAddError('') }}
-            style={{ fontSize: '0.85rem' }}
-          >
-            ↑ Upload MP3
-          </button>
-          <button
-            className={`${styles.btn} ${addSourceType === 'external' ? '' : styles.btnGhost}`}
-            onClick={() => { setAddSourceType('external'); setAddError('') }}
-            style={{ fontSize: '0.85rem' }}
-          >
-            🔗 External Link
-          </button>
+        <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 24 }}>
+          {([
+            { type: 'hosted', label: '↑ Upload MP3' },
+            { type: 'external', label: '🔗 External Link' },
+          ] as const).map(({ type, label }) => {
+            const active = addSourceType === type
+            return (
+              <button
+                key={type}
+                onClick={() => { setAddSourceType(type); setAddError('') }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
+                  color: active ? 'var(--color-text)' : 'var(--color-text-muted)',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.82rem',
+                  fontWeight: active ? 600 : 400,
+                  letterSpacing: '0.05em',
+                  marginBottom: -1,
+                  padding: '8px 16px',
+                  transition: 'color 0.15s, border-color 0.15s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
         </div>
 
         {addSourceType === 'external' && (
