@@ -20,6 +20,15 @@ class TelegramService(
     private val berlin = ZoneId.of("Europe/Berlin")
     private val fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
 
+    fun sendErrorAlert(title: String, detail: String) {
+        val receivedAt = ZonedDateTime.now(berlin).format(fmt)
+        val text = "🚨 *Error — $receivedAt*\n\n*$title*\n\n$detail".take(4000)
+        val url = "https://api.telegram.org/bot$botToken/sendMessage"
+        val body = mapOf("chat_id" to chatId, "text" to text, "parse_mode" to "Markdown")
+        val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON }
+        runCatching { rest.postForObject(url, HttpEntity(body, headers), String::class.java) }
+    }
+
     fun sendNotification(req: ContactRequest) {
         val receivedAt = ZonedDateTime.now(berlin).format(fmt)
         val header = when (req.source) {
