@@ -4,10 +4,16 @@ import com.cloudinary.Cloudinary
 import com.djsabi.backend.model.Mix
 import com.djsabi.backend.repository.MixRepository
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import java.util.UUID
 
 data class MixAdminResponse(
     val id: Long,
@@ -32,7 +38,10 @@ data class MixReorderItem(val id: Long, val displayOrder: Int)
 class AdminMixController(
     private val mixRepository: MixRepository,
     private val cloudinary: Cloudinary,
-    private val authService: AdminAuthService
+    private val authService: AdminAuthService,
+    private val s3Client: S3Client,
+    @Value("\${r2.bucket-name}") private val r2BucketName: String,
+    @Value("\${r2.public-url}") private val r2PublicUrl: String
 ) {
 
     private fun authorized(req: HttpServletRequest): Boolean {
@@ -60,15 +69,25 @@ class AdminMixController(
         @RequestParam("style") style: String,
         @RequestParam("event", defaultValue = "") event: String,
         @RequestParam("city", defaultValue = "") city: String,
+        @RequestParam("durationSeconds", defaultValue = "0") durationSeconds: Int,
         req: HttpServletRequest
     ): ResponseEntity<MixAdminResponse> {
         if (!authorized(req)) return ResponseEntity.status(401).build()
 
-        // Stream via temp file — avoids loading the entire MP3 into heap memory
+        // Stream via temp file to R2 — avoids loading the entire MP3 into heap memory
+        val key = "mixes/${UUID.randomUUID()}.mp3"
         val tempFile = kotlin.io.path.createTempFile("mix-", ".tmp").toFile()
-        val result = try {
+        val url = try {
             file.transferTo(tempFile)
-            cloudinary.uploader().upload(tempFile, mapOf("folder" to "dj-sabi/mixes", "resource_type" to "video"))
+            s3Client.putObject(
+                PutObjectRequest.builder()
+                    .bucket(r2BucketName)
+                    .key(key)
+                    .contentType("audio/mpeg")
+                    .build(),
+                RequestBody.fromFile(tempFile)
+            )
+            "$r2PublicUrl/$key"
         } finally {
             tempFile.delete()
         }
@@ -84,20 +103,19 @@ class AdminMixController(
             coverPublicId = coverResult["public_id"] as String
         }
 
-        val duration = ((result["duration"] as? Number)?.toDouble() ?: 0.0).toInt()
         val maxOrder = mixRepository.findAll().maxOfOrNull { it.displayOrder } ?: -1
 
         val mix = mixRepository.save(
             Mix(
-                publicId = result["public_id"] as String,
-                url = result["secure_url"] as String,
+                publicId = key,
+                url = url,
                 coverUrl = coverUrl,
                 title = title,
                 year = year,
                 style = style,
                 event = event,
                 city = city,
-                durationSeconds = duration,
+                durationSeconds = durationSeconds,
                 displayOrder = maxOrder + 1,
                 coverPublicId = coverPublicId
             )
@@ -182,7 +200,9 @@ class AdminMixController(
     fun delete(@PathVariable id: Long, req: HttpServletRequest): ResponseEntity<Void> {
         if (!authorized(req)) return ResponseEntity.status(401).build()
         val mix = mixRepository.findById(id).orElse(null) ?: return ResponseEntity.notFound().build()
-        cloudinary.uploader().destroy(mix.publicId, mapOf("resource_type" to "video"))
+        if (mix.publicId.isNotBlank()) {
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build())
+        }
         if (mix.coverPublicId.isNotBlank()) {
             cloudinary.uploader().destroy(mix.coverPublicId, mapOf("resource_type" to "image"))
         }

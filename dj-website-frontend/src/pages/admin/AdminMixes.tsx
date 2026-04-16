@@ -55,6 +55,15 @@ const EMPTY_FORM: FormState = {
 }
 
 // ── Helpers ──────────────────────────────────────────────
+function getDuration(file: File): Promise<number> {
+  return new Promise(resolve => {
+    const audio = new Audio()
+    audio.src = URL.createObjectURL(file)
+    audio.onloadedmetadata = () => { resolve(Math.round(audio.duration)); URL.revokeObjectURL(audio.src) }
+    audio.onerror = () => { URL.revokeObjectURL(audio.src); resolve(0) }
+  })
+}
+
 function formatTime(seconds: number): string {
   if (!seconds) return '—'
   const m = Math.floor(seconds / 60)
@@ -177,10 +186,12 @@ export default function AdminMixes() {
     setAddError('')
   }
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) { setAddError('Please choose a file first'); return }
     if (!addForm.title.trim()) { setAddError('Title is required'); return }
     setAddError(''); setUploading(true); setUploadProgress(0)
+
+    const duration = await getDuration(selectedFile)
 
     const fd = new FormData()
     fd.append('file', selectedFile)
@@ -190,6 +201,7 @@ export default function AdminMixes() {
     fd.append('style', addForm.style.trim())
     fd.append('event', addForm.event.trim())
     fd.append('city', addForm.city.trim())
+    fd.append('durationSeconds', duration.toString())
 
     const xhr = new XMLHttpRequest()
     xhr.open('POST', '/api/admin/mixes/upload')

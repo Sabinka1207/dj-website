@@ -144,5 +144,8 @@
     "message": "This site uses cookies for embedded content.",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "common": {
+    "warmup": "Server warming up… this may take up to 90 seconds"
   }
 }

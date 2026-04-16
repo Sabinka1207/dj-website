@@ -135,7 +135,7 @@ export default function Events() {
           {loading ? (
             <div className={styles.loadingRow}>
               <span className={styles.spinner} />
-              {showWarmup && <span className={styles.warmupHint}>Server warming up…</span>}
+              {showWarmup && <span className={styles.warmupHint}>{t('common.warmup')}</span>}
               {showReload && (
                 <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
                   Reload
