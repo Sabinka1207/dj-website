@@ -64,10 +64,14 @@ class AdminMixController(
     ): ResponseEntity<MixAdminResponse> {
         if (!authorized(req)) return ResponseEntity.status(401).build()
 
-        val result = cloudinary.uploader().upload(
-            file.bytes,
-            mapOf("folder" to "dj-sabi/mixes", "resource_type" to "video")
-        )
+        // Stream via temp file — avoids loading the entire MP3 into heap memory
+        val tempFile = kotlin.io.path.createTempFile("mix-", ".tmp").toFile()
+        val result = try {
+            file.transferTo(tempFile)
+            cloudinary.uploader().upload(tempFile, mapOf("folder" to "dj-sabi/mixes", "resource_type" to "video"))
+        } finally {
+            tempFile.delete()
+        }
 
         var coverUrl = ""
         var coverPublicId = ""
