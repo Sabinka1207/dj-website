@@ -2,6 +2,7 @@ package com.djsabi.backend
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -21,6 +22,11 @@ class GlobalExceptionHandler(private val telegram: TelegramService) {
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(ex: Exception, request: HttpServletRequest): ResponseEntity<Map<String, String>> {
+        // Spring's standard 4xx exceptions (NoResourceFoundException, MethodNotAllowedException, etc.)
+        // all implement ErrorResponse — let Spring handle them without alerting
+        if (ex is ErrorResponse) {
+            return ResponseEntity.status(ex.statusCode).body(mapOf("error" to (ex.body.detail ?: ex.statusCode.toString())))
+        }
         log.error("Unhandled exception on ${request.method} ${request.requestURI}", ex)
         val detail = buildString {
             append("`${request.method} ${request.requestURI}`\n\n")
