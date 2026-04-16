@@ -360,6 +360,12 @@ export default function AdminMixes() {
   const addDetectedType = detectType(addForm.embedUrl)
   const editDetectedType = detectType(editForm.embedUrl)
 
+  const mixTypeLabel = (mix: AnyMix) =>
+    mix.kind === 'hosted' ? 'MP3' : (TYPE_LABEL[mix.embedType] ?? '?')
+
+  const mixSubline = (mix: AnyMix) =>
+    [mix.year || null, mix.city || null, mix.style || null].filter(Boolean).join(' · ')
+
   return (
     <div>
       <div className={styles.panelHeader}>
@@ -410,46 +416,52 @@ export default function AdminMixes() {
 
         {addError && <p className={styles.errorMsg}>{addError}</p>}
 
-        <div className={styles.formFooter}>
-          {addSourceType === 'hosted' ? (
-            <>
-              <input ref={fileRef} type="file" accept=".mp3,audio/*" hidden onChange={handleFileSelect} />
-              <input ref={coverRef} type="file" accept="image/*" hidden onChange={e => setSelectedCover(e.target.files?.[0] ?? null)} />
+        {addSourceType === 'hosted' ? (
+          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input ref={fileRef} type="file" accept=".mp3,audio/*" hidden onChange={handleFileSelect} />
+            <input ref={coverRef} type="file" accept="image/*" hidden onChange={e => setSelectedCover(e.target.files?.[0] ?? null)} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => fileRef.current?.click()}>
                 Choose MP3
               </button>
-              <span style={{ fontSize: '0.85rem', color: selectedFile ? 'var(--color-text)' : 'var(--color-text-muted)', alignSelf: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: selectedFile ? 'var(--color-text)' : 'var(--color-text-muted)' }}>
                 {selectedFile ? selectedFile.name : 'No file chosen'}
               </span>
-              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => coverRef.current?.click()} style={{ marginLeft: 8 }}>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => coverRef.current?.click()}>
                 Cover image
               </button>
-              <span style={{ fontSize: '0.85rem', color: selectedCover ? 'var(--color-text)' : 'var(--color-text-muted)', alignSelf: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: selectedCover ? 'var(--color-text)' : 'var(--color-text-muted)' }}>
                 {selectedCover ? selectedCover.name : 'Optional'}
               </span>
-              {uploadProgress !== null && (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ flex: 1, height: 6, background: '#2a2a2a', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--color-accent)', borderRadius: 3, transition: 'width 0.2s' }} />
-                  </div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums', minWidth: 36 }}>
-                    {uploadProgress}%
-                  </span>
+            </div>
+            {uploadProgress !== null && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1, height: 6, background: '#2a2a2a', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--color-accent)', borderRadius: 3, transition: 'width 0.2s' }} />
                 </div>
-              )}
-              <button className={styles.btn} onClick={handleUpload} disabled={!selectedFile || uploading} style={{ marginLeft: uploadProgress !== null ? 0 : 'auto' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums', minWidth: 36 }}>
+                  {uploadProgress}%
+                </span>
+              </div>
+            )}
+            <div>
+              <button className={styles.btn} onClick={handleUpload} disabled={!selectedFile || uploading}>
                 {uploading ? 'Uploading…' : '↑ Upload'}
               </button>
-            </>
-          ) : (
+            </div>
+          </div>
+        ) : (
+          <div className={styles.formFooter}>
             <button className={styles.btn} onClick={handleAddExternal} disabled={uploading}>
               {uploading ? 'Saving…' : '+ Add Mix'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* ══ ZONE 2: Mixes table ══════════════════════════ */}
+      {/* ══ ZONE 2: Mixes list ═══════════════════════════ */}
       <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
         Home page: <strong style={{ color: 'var(--color-accent)' }}>{allFeatured.length}</strong> mixes featured
         <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle, then set position)</span>
@@ -458,27 +470,28 @@ export default function AdminMixes() {
       {allMixes.length === 0 ? (
         <p className={styles.empty}>No mixes yet.</p>
       ) : (
-        <div className={styles.tableWrap} style={{ marginBottom: editingMix ? 32 : 0 }}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Title</th>
-                <th>Year</th>
-                <th>Style</th>
-                <th>Event</th>
-                <th>City</th>
-                <th title="Show on home page">Home</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {allMixes.map(mix => (
-                <>
+        <>
+          {/* Desktop table */}
+          <div className={`${styles.tableWrap} ${styles.desktopOnly}`}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Title</th>
+                  <th>Year</th>
+                  <th>Style</th>
+                  <th>Event</th>
+                  <th>City</th>
+                  <th title="Show on home page">Home</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {allMixes.map(mix => (
                   <tr key={`${mix.kind}-${mix.id}`}>
                     <td>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.05em' }}>
-                        {mix.kind === 'hosted' ? 'MP3' : (TYPE_LABEL[mix.embedType] ?? '?')}
+                        {mixTypeLabel(mix)}
                       </span>
                     </td>
                     <td>{mix.title}</td>
@@ -514,19 +527,16 @@ export default function AdminMixes() {
                     </td>
                     <td>
                       <div className={styles.rowActions}>
-                        {(mix.kind === 'external' || mix.kind === 'hosted') && (
-                          <button
-                            className={styles.iconBtn}
-                            style={{ color: editingMix?.id === mix.id && editingMix?.kind === mix.kind ? 'var(--color-accent)' : undefined }}
-                            onClick={() => editingMix?.id === mix.id && editingMix?.kind === mix.kind ? handleCancelEdit() : handleEdit(mix)}
-                            title={editingMix?.id === mix.id && editingMix?.kind === mix.kind ? 'Close editor' : 'Edit'}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </button>
-                        )}
+                        <button
+                          className={styles.iconBtn}
+                          onClick={() => handleEdit(mix)}
+                          title="Edit"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
                         <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={() => handleDelete(mix)} title="Delete">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6"/>
@@ -538,66 +548,136 @@ export default function AdminMixes() {
                       </div>
                     </td>
                   </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-                  {/* Inline edit row — appears directly under the selected mix */}
-                  {editingMix?.id === mix.id && editingMix?.kind === mix.kind && (
-                    <tr key={`edit-${mix.id}`}>
-                      <td colSpan={9} style={{ padding: 0, borderTop: '2px solid var(--color-accent)' }}>
-                        <div style={{ background: '#0d0d0d', padding: '20px 24px' }}>
-                          {mix.kind === 'external' && (
-                          <div style={{ marginBottom: 16 }}>
-                            <label className={`${styles.label} ${styles.fullWidth}`}>
-                              Embed URL
-                              {editDetectedType && (
-                                <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--color-accent)' }}>
-                                  {editDetectedType.toUpperCase()}
-                                </span>
-                              )}
-                              <input
-                                className={styles.input}
-                                value={editForm.embedUrl}
-                                onChange={handleEditChange('embedUrl')}
-                              />
-                            </label>
-                          </div>
-                          )}
-                          <MetaFields form={editForm} onChange={handleEditChange} />
+          {/* Mobile card list */}
+          <div className={styles.mobileCardList}>
+            {allMixes.map(mix => (
+              <div key={`${mix.kind}-${mix.id}`} className={styles.mobileCard}>
+                <div className={styles.mobileCardHeader}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.08em', flexShrink: 0 }}>
+                        {mixTypeLabel(mix)}
+                      </span>
+                      <span className={styles.mobileCardName} style={{ margin: 0, fontSize: '0.95rem' }}>{mix.title}</span>
+                    </div>
+                    {mixSubline(mix) && (
+                      <div className={styles.mobileCardDate}>{mixSubline(mix)}</div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                    <button
+                      className={styles.iconBtn}
+                      style={{ color: mix.homeFeatured ? 'var(--color-accent)' : undefined }}
+                      onClick={() => handleToggleFeatured(mix)}
+                      title={mix.homeFeatured ? 'Remove from home page' : 'Show on home page'}
+                    >
+                      <HomeIcon filled={mix.homeFeatured} />
+                    </button>
+                    <button className={styles.iconBtn} onClick={() => handleEdit(mix)} title="Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={() => handleDelete(mix)} title="Delete">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                {mix.homeFeatured && (
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>Home position:</span>
+                    <select
+                      value={mix.homeDisplayOrder || 1}
+                      style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4, color: 'var(--color-accent)', fontSize: '0.8rem', padding: '2px 6px' }}
+                      onChange={e => handleSetHomeOrder(mix, parseInt(e.target.value))}
+                    >
+                      {Array.from({ length: allFeatured.length }, (_, i) => i + 1).map(n => (
+                        <option key={n} value={n} disabled={usedOrders.has(n) && mix.homeDisplayOrder !== n}>
+                          #{n}{usedOrders.has(n) && mix.homeDisplayOrder !== n ? ' ✕' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
-                          {mix.kind === 'hosted' && (
-                            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                              {mix.coverUrl && (
-                                <img src={mix.coverUrl} alt="cover" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4, border: '1px solid #2a2a2a' }} />
-                              )}
-                              <input ref={editCoverRef} type="file" accept="image/*" hidden
-                                onChange={e => { const f = e.target.files?.[0]; if (f) handleUpdateCover(mix as HostedMix, f) }} />
-                              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => editCoverRef.current?.click()} style={{ fontSize: '0.82rem' }}>
-                                {mix.coverUrl ? 'Replace cover' : 'Add cover'}
-                              </button>
-                              {mix.coverUrl && (
-                                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => handleRemoveCover(mix as HostedMix)} style={{ fontSize: '0.82rem', color: 'var(--color-danger, #e55)' }}>
-                                  Remove cover
-                                </button>
-                              )}
-                            </div>
-                          )}
+      {/* ══ Edit modal ════════════════════════════════════ */}
+      {editingMix && (
+        <div className={styles.modalBackdrop} onClick={e => { if (e.target === e.currentTarget) handleCancelEdit() }}>
+          <div className={styles.modalBox} style={{ maxWidth: 560 }}>
+            <button className={styles.modalClose} onClick={handleCancelEdit} type="button">×</button>
+            <p className={styles.modalMeta}>
+              Edit {mixTypeLabel(editingMix)} · {editingMix.title}
+            </p>
 
-                          {editError && <p className={styles.errorMsg}>{editError}</p>}
-                          <div className={styles.formFooter}>
-                            <button className={styles.btn} onClick={handleSaveEdit} disabled={saving}>
-                              {saving ? 'Saving…' : '✓ Update'}
-                            </button>
-                            <button className={`${styles.btn} ${styles.btnGhost}`} onClick={handleCancelEdit}>
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+            {editingMix.kind === 'external' && (
+              <div style={{ marginBottom: 16 }}>
+                <label className={`${styles.label} ${styles.fullWidth}`}>
+                  Embed URL
+                  {editDetectedType && (
+                    <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--color-accent)' }}>
+                      {editDetectedType.toUpperCase()}
+                    </span>
                   )}
-                </>
-              ))}
-            </tbody>
-          </table>
+                  <input
+                    className={styles.input}
+                    value={editForm.embedUrl}
+                    onChange={handleEditChange('embedUrl')}
+                    autoFocus
+                  />
+                </label>
+              </div>
+            )}
+
+            <MetaFields form={editForm} onChange={handleEditChange} />
+
+            {editingMix.kind === 'hosted' && (
+              <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                {(editingMix as HostedMix & { coverUrl?: string }).coverUrl && (
+                  <img
+                    src={(editingMix as HostedMix & { coverUrl?: string }).coverUrl}
+                    alt="cover"
+                    style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4, border: '1px solid #2a2a2a' }}
+                  />
+                )}
+                <input ref={editCoverRef} type="file" accept="image/*" hidden
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleUpdateCover(editingMix as HostedMix, f) }} />
+                <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => editCoverRef.current?.click()} style={{ fontSize: '0.82rem' }}>
+                  {(editingMix as HostedMix & { coverUrl?: string }).coverUrl ? 'Replace cover' : 'Add cover'}
+                </button>
+                {(editingMix as HostedMix & { coverUrl?: string }).coverUrl && (
+                  <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => handleRemoveCover(editingMix as HostedMix)} style={{ fontSize: '0.82rem', color: 'var(--color-danger, #e55)' }}>
+                    Remove cover
+                  </button>
+                )}
+              </div>
+            )}
+
+            {editError && <p className={styles.errorMsg}>{editError}</p>}
+            <div className={styles.formFooter} style={{ marginTop: 24 }}>
+              <button className={styles.btn} onClick={handleSaveEdit} disabled={saving}>
+                {saving ? 'Saving…' : '✓ Update'}
+              </button>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={handleCancelEdit}>
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

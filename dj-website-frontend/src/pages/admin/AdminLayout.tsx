@@ -81,6 +81,13 @@ export default function AdminLayout() {
             Availability
           </NavLink>
           <NavLink
+            to="/admin/org-docs"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Org Docs
+          </NavLink>
+          <NavLink
             to="/admin/mixes"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}

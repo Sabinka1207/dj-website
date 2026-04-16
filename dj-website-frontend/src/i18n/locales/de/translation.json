@@ -90,9 +90,11 @@
     "rider": "Technical Rider",
     "riderDesc": "Technische Anforderungen an Bühne und Sound.",
     "invoice": "Rechnungsvorlage",
-    "invoiceDesc": "Einfache Rechnungsvorlage für die Buchung.",
+    "invoiceDesc": "Rechnungsvorlage für die Buchung.",
     "contract": "Vertrag",
-    "contractDesc": "Buchungsvertrag – bitte vor der Zusammenarbeit lesen.",
+    "contractDesc": "Vollständiger Buchungsvertrag – bitte vor der Zusammenarbeit lesen.",
+    "basicContract": "Kurzvertrag",
+    "basicContractDesc": "Vereinfachte Version für kleine Veranstaltungen.",
     "openLink": "Öffnen →",
     "comingSoon": "Demnächst verfügbar",
     "langSoon": "bald",
@@ -132,7 +134,11 @@
     "s5Title": "5. Ihre Rechte",
     "s5p1": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung sowie Datenübertragbarkeit Ihrer personenbezogenen Daten.",
     "s5p2": "Wenden Sie sich dazu an: djsabi_ua@icloud.com",
-    "s5p3": "Sie haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit (HBDI)."
+    "s5p3": "Sie haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit (HBDI).",
+    "s6Title": "6. Vertragsunterzeichnung (DocuSign)",
+    "s6p1": "Für das Versenden und die elektronische Unterzeichnung von Buchungsverträgen wird der Dienst DocuSign verwendet (DocuSign International (EMEA) Limited, Vinters Park, Maidstone, Kent ME14 5NZ, Vereinigtes Königreich).",
+    "s6p2": "Bei der Unterzeichnung eines Vertrages werden personenbezogene Daten wie Name, E-Mail-Adresse, IP-Adresse und Signaturmetadaten durch DocuSign ausschließlich zur Erstellung einer rechtsverbindlichen elektronischen Unterschrift verarbeitet.",
+    "s6p3": "Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Weitere Informationen finden Sie in der Datenschutzerklärung von DocuSign: https://www.docusign.com/company/privacy-policy"
   },
   "cookies": {
     "message": "Diese Website verwendet Cookies für eingebettete Inhalte.",

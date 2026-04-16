@@ -7,13 +7,11 @@ import styles from './ForOrganisers.module.css'
 const LANGUAGES = [{ code: 'de', label: 'DE' }, { code: 'en', label: 'EN' }, { code: 'ua', label: 'UA' }]
 
 const DRIVE_ALL = 'https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link'
-const DRIVE_PHOTOS = 'https://drive.google.com/drive/folders/1DgXQQmH6z6DD0ufRPgYg3wG8tOdpJdSV?usp=drive_link'
 const DRIVE_VIDEOS = 'https://drive.google.com/drive/folders/1-C07PmLCBMsC0qDdPN0il7ztRTyrPpYL?usp=drive_link'
 const DRIVE_LOGO_JPG = 'https://drive.google.com/file/d/1p7F_5byvk_9hpbhPeR83wvIOj_pV1l8S/view?usp=drive_link'
 const DRIVE_LOGO_PNG = 'https://drive.google.com/file/d/1T6hysXCj5ZKqeRa4T18XXBzoMDJy6NgD/view?usp=drive_link'
-const DRIVE_HOSPITALITY = 'https://docs.google.com/document/d/139-24plLwikr8iLqUbKhD3zlrxhGazUmN9RYcMaIik8/edit?usp=drive_link'
-const DRIVE_TECH_RIDER = 'https://docs.google.com/document/d/1eVTWVYQ123ySMGwbuSqEZK3w7mpMQthy9-Y6bMmSaoo/edit?usp=drive_link'
-const DRIVE_CONTRACT = 'https://docs.google.com/document/d/1medsQl1ep1tLKFQ296fPqEJ-wZdfqjprpcn-wxrZ9S4/edit?usp=drive_link'
+
+type OrgDoc = { id: number; docType: string; language: string; url: string }
 
 function DriveLink({ href, label }: { href: string; label: string }) {
   return (
@@ -23,12 +21,15 @@ function DriveLink({ href, label }: { href: string; label: string }) {
   )
 }
 
-function LangButtons({ enHref, soonLabel }: { enHref: string; soonLabel: string }) {
+function DocButtons({ docs, docType, soonLabel, langs = ['de', 'en', 'ua'] }: { docs: OrgDoc[]; docType: string; soonLabel: string; langs?: string[] }) {
   return (
     <div className={styles.downloadGroup}>
-      <a className={styles.downloadBtn} href={enHref} target="_blank" rel="noopener noreferrer">↓ EN</a>
-      <span className={styles.downloadBtnDisabled}>DE — {soonLabel}</span>
-      <span className={styles.downloadBtnDisabled}>UA — {soonLabel}</span>
+      {langs.map(lang => {
+        const doc = docs.find(d => d.docType === docType && d.language === lang)
+        return doc
+          ? <a key={lang} className={styles.downloadBtn} href={doc.url} target="_blank" rel="noopener noreferrer">↗ {lang.toUpperCase()}</a>
+          : <span key={lang} className={styles.downloadBtnDisabled}>{lang.toUpperCase()} — {soonLabel}</span>
+      })}
     </div>
   )
 }
@@ -37,8 +38,13 @@ export default function ForOrganisers() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [contactOpen, setContactOpen] = useState(false)
+  const [docs, setDocs] = useState<OrgDoc[]>([])
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
+
+  useEffect(() => {
+    fetch('/api/org-docs').then(r => r.ok ? r.json() : []).then(setDocs).catch(() => {})
+  }, [])
 
   const changeLanguage = (code: string) => {
     localStorage.setItem('lang', code)
@@ -77,11 +83,7 @@ export default function ForOrganisers() {
           <div className={styles.card}>
             <p className={styles.cardTitle}>{t('organisers.pressKit')}</p>
             <p className={styles.cardDesc}>{t('organisers.pressKitDesc')}</p>
-            <div className={styles.downloadGroup}>
-              <a className={styles.downloadBtn} href="/press-kit/press-kit-de.pdf" download>{t('organisers.downloadDe')}</a>
-              <a className={styles.downloadBtn} href="/press-kit/press-kit-en.pdf" download>{t('organisers.downloadEn')}</a>
-              <a className={styles.downloadBtn} href="/press-kit/press-kit-ua.pdf" download>{t('organisers.downloadUa')}</a>
-            </div>
+            <DocButtons docs={docs} docType="press-kit" soonLabel={t('organisers.langSoon')} />
           </div>
 
 
@@ -105,19 +107,31 @@ export default function ForOrganisers() {
           <div className={styles.card}>
             <p className={styles.cardTitle}>{t('organisers.hospitalityRider')}</p>
             <p className={styles.cardDesc}>{t('organisers.hospitalityRiderDesc')}</p>
-            <LangButtons enHref={DRIVE_HOSPITALITY} soonLabel={t('organisers.langSoon')} />
+            <DocButtons docs={docs} docType="hospitality-rider" soonLabel={t('organisers.langSoon')} />
           </div>
 
           <div className={styles.card}>
             <p className={styles.cardTitle}>{t('organisers.rider')}</p>
             <p className={styles.cardDesc}>{t('organisers.riderDesc')}</p>
-            <LangButtons enHref={DRIVE_TECH_RIDER} soonLabel={t('organisers.langSoon')} />
+            <DocButtons docs={docs} docType="tech-rider" soonLabel={t('organisers.langSoon')} />
           </div>
 
           <div className={styles.card}>
             <p className={styles.cardTitle}>{t('organisers.contract')}</p>
             <p className={styles.cardDesc}>{t('organisers.contractDesc')}</p>
-            <LangButtons enHref={DRIVE_CONTRACT} soonLabel={t('organisers.langSoon')} />
+            <DocButtons docs={docs} docType="booking-agreement" soonLabel={t('organisers.langSoon')} />
+          </div>
+
+          <div className={styles.card}>
+            <p className={styles.cardTitle}>{t('organisers.basicContract')}</p>
+            <p className={styles.cardDesc}>{t('organisers.basicContractDesc')}</p>
+            <DocButtons docs={docs} docType="basic-booking-agreement" soonLabel={t('organisers.langSoon')} />
+          </div>
+
+          <div className={styles.card}>
+            <p className={styles.cardTitle}>{t('organisers.invoice')}</p>
+            <p className={styles.cardDesc}>{t('organisers.invoiceDesc')}</p>
+            <DocButtons docs={docs} docType="invoice-template" soonLabel={t('organisers.langSoon')} langs={['de']} />
           </div>
 
         </div>

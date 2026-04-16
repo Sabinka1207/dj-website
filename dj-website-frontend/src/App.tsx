@@ -25,6 +25,7 @@ import AdminBookings from './pages/admin/AdminBookings'
 import AdminAvailability from './pages/admin/AdminAvailability'
 import AdminTools from './pages/admin/AdminTools'
 import AdminMixes from './pages/admin/AdminMixes'
+import AdminOrgDocs from './pages/admin/AdminOrgDocs'
 import MixesPage from './pages/MixesPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -119,6 +120,7 @@ function App() {
           <Route path="bookings" element={<AdminBookings />} />
           <Route path="availability" element={<AdminAvailability />} />
           <Route path="tools" element={<AdminTools />} />
+          <Route path="org-docs" element={<AdminOrgDocs />} />
           <Route path="mixes" element={<AdminMixes />} />
         </Route>
       </Routes>

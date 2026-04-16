@@ -65,6 +65,18 @@ export default function Privacy() {
           </p>
           <p>{t('privacy.s5p3')}</p>
         </section>
+
+        <section className={styles.section}>
+          <h2>{t('privacy.s6Title')}</h2>
+          <p>{t('privacy.s6p1')}</p>
+          <p>{t('privacy.s6p2')}</p>
+          <p>
+            {t('privacy.s6p3').split('https://')[0]}
+            <a href="https://www.docusign.com/company/privacy-policy" target="_blank" rel="noopener noreferrer" className={styles.emailLink}>
+              https://www.docusign.com/company/privacy-policy
+            </a>
+          </p>
+        </section>
       </div>
     </div>
   )

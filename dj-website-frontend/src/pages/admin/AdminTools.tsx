@@ -12,15 +12,15 @@ const TOOLS: Tool[] = [
   { name: 'Vercel', description: 'Frontend hosting & deployments', url: 'https://vercel.com/dashboard', category: 'Hosting' },
   { name: 'Render', description: 'Backend hosting & deployments', url: 'https://dashboard.render.com', category: 'Hosting' },
   { name: 'Supabase', description: 'PostgreSQL database', url: 'https://supabase.com/dashboard', category: 'Hosting' },
-  // Media
-  { name: 'Cloudinary', description: 'Photos & media storage', url: 'https://console.cloudinary.com', category: 'Media' },
+  // Media & Docs
+  { name: 'Cloudinary', description: 'Photos & media storage', url: 'https://console.cloudinary.com', category: 'Media & Docs' },
   // Notifications & email
   { name: 'Resend', description: 'Transactional email (booking notifications)', url: 'https://resend.com/emails', category: 'Email & Notifications' },
   { name: 'Telegram Bot', description: 'Bot for booking alerts', url: 'https://t.me/BotFather', category: 'Email & Notifications' },
   // Auth
   { name: 'Google Cloud Console', description: 'Google OAuth client (admin login)', url: 'https://console.cloud.google.com', category: 'Auth' },
-  // Design
-  { name: 'Canva', description: 'Flyers, promo graphics, social posts', url: 'https://www.canva.com', category: 'Design' },
+  { name: 'DocuSign', description: 'Electronic contract signing', url: 'https://app.docusign.com', category: 'Media & Docs' },
+  { name: 'Canva', description: 'Flyers, promo graphics, social posts', url: 'https://www.canva.com', category: 'Media & Docs' },
   // Monitoring
   { name: 'UptimeRobot', description: 'Uptime monitoring for backend', url: 'https://uptimerobot.com/dashboard', category: 'Monitoring' },
 ]

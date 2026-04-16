@@ -90,9 +90,11 @@
     "rider": "Technical Rider",
     "riderDesc": "Stage and sound technical requirements.",
     "invoice": "Invoice Template",
-    "invoiceDesc": "Simple invoice template for the booking.",
+    "invoiceDesc": "Invoice template for the booking.",
     "contract": "Contract",
-    "contractDesc": "Booking contract — please read before working together.",
+    "contractDesc": "Full booking contract — please read before working together.",
+    "basicContract": "Basic Contract",
+    "basicContractDesc": "Simplified version for small gigs and short engagements.",
     "openLink": "Open →",
     "comingSoon": "Coming Soon",
     "langSoon": "soon",
@@ -132,7 +134,11 @@
     "s5Title": "5. Your Rights",
     "s5p1": "You have the right to access, rectify, erase, restrict processing, and port your personal data.",
     "s5p2": "Please contact: djsabi_ua@icloud.com",
-    "s5p3": "You also have the right to lodge a complaint with a data protection supervisory authority. The competent authority in Hesse is the Hessian Commissioner for Data Protection and Freedom of Information (HBDI)."
+    "s5p3": "You also have the right to lodge a complaint with a data protection supervisory authority. The competent authority in Hesse is the Hessian Commissioner for Data Protection and Freedom of Information (HBDI).",
+    "s6Title": "6. Contract Signing (DocuSign)",
+    "s6p1": "For sending and electronically signing booking contracts, this website uses DocuSign (DocuSign International (EMEA) Limited, Vinters Park, Maidstone, Kent ME14 5NZ, United Kingdom).",
+    "s6p2": "When you sign a contract, personal data such as your name, email address, IP address, and signature metadata is processed by DocuSign solely for the purpose of creating a legally binding electronic signature.",
+    "s6p3": "Processing is based on Art. 6(1)(b) GDPR (performance of a contract). For more information, please refer to DocuSign's privacy policy: https://www.docusign.com/company/privacy-policy"
   },
   "cookies": {
     "message": "This site uses cookies for embedded content.",
