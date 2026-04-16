@@ -16,13 +16,15 @@ export default function Mixes({ cookiesAccepted }: Props) {
   const { t } = useTranslation()
   const [items, setItems] = useState<FeaturedItem[]>([])
   const [playingId, setPlayingId] = useState<number | null>(null)
+  const [totalCount, setTotalCount] = useState(0)
 
   useEffect(() => {
     Promise.all([
       fetch('/api/external-mixes/featured').then(r => r.json()).catch(() => []),
       fetch('/api/mixes/featured').then(r => r.json()).catch(() => []),
       fetch('/api/external-mixes').then(r => r.json()).catch(() => []),
-    ]).then(([external, hosted, allExternal]) => {
+      fetch('/api/mixes').then(r => r.json()).catch(() => []),
+    ]).then(([external, hosted, allExternal, allHosted]) => {
       let featuredExternal = external
       let featuredHosted = hosted
 
@@ -39,6 +41,7 @@ export default function Mixes({ cookiesAccepted }: Props) {
         ...featuredHosted.map((m: any) => ({ kind: 'hosted' as const, ...m })),
       ].sort((a, b) => (a.homeDisplayOrder || 0) - (b.homeDisplayOrder || 0))
       setItems(all)
+      setTotalCount(allExternal.length + allHosted.length)
     })
   }, [])
 
@@ -88,7 +91,9 @@ export default function Mixes({ cookiesAccepted }: Props) {
         </div>
 
         <div className={styles.viewAll}>
-          <Link to="/mixes" className={styles.viewAllBtn}>{t('mixes.viewAll')}</Link>
+          <Link to="/mixes" className={styles.viewAllBtn}>
+            {t('mixes.viewAll')}{totalCount > 0 ? ` (${totalCount})` : ''}
+          </Link>
         </div>
       </div>
     </section>

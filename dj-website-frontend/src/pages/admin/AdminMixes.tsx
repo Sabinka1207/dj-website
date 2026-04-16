@@ -354,9 +354,37 @@ export default function AdminMixes() {
     load()
   }
 
-  const allMixes: AnyMix[] = [...hostedMixes, ...externalMixes].sort((a, b) => (b.year || 0) - (a.year || 0))
+  // ── Sort state ──────────────────────────────────────────
+  type SortKey = 'type' | 'title' | 'year' | 'style' | 'event' | 'city' | 'home'
+  const [sortKey, setSortKey] = useState<SortKey>('year')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
+
+  const allMixes: AnyMix[] = [...hostedMixes, ...externalMixes]
   const allFeatured = allMixes.filter(m => m.homeFeatured)
   const usedOrders = new Set(allFeatured.map(m => m.homeDisplayOrder))
+
+  const sortedMixes = [...allMixes].sort((a, b) => {
+    let va: string | number, vb: string | number
+    switch (sortKey) {
+      case 'type': va = mixTypeLabel(a); vb = mixTypeLabel(b); break
+      case 'title': va = a.title.toLowerCase(); vb = b.title.toLowerCase(); break
+      case 'year': va = a.year || 0; vb = b.year || 0; break
+      case 'style': va = (a.style || '').toLowerCase(); vb = (b.style || '').toLowerCase(); break
+      case 'event': va = (a.event || '').toLowerCase(); vb = (b.event || '').toLowerCase(); break
+      case 'city': va = (a.city || '').toLowerCase(); vb = (b.city || '').toLowerCase(); break
+      case 'home': va = a.homeFeatured ? 1 : 0; vb = b.homeFeatured ? 1 : 0; break
+      default: va = 0; vb = 0
+    }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1
+    if (va > vb) return sortDir === 'asc' ? 1 : -1
+    return 0
+  })
+
   const addDetectedType = detectType(addForm.embedUrl)
   const editDetectedType = detectType(editForm.embedUrl)
 
@@ -369,7 +397,14 @@ export default function AdminMixes() {
   return (
     <div>
       <div className={styles.panelHeader}>
-        <h2 className={styles.panelTitle}>Mixes</h2>
+        <h2 className={styles.panelTitle}>
+          Mixes
+          {allMixes.length > 0 && (
+            <span style={{ marginLeft: 10, fontSize: '0.85rem', fontWeight: 400, color: 'var(--color-text-muted)' }}>
+              ({allMixes.length})
+            </span>
+          )}
+        </h2>
       </div>
 
       {/* ══ ZONE 1: Add Mix ══════════════════════════════ */}
@@ -491,18 +526,19 @@ export default function AdminMixes() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Type</th>
-                  <th>Title</th>
-                  <th>Year</th>
-                  <th>Style</th>
-                  <th>Event</th>
-                  <th>City</th>
-                  <th title="Show on home page">Home</th>
+                  {([ ['type','Type'], ['title','Title'], ['year','Year'], ['style','Style'], ['event','Event'], ['city','City'] ] as [SortKey, string][]).map(([key, label]) => (
+                    <th key={key} onClick={() => toggleSort(key)} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>
+                      {label} {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : <span style={{ opacity: 0.25 }}>↕</span>}
+                    </th>
+                  ))}
+                  <th onClick={() => toggleSort('home')} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} title="Show on home page">
+                    Home {sortKey === 'home' ? (sortDir === 'asc' ? '↑' : '↓') : <span style={{ opacity: 0.25 }}>↕</span>}
+                  </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {allMixes.map(mix => (
+                {sortedMixes.map(mix => (
                   <tr key={`${mix.kind}-${mix.id}`}>
                     <td>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.05em' }}>
@@ -570,7 +606,7 @@ export default function AdminMixes() {
 
           {/* Mobile card list */}
           <div className={styles.mobileCardList}>
-            {allMixes.map(mix => (
+            {sortedMixes.map(mix => (
               <div key={`${mix.kind}-${mix.id}`} className={styles.mobileCard}>
                 <div className={styles.mobileCardHeader}>
                   <div style={{ flex: 1, minWidth: 0 }}>
