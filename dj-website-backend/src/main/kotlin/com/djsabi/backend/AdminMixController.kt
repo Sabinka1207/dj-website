@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.core.sync.RequestBody as S3RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -85,7 +85,7 @@ class AdminMixController(
                     .key(key)
                     .contentType("audio/mpeg")
                     .build(),
-                RequestBody.fromFile(tempFile)
+                S3RequestBody.fromFile(tempFile)
             )
             "$r2PublicUrl/$key"
         } finally {
