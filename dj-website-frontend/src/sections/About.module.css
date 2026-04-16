@@ -53,9 +53,15 @@
   margin-bottom: 0;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
 .promoLink {
   display: inline-block;
-  margin-top: 32px;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -70,6 +76,24 @@
 .promoLink:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
+}
+
+.organisersLink {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1px solid var(--color-accent);
+  padding: 10px 20px;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.organisersLink:hover {
+  background: var(--color-accent);
+  color: #000;
 }
 
 @media (max-width: 768px) {

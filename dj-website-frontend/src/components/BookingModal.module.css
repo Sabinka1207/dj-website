@@ -152,6 +152,15 @@
   color: #ff4444;
 }
 
+.inputError {
+  border-color: #ff4444 !important;
+}
+
+.fieldError {
+  font-size: 0.78rem;
+  color: #ff4444;
+}
+
 @media (max-width: 560px) {
   .modal {
     padding: 36px 24px;

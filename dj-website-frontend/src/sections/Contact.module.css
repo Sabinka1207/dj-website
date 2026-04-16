@@ -154,6 +154,15 @@
   color: #ff4444;
 }
 
+.inputError {
+  border-color: #ff4444 !important;
+}
+
+.fieldError {
+  font-size: 0.78rem;
+  color: #ff4444;
+}
+
 .required {
   color: var(--color-accent);
 }

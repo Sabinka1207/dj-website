@@ -97,14 +97,7 @@ export default function Footer() {
         </div>
 
         <nav className={styles.links}>
-          <a
-            href="https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
-            {t('footer.promoKit')}
-          </a>
+          <Link to="/for-organisers" className={styles.link}>{t('footer.forOrganisers')}</Link>
           <Link to="/impressum" className={styles.link}>{t('footer.impressum')}</Link>
           <Link to="/privacy" className={styles.link}>{t('footer.privacy')}</Link>
         </nav>

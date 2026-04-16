@@ -16,12 +16,17 @@ import ScrollToTop from './components/ScrollToTop'
 import SEO from './components/SEO'
 import Impressum from './pages/Impressum'
 import Privacy from './pages/Privacy'
+import ForOrganisers from './pages/ForOrganisers'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminEvents from './pages/admin/AdminEvents'
 import AdminPhotos from './pages/admin/AdminPhotos'
 import AdminBookings from './pages/admin/AdminBookings'
 import AdminAvailability from './pages/admin/AdminAvailability'
+import AdminTools from './pages/admin/AdminTools'
+import AdminMixes from './pages/admin/AdminMixes'
+import AdminOrgDocs from './pages/admin/AdminOrgDocs'
+import MixesPage from './pages/MixesPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 type Consent = 'accepted' | 'declined' | null
@@ -46,6 +51,10 @@ function Home({ consent, onAccept, onDecline }: {
       const onAlive = () => { clearTimeout(fallback); setTimeout(scroll, 50) }
       const fallback = setTimeout(scroll, 3000)
       window.addEventListener('backend-alive', onAlive, { once: true })
+    }
+    if (location.state?.scrollToMixes) {
+      window.history.replaceState({}, '')
+      setTimeout(() => document.getElementById('mixes')?.scrollIntoView({ behavior: 'smooth' }), 50)
     }
   }, [])
 
@@ -83,7 +92,7 @@ function App() {
 
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
-  const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy'
+  const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy' || location.pathname === '/for-organisers' || location.pathname === '/mixes'
 
   return (
     <HelmetProvider>
@@ -101,6 +110,8 @@ function App() {
         />
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/for-organisers" element={<ForOrganisers />} />
+        <Route path="/mixes" element={<MixesPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/admin/events" replace />} />
@@ -108,6 +119,9 @@ function App() {
           <Route path="photos" element={<AdminPhotos />} />
           <Route path="bookings" element={<AdminBookings />} />
           <Route path="availability" element={<AdminAvailability />} />
+          <Route path="tools" element={<AdminTools />} />
+          <Route path="org-docs" element={<AdminOrgDocs />} />
+          <Route path="mixes" element={<AdminMixes />} />
         </Route>
       </Routes>
       <Analytics />

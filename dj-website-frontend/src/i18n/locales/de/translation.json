@@ -11,10 +11,17 @@
   },
   "about": {
     "title": "Über mich",
+    "downloadPressKit": "↓ Pressekit herunterladen",
+    "forOrganisers": "Für Veranstalter →",
     "bio": "DJ SABI (Sabina Abdulaliieva) ist eine DJ mit über 15 Jahren Erfahrung, die ihre Karriere in der Ukraine begann und in Deutschland fortsetzte.\n\nSeit 2015 ist sie Residentin des legendären Kiewer Clubs Forsage und Teilnehmerin der Projekte RnB BooM und Latino Fiesta. Anfangs in den Genres RnB und Hip-Hop tätig, entwickelte sie mit der Zeit einen vielseitigen Stil, der kommerzielle Musik, 80er/90er, House und Techno vereint.\n\nNach ihrem Umzug nach Deutschland im Jahr 2022 integrierte sie sich schnell in die lokale Szene und trat in einer der aktivsten Bars Frankfurts auf — der Zar Vodka Bar — wo sie für ein internationales Publikum mit unterschiedlichen Musikgeschmäckern spielte.\n\nSpäter wurde sie zu einer der wichtigsten DJs der ukrainischen Partys in Deutschland, füllte Tanzflächen und brachte Menschen durch Musik in einer schwierigen Zeit zusammen. Heute ist DJ SABI eine vielseitige Künstlerin, die gleichermaßen souverän mit Themenevents, kommerziellen Venues, Clubs und Festivals umgeht."
   },
   "mixes": {
-    "title": "Mixes"
+    "title": "Mixes",
+    "viewAll": "Alle Mixes ansehen →"
+  },
+  "mixesPage": {
+    "title": "Mixes",
+    "empty": "Noch keine Mixes hochgeladen."
   },
   "gallery": {
     "title": "Galerie",
@@ -24,6 +31,14 @@
     "downloadPromo": "Werbematerial herunterladen"
   },
   "contact": {
+    "questionTitle": "Fragen?",
+    "questionLabel": "Deine Frage",
+    "errorName": "Bitte gib deinen Namen ein (mind. 2 Zeichen).",
+    "errorEvent": "Bitte gib den Event-Typ oder den Veranstaltungsort an.",
+    "errorEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "errorMessage": "Bitte schreib eine Nachricht (mind. 10 Zeichen).",
+    "errorQuestion": "Bitte formuliere deine Frage (mind. 5 Zeichen).",
+    "errorTooMany": "Zu viele Anfragen. Bitte versuche es später erneut.",
     "title": "Kontakt",
     "name": "Name",
     "email": "E-Mail",
@@ -48,9 +63,44 @@
     "close": "Schließen"
   },
   "footer": {
-    "promoKit": "Werbematerial",
+    "forOrganisers": "Für Veranstalter",
     "impressum": "Impressum",
     "privacy": "Datenschutz"
+  },
+  "organisers": {
+    "title": "Für Veranstalter",
+    "subtitle": "Alles, was du für die Planung deines Events mit DJ Sabi brauchst.",
+    "allFilesText": "Hier findest du alle Dateien auf einen Blick. Weitere Materialien können hier ebenfalls abgelegt werden.",
+    "allFiles": "Google Drive öffnen →",
+    "pressKit": "Pressekit",
+    "pressKitDesc": "Offizielle DJ-Biografie von DJ Sabi – für Promotion und Medienanfragen.",
+    "downloadDe": "↓ Deutsch",
+    "downloadEn": "↓ Englisch",
+    "downloadUa": "↓ Ukrainisch",
+    "photos": "Pressefotos",
+    "photosDesc": "Hochauflösende Fotos für Flyer, Poster und Pressemitteilungen.",
+    "logo": "Logo",
+    "logoDesc": "DJ Sabi Logo zum Herunterladen – JPG und PNG.",
+    "logoJpg": "↓ JPG",
+    "logoPng": "↓ PNG",
+    "liveVideos": "Live-Videos & Beispiele",
+    "liveVideosDesc": "Aufnahmen von Sets und Auftritten als Referenz.",
+    "hospitalityRider": "Hospitality Rider",
+    "hospitalityRiderDesc": "Anforderungen an Unterkunft und Verpflegung.",
+    "rider": "Technical Rider",
+    "riderDesc": "Technische Anforderungen an Bühne und Sound.",
+    "invoice": "Rechnungsvorlage",
+    "invoiceDesc": "Rechnungsvorlage für die Buchung.",
+    "contract": "Vertrag",
+    "contractDesc": "Vollständiger Buchungsvertrag – bitte vor der Zusammenarbeit lesen.",
+    "basicContract": "Kurzvertrag",
+    "basicContractDesc": "Vereinfachte Version für kleine Veranstaltungen.",
+    "openLink": "Öffnen →",
+    "comingSoon": "Demnächst verfügbar",
+    "langSoon": "bald",
+    "contactTitle": "Fragen zur Buchung?",
+    "contactText": "Schreib mir direkt – ich antworte so schnell wie möglich.",
+    "contactLink": "Kontakt aufnehmen"
   },
   "impressum": {
     "back": "← Zurück",
@@ -84,7 +134,11 @@
     "s5Title": "5. Ihre Rechte",
     "s5p1": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung sowie Datenübertragbarkeit Ihrer personenbezogenen Daten.",
     "s5p2": "Wenden Sie sich dazu an: djsabi_ua@icloud.com",
-    "s5p3": "Sie haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit (HBDI)."
+    "s5p3": "Sie haben zudem das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit (HBDI).",
+    "s6Title": "6. Vertragsunterzeichnung (DocuSign)",
+    "s6p1": "Für das Versenden und die elektronische Unterzeichnung von Buchungsverträgen wird der Dienst DocuSign verwendet (DocuSign International (EMEA) Limited, Vinters Park, Maidstone, Kent ME14 5NZ, Vereinigtes Königreich).",
+    "s6p2": "Bei der Unterzeichnung eines Vertrages werden personenbezogene Daten wie Name, E-Mail-Adresse, IP-Adresse und Signaturmetadaten durch DocuSign ausschließlich zur Erstellung einer rechtsverbindlichen elektronischen Unterschrift verarbeitet.",
+    "s6p3": "Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Weitere Informationen finden Sie in der Datenschutzerklärung von DocuSign: https://www.docusign.com/company/privacy-policy"
   },
   "cookies": {
     "message": "Diese Website verwendet Cookies für eingebettete Inhalte.",

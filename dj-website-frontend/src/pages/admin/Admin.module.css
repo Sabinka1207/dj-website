@@ -142,6 +142,11 @@
   margin-bottom: 32px;
 }
 
+.formEdit {
+  border-color: var(--color-accent);
+  border-left-width: 3px;
+}
+
 .formTitle {
   font-size: 1rem;
   font-weight: 600;
@@ -967,4 +972,50 @@
     align-items: flex-start;
     gap: 8px;
   }
+}
+
+/* Tools page */
+.sectionLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  margin-bottom: 10px;
+}
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.toolCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  border-radius: 3px;
+  padding: 16px 18px;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.toolCard:hover {
+  border-color: var(--color-accent);
+}
+
+.toolName {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+}
+
+.toolDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
 }

@@ -80,6 +80,27 @@ export default function AdminLayout() {
           >
             Availability
           </NavLink>
+          <NavLink
+            to="/admin/org-docs"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Org Docs
+          </NavLink>
+          <NavLink
+            to="/admin/mixes"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Mixes
+          </NavLink>
+          <NavLink
+            to="/admin/tools"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Tools
+          </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>
           <button className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm} ${styles.btnGoogle}`} onClick={handleLogout}>
