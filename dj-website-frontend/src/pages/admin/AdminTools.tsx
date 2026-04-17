@@ -191,7 +191,10 @@ export default function AdminTools() {
                 <span className={styles.toolDesc}>{r2Usage.objectCount.toLocaleString()} files</span>
               </div>
               <div className={styles.statCard}>
-                <span className={styles.toolName}>Class A Ops</span>
+                <span className={styles.toolName}>
+                  Class A Ops
+                  <i className={styles.infoIcon}>i<span className={styles.infoTooltip}>Write operations: uploading, deleting, listing files</span></i>
+                </span>
                 <span className={styles.toolDesc}>{r2Usage.classAOps.toLocaleString()} / 1,000,000</span>
                 <UsageBar percent={(r2Usage.classAOps / 1_000_000) * 100} />
                 <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
@@ -199,7 +202,10 @@ export default function AdminTools() {
                 </span>
               </div>
               <div className={styles.statCard}>
-                <span className={styles.toolName}>Class B Ops</span>
+                <span className={styles.toolName}>
+                  Class B Ops
+                  <i className={styles.infoIcon}>i<span className={styles.infoTooltip}>Read operations: streaming & downloading files, checking metadata</span></i>
+                </span>
                 <span className={styles.toolDesc}>{r2Usage.classBOps.toLocaleString()} / 10,000,000</span>
                 <UsageBar percent={(r2Usage.classBOps / 10_000_000) * 100} />
                 <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
