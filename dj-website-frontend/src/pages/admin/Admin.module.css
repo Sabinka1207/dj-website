@@ -1019,3 +1019,39 @@
   color: var(--color-text-muted);
   line-height: 1.5;
 }
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #111;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  padding: 16px 18px;
+  cursor: default;
+}
+
+.mediaRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.mediaLinkCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  border-radius: 3px;
+  padding: 16px 18px;
+  text-decoration: none;
+  transition: border-color 0.15s;
+  min-width: 160px;
+}
+
+.mediaLinkCard:hover {
+  border-color: var(--color-accent);
+}

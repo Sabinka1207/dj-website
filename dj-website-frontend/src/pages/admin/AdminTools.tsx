@@ -15,16 +15,14 @@ const TOOLS: Tool[] = [
   { name: 'Vercel', description: 'Frontend hosting & deployments', url: 'https://vercel.com/dashboard', category: 'Hosting' },
   { name: 'Render', description: 'Backend hosting & deployments', url: 'https://dashboard.render.com', category: 'Hosting' },
   { name: 'Supabase', description: 'PostgreSQL database', url: 'https://supabase.com/dashboard', category: 'Hosting' },
-  // Media & Docs
-  { name: 'Cloudinary', description: 'Cover images storage', url: 'https://console.cloudinary.com', category: 'Media & Docs' },
-  { name: 'Cloudflare R2', description: 'Mix audio files (zero egress)', url: 'https://dash.cloudflare.com/?to=/:account/r2', category: 'Media & Docs' },
   // Notifications & email
   { name: 'Resend', description: 'Transactional email (booking notifications)', url: 'https://resend.com/emails', category: 'Email & Notifications' },
   { name: 'Telegram Bot', description: 'Bot for booking alerts', url: 'https://t.me/BotFather', category: 'Email & Notifications' },
   // Auth
   { name: 'Google Cloud Console', description: 'Google OAuth client (admin login)', url: 'https://console.cloud.google.com', category: 'Auth' },
-  { name: 'DocuSign', description: 'Electronic contract signing', url: 'https://app.docusign.com', category: 'Media & Docs' },
-  { name: 'Canva', description: 'Flyers, promo graphics, social posts', url: 'https://www.canva.com', category: 'Media & Docs' },
+  // Docs & design
+  { name: 'DocuSign', description: 'Electronic contract signing', url: 'https://app.docusign.com', category: 'Docs & Design' },
+  { name: 'Canva', description: 'Flyers, promo graphics, social posts', url: 'https://www.canva.com', category: 'Docs & Design' },
   // Monitoring
   { name: 'UptimeRobot', description: 'Uptime monitoring for backend', url: 'https://uptimerobot.com/dashboard', category: 'Monitoring' },
 ]
@@ -33,17 +31,20 @@ const CATEGORIES = [...new Set(TOOLS.map(t => t.category))]
 
 type CloudinaryUsage = {
   storageBytesUsed: number
-  storageBytesLimit: number
-  storagePercent: number
   objectCount: number
   bandwidthBytesUsed: number
-  bandwidthBytesLimit: number
   plan: string
 }
 
-// Cloudinary Free plan limits (API does not return them reliably)
-const FREE_STORAGE_BYTES = 25 * 1024 * 1024 * 1024   // 25 GB
-const FREE_BANDWIDTH_BYTES = 25 * 1024 * 1024 * 1024  // 25 GB
+type R2Usage = {
+  storageBytesUsed: number
+  objectCount: number
+}
+
+// Free plan limits (hardcoded — APIs do not return them reliably)
+const FREE_CLOUDINARY_STORAGE_BYTES = 25 * 1024 * 1024 * 1024   // 25 GB
+const FREE_CLOUDINARY_BANDWIDTH_BYTES = 25 * 1024 * 1024 * 1024  // 25 GB
+const FREE_R2_STORAGE_BYTES = 10 * 1024 * 1024 * 1024            // 10 GB
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -63,18 +64,29 @@ function UsageBar({ percent }: { percent: number }) {
 
 export default function AdminTools() {
   const navigate = useNavigate()
-  const [usage, setUsage] = useState<CloudinaryUsage | null>(null)
-  const [usageError, setUsageError] = useState(false)
+  const [cloudinaryUsage, setCloudinaryUsage] = useState<CloudinaryUsage | null>(null)
+  const [cloudinaryError, setCloudinaryError] = useState(false)
+  const [r2Usage, setR2Usage] = useState<R2Usage | null>(null)
+  const [r2Error, setR2Error] = useState(false)
 
   useEffect(() => {
     fetch('/api/admin/cloudinary-usage', { headers: authHeaders() })
       .then(res => {
         if (res.status === 401) { clearToken(); navigate('/admin/login'); return null }
-        if (!res.ok) { setUsageError(true); return null }
+        if (!res.ok) { setCloudinaryError(true); return null }
         return res.json()
       })
-      .then(data => { if (data) setUsage(data) })
-      .catch(() => setUsageError(true))
+      .then(data => { if (data) setCloudinaryUsage(data) })
+      .catch(() => setCloudinaryError(true))
+
+    fetch('/api/admin/r2-usage', { headers: authHeaders() })
+      .then(res => {
+        if (res.status === 401) { clearToken(); navigate('/admin/login'); return null }
+        if (!res.ok) { setR2Error(true); return null }
+        return res.json()
+      })
+      .then(data => { if (data) setR2Usage(data) })
+      .catch(() => setR2Error(true))
   }, [])
 
   return (
@@ -86,49 +98,110 @@ export default function AdminTools() {
         Quick access to all services used by this website.
       </p>
 
-      {/* Cloudinary storage usage */}
+      {/* Media Storage */}
       <div style={{ marginBottom: 40 }}>
-        <p className={styles.sectionLabel}>Cloudinary Storage</p>
-        {usageError ? (
-          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Could not load usage data.</p>
-        ) : !usage ? (
-          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Loading…</p>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-            <div className={styles.toolCard} style={{ cursor: 'default' }}>
-              <span className={styles.toolName}>Storage</span>
-              <span className={styles.toolDesc}>
-                {formatBytes(usage.storageBytesUsed)} / {formatBytes(FREE_STORAGE_BYTES)}
-              </span>
-              <UsageBar percent={(usage.storageBytesUsed / FREE_STORAGE_BYTES) * 100} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
-                {((usage.storageBytesUsed / FREE_STORAGE_BYTES) * 100).toFixed(1)}% used
-              </span>
+        <p className={styles.sectionLabel}>Media Storage</p>
+
+        {/* Cloudinary row */}
+        <div className={styles.mediaRow}>
+          <a
+            href="https://console.cloudinary.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.mediaLinkCard}
+          >
+            <span className={styles.toolName}>Cloudinary</span>
+            <span className={styles.toolDesc}>Cover images storage</span>
+          </a>
+          {cloudinaryError ? (
+            <div className={styles.statCard}>
+              <span className={styles.toolName}>Stats</span>
+              <span className={styles.toolDesc}>Could not load usage data.</span>
             </div>
-            <div className={styles.toolCard} style={{ cursor: 'default' }}>
-              <span className={styles.toolName}>Objects</span>
-              <span className={styles.toolDesc}>{usage.objectCount.toLocaleString()} files</span>
+          ) : !cloudinaryUsage ? (
+            <div className={styles.statCard}>
+              <span className={styles.toolDesc}>Loading…</span>
             </div>
-            <div className={styles.toolCard} style={{ cursor: 'default' }}>
-              <span className={styles.toolName}>Bandwidth</span>
-              <span className={styles.toolDesc}>
-                {formatBytes(usage.bandwidthBytesUsed)} / {formatBytes(FREE_BANDWIDTH_BYTES)}
-              </span>
-              <UsageBar percent={(usage.bandwidthBytesUsed / FREE_BANDWIDTH_BYTES) * 100} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
-                {((usage.bandwidthBytesUsed / FREE_BANDWIDTH_BYTES) * 100).toFixed(1)}% used
-              </span>
-            </div>
-            {usage.plan && (
-              <div className={styles.toolCard} style={{ cursor: 'default' }}>
-                <span className={styles.toolName}>Plan</span>
-                <span className={styles.toolDesc}>{usage.plan}</span>
+          ) : (
+            <>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Storage</span>
+                <span className={styles.toolDesc}>
+                  {formatBytes(cloudinaryUsage.storageBytesUsed)} / {formatBytes(FREE_CLOUDINARY_STORAGE_BYTES)}
+                </span>
+                <UsageBar percent={(cloudinaryUsage.storageBytesUsed / FREE_CLOUDINARY_STORAGE_BYTES) * 100} />
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                  {((cloudinaryUsage.storageBytesUsed / FREE_CLOUDINARY_STORAGE_BYTES) * 100).toFixed(1)}% used
+                </span>
               </div>
-            )}
-          </div>
-        )}
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Bandwidth</span>
+                <span className={styles.toolDesc}>
+                  {formatBytes(cloudinaryUsage.bandwidthBytesUsed)} / {formatBytes(FREE_CLOUDINARY_BANDWIDTH_BYTES)}
+                </span>
+                <UsageBar percent={(cloudinaryUsage.bandwidthBytesUsed / FREE_CLOUDINARY_BANDWIDTH_BYTES) * 100} />
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                  {((cloudinaryUsage.bandwidthBytesUsed / FREE_CLOUDINARY_BANDWIDTH_BYTES) * 100).toFixed(1)}% used
+                </span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Objects</span>
+                <span className={styles.toolDesc}>{cloudinaryUsage.objectCount.toLocaleString()} files</span>
+                {cloudinaryUsage.plan && (
+                  <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                    {cloudinaryUsage.plan} plan
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Cloudflare R2 row */}
+        <div className={styles.mediaRow}>
+          <a
+            href="https://dash.cloudflare.com/?to=/:account/r2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.mediaLinkCard}
+          >
+            <span className={styles.toolName}>Cloudflare R2</span>
+            <span className={styles.toolDesc}>Mix audio files · zero egress</span>
+          </a>
+          {r2Error ? (
+            <div className={styles.statCard}>
+              <span className={styles.toolName}>Stats</span>
+              <span className={styles.toolDesc}>Could not load usage data.</span>
+            </div>
+          ) : !r2Usage ? (
+            <div className={styles.statCard}>
+              <span className={styles.toolDesc}>Loading…</span>
+            </div>
+          ) : (
+            <>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Storage</span>
+                <span className={styles.toolDesc}>
+                  {formatBytes(r2Usage.storageBytesUsed)} / {formatBytes(FREE_R2_STORAGE_BYTES)}
+                </span>
+                <UsageBar percent={(r2Usage.storageBytesUsed / FREE_R2_STORAGE_BYTES) * 100} />
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                  {((r2Usage.storageBytesUsed / FREE_R2_STORAGE_BYTES) * 100).toFixed(1)}% used
+                </span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Objects</span>
+                <span className={styles.toolDesc}>{r2Usage.objectCount.toLocaleString()} files</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                  10M Class B · 1M Class A ops/mo free
+                </span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Tool categories */}
       {CATEGORIES.map(category => (
         <div key={category} style={{ marginBottom: 36 }}>
           <p className={styles.sectionLabel}>{category}</p>
