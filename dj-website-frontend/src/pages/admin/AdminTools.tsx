@@ -52,7 +52,7 @@ function formatBytes(bytes: number): string {
 }
 
 function UsageBar({ percent }: { percent: number }) {
-  const color = percent > 80 ? '#e55' : percent > 50 ? 'var(--color-accent)' : '#4a9'
+  const color = percent > 80 ? '#e55' : percent > 60 ? '#fa0' : percent > 40 ? '#ffd' : '#fff'
   return (
     <div style={{ height: 4, background: '#2a2a2a', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
       <div style={{ width: `${Math.min(percent, 100)}%`, height: '100%', background: color, borderRadius: 2, transition: 'width 0.4s ease' }} />
