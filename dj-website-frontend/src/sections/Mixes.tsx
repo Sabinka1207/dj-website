@@ -69,7 +69,11 @@ export default function Mixes({ cookiesAccepted }: Props) {
         const all: FeaturedItem[] = [
           ...featuredExternal.map((m: any) => ({ kind: 'external' as const, ...m })),
           ...featuredHosted.map((m: any) => ({ kind: 'hosted' as const, ...m })),
-        ].sort((a, b) => (a.homeDisplayOrder || 0) - (b.homeDisplayOrder || 0))
+        ].sort((a, b) => {
+          const ao = a.homeDisplayOrder > 0 ? a.homeDisplayOrder : Infinity
+          const bo = b.homeDisplayOrder > 0 ? b.homeDisplayOrder : Infinity
+          return ao - bo
+        })
         setItems(all)
         setTotalCount(allExt.length + allHost.length)
       })
