@@ -12,21 +12,33 @@ import java.net.URI
 @Configuration
 class R2Config {
 
-    @Value("\${r2.account-id}")
+    @Value("\${r2.account-id:}")
     private lateinit var accountId: String
 
-    @Value("\${r2.access-key-id}")
+    @Value("\${r2.access-key-id:}")
     private lateinit var accessKeyId: String
 
-    @Value("\${r2.secret-access-key}")
+    @Value("\${r2.secret-access-key:}")
     private lateinit var secretAccessKey: String
 
     @Bean
-    fun s3Client(): S3Client = S3Client.builder()
-        .endpointOverride(URI.create("https://$accountId.r2.cloudflarestorage.com"))
-        .credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(accessKeyId, secretAccessKey)
-        ))
-        .region(Region.of("auto"))
-        .build()
+    fun s3Client(): S3Client {
+        if (accountId.isBlank() || accessKeyId.isBlank() || secretAccessKey.isBlank()) {
+            // Return a no-op client when R2 is not configured (local dev)
+            return S3Client.builder()
+                .endpointOverride(URI.create("https://localhost"))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create("dummy", "dummy")
+                ))
+                .region(Region.of("us-east-1"))
+                .build()
+        }
+        return S3Client.builder()
+            .endpointOverride(URI.create("https://$accountId.r2.cloudflarestorage.com"))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKeyId, secretAccessKey)
+            ))
+            .region(Region.of("auto"))
+            .build()
+    }
 }
