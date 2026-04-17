@@ -1055,3 +1055,44 @@
 .mediaLinkCard:hover {
   border-color: var(--color-accent);
 }
+
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 0.6rem;
+  font-style: normal;
+  color: var(--color-text-muted);
+  cursor: help;
+  position: relative;
+  opacity: 0.6;
+  vertical-align: middle;
+  margin-left: 5px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.infoIcon .infoTooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1c1c1c;
+  border: 1px solid #2e2e2e;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.infoIcon:hover .infoTooltip {
+  display: block;
+}
