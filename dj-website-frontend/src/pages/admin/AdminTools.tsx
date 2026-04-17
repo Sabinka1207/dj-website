@@ -82,6 +82,7 @@ export default function AdminTools() {
     fetch('/api/admin/r2-usage', { headers: authHeaders() })
       .then(res => {
         if (res.status === 401) { clearToken(); navigate('/admin/login'); return null }
+        if (res.status === 503) return null  // not configured — skip silently
         if (!res.ok) { setR2Error(true); return null }
         return res.json()
       })
@@ -173,11 +174,7 @@ export default function AdminTools() {
               <span className={styles.toolName}>Stats</span>
               <span className={styles.toolDesc}>Could not load usage data.</span>
             </div>
-          ) : !r2Usage ? (
-            <div className={styles.statCard}>
-              <span className={styles.toolDesc}>Loading…</span>
-            </div>
-          ) : (
+          ) : r2Usage ? (
             <>
               <div className={styles.statCard}>
                 <span className={styles.toolName}>Storage</span>

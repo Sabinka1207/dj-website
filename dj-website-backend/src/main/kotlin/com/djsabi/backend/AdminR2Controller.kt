@@ -28,22 +28,27 @@ class AdminR2Controller(
     @GetMapping("/r2-usage")
     fun usage(req: HttpServletRequest): ResponseEntity<R2UsageResponse> {
         if (!authorized(req)) return ResponseEntity.status(401).build()
+        if (r2BucketName.isBlank()) return ResponseEntity.status(503).build()
 
-        var totalBytes = 0L
-        var totalObjects = 0L
-        var continuationToken: String? = null
+        return try {
+            var totalBytes = 0L
+            var totalObjects = 0L
+            var continuationToken: String? = null
 
-        do {
-            val request = ListObjectsV2Request.builder()
-                .bucket(r2BucketName)
-                .also { if (continuationToken != null) it.continuationToken(continuationToken) }
-                .build()
-            val response = s3Client.listObjectsV2(request)
-            totalBytes += response.contents().sumOf { it.size() }
-            totalObjects += response.contents().size
-            continuationToken = if (response.isTruncated == true) response.nextContinuationToken() else null
-        } while (continuationToken != null)
+            do {
+                val request = ListObjectsV2Request.builder()
+                    .bucket(r2BucketName)
+                    .also { if (continuationToken != null) it.continuationToken(continuationToken) }
+                    .build()
+                val response = s3Client.listObjectsV2(request)
+                totalBytes += response.contents().sumOf { it.size() }
+                totalObjects += response.contents().size
+                continuationToken = if (response.isTruncated == true) response.nextContinuationToken() else null
+            } while (continuationToken != null)
 
-        return ResponseEntity.ok(R2UsageResponse(totalBytes, totalObjects))
+            ResponseEntity.ok(R2UsageResponse(totalBytes, totalObjects))
+        } catch (e: Exception) {
+            ResponseEntity.status(503).build()
+        }
     }
 }
