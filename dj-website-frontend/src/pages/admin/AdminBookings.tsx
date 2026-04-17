@@ -17,11 +17,7 @@ type Booking = {
   submittedAt: string
 }
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+const formatDate = (s: string) => s
 
 const replyTemplate = (name: string, lang: string) => {
   switch (lang) {
@@ -90,7 +86,7 @@ export default function AdminBookings() {
   return (
     <>
       <div className={styles.panelHeader}>
-        <h1 className={styles.panelTitle}>Booking Requests</h1>
+        <h1 className={styles.panelTitle}>Contacts</h1>
         <button
           className={styles.iconBtn}
           onClick={() => load(true)}
@@ -105,7 +101,7 @@ export default function AdminBookings() {
       {loading ? (
         <p className={styles.empty}>Loading…</p>
       ) : bookings.length === 0 ? (
-        <p className={styles.empty}>No booking requests yet.</p>
+        <p className={styles.empty}>No messages yet.</p>
       ) : (
         <>
           {/* Desktop table */}

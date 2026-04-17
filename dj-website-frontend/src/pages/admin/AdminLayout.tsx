@@ -68,7 +68,7 @@ export default function AdminLayout() {
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
           >
-            Bookings
+            Contacts
             {unreadCount > 0 && (
               <span className={styles.navBadge}>{unreadCount}</span>
             )}
