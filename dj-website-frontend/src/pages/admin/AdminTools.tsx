@@ -37,6 +37,8 @@ type CloudinaryUsage = {
 type R2Usage = {
   storageBytesUsed: number
   objectCount: number
+  classAOps: number
+  classBOps: number
 }
 
 // Free plan limits (hardcoded — APIs do not return them reliably)
@@ -187,8 +189,21 @@ export default function AdminTools() {
               <div className={styles.statCard}>
                 <span className={styles.toolName}>Objects</span>
                 <span className={styles.toolDesc}>{r2Usage.objectCount.toLocaleString()} files</span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Class A Ops</span>
+                <span className={styles.toolDesc}>{r2Usage.classAOps.toLocaleString()} / 1,000,000</span>
+                <UsageBar percent={(r2Usage.classAOps / 1_000_000) * 100} />
                 <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
-                  10M Class B · 1M Class A ops/mo free
+                  {((r2Usage.classAOps / 1_000_000) * 100).toFixed(2)}% used
+                </span>
+              </div>
+              <div className={styles.statCard}>
+                <span className={styles.toolName}>Class B Ops</span>
+                <span className={styles.toolDesc}>{r2Usage.classBOps.toLocaleString()} / 10,000,000</span>
+                <UsageBar percent={(r2Usage.classBOps / 10_000_000) * 100} />
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
+                  {((r2Usage.classBOps / 10_000_000) * 100).toFixed(2)}% used
                 </span>
               </div>
             </>
