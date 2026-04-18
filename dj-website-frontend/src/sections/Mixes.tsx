@@ -19,19 +19,31 @@ interface Props {
 
 export default function Mixes({ cookiesAccepted }: Props) {
   const { t } = useTranslation()
-  const [items, setItems] = useState<FeaturedItem[]>([])
+  const [items, setItems] = useState<FeaturedItem[]>(FALLBACK_MIXES)
   const [playingId, setPlayingId] = useState<number | null>(null)
   const [totalCount, setTotalCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
   const [serverDown, setServerDown] = useState(false)
   const [showWarmup, setShowWarmup] = useState(false)
+  const [showReload, setShowReload] = useState(false)
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 8000)
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 70000)
 
     const fetchMixes = () => {
-      const tryFetch = (url: string) => fetch(url).then(r => r.json()).catch(() => null)
+      const tryFetch = (url: string) => {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000)
+        return fetch(url, { signal: controller.signal })
+          .then(r => r.json())
+          .catch(() => null)
+          .finally(() => clearTimeout(timeout))
+      }
+
       Promise.all([
         tryFetch('/api/external-mixes/featured'),
         tryFetch('/api/mixes/featured'),
@@ -45,10 +57,13 @@ export default function Mixes({ cookiesAccepted }: Props) {
           return
         }
 
-        // Server responded — clear warmup state
+        // Server is alive — clear warmup state
+        setIsLoading(false)
         setServerDown(false)
         setShowWarmup(false)
+        setShowReload(false)
         if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
+        if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
 
         const ext = external ?? []
         const host = hosted ?? []
@@ -84,6 +99,7 @@ export default function Mixes({ cookiesAccepted }: Props) {
     return () => {
       if (retryRef.current) clearTimeout(retryRef.current)
       if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
     }
   }, [])
 
@@ -132,14 +148,19 @@ export default function Mixes({ cookiesAccepted }: Props) {
           })}
         </div>
 
-        {serverDown && (
+        {(isLoading || serverDown) && (
           <div className={styles.warmupRow}>
             <span className={styles.spinner} />
             {showWarmup && <span className={styles.warmupHint}>{t('common.warmup')}</span>}
+            {showReload && (
+              <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            )}
           </div>
         )}
 
-        {!serverDown && (
+        {!isLoading && !serverDown && (
           <div className={styles.viewAll}>
             <Link to="/mixes" className={styles.viewAllBtn}>
               {t('mixes.viewAll')}{totalCount > 0 ? ` (${totalCount})` : ''}
