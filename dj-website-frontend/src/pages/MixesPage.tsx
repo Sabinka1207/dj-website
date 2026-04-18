@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import MixPlayer from '../components/MixPlayer'
@@ -130,6 +130,12 @@ export default function MixesPage() {
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
   const [playingId, setPlayingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [serverDown, setServerDown] = useState(false)
+  const [showWarmup, setShowWarmup] = useState(false)
+  const [showReload, setShowReload] = useState(false)
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const warmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cookiesAccepted = localStorage.getItem('cookieConsent') === 'accepted'
 
   const changeLanguage = (code: string) => {
@@ -138,13 +144,46 @@ export default function MixesPage() {
   }
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/mixes').then(r => r.json()).catch(() => []),
-      fetch('/api/external-mixes').then(r => r.json()).catch(() => []),
-    ]).then(([hosted, external]) => {
-      setHostedMixes(hosted)
-      setExternalMixes(external)
-    }).finally(() => setLoading(false))
+    warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 8000)
+    reloadTimerRef.current = setTimeout(() => setShowReload(true), 70000)
+
+    const fetchData = () => {
+      const tryFetch = (url: string) => {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000)
+        return fetch(url, { signal: controller.signal })
+          .then(r => r.json())
+          .catch(() => null)
+          .finally(() => clearTimeout(timeout))
+      }
+
+      Promise.all([
+        tryFetch('/api/mixes'),
+        tryFetch('/api/external-mixes'),
+      ]).then(([hosted, external]) => {
+        if (hosted === null && external === null) {
+          setServerDown(true)
+          retryRef.current = setTimeout(fetchData, 5000)
+          return
+        }
+        setHostedMixes(hosted ?? [])
+        setExternalMixes(external ?? [])
+        setLoading(false)
+        setServerDown(false)
+        setShowWarmup(false)
+        setShowReload(false)
+        if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
+        if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+      })
+    }
+
+    fetchData()
+
+    return () => {
+      if (retryRef.current) clearTimeout(retryRef.current)
+      if (warmupTimerRef.current) clearTimeout(warmupTimerRef.current)
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current)
+    }
   }, [])
 
   const allMixes: UnifiedMix[] = [
@@ -172,10 +211,21 @@ export default function MixesPage() {
 
         <h1 className={styles.title}>{t('mixesPage.title')}</h1>
 
-        {loading && <p className={styles.empty}>...</p>}
-        {!loading && allMixes.length === 0 && <p className={styles.empty}>{t('mixesPage.empty')}</p>}
+        {(loading || serverDown) && (
+          <div className={styles.loadingRow}>
+            <span className={styles.spinner} />
+            {showWarmup && <span className={styles.warmupHint}>{t('common.warmup')}</span>}
+            {showReload && (
+              <button className={styles.reloadBtn} onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            )}
+          </div>
+        )}
 
-        {!loading && allMixes.length > 0 && (
+        {!loading && !serverDown && allMixes.length === 0 && <p className={styles.empty}>{t('mixesPage.empty')}</p>}
+
+        {!loading && !serverDown && allMixes.length > 0 && (
           <div className={styles.list}>
             {allMixes.map(item =>
               item.kind === 'hosted' ? (
