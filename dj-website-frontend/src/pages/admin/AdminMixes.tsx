@@ -150,7 +150,7 @@ function formatDuration(totalSeconds: number): string {
 }
 
 function StatsTable({ stats }: { stats: MixStat[] }) {
-  const [sortKey, setSortKey] = useState<StatSortKey>('plays')
+  const [sortKey, setSortKey] = useState<StatSortKey>('year')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
   const handleSort = (key: StatSortKey) => {
