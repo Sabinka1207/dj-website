@@ -35,7 +35,7 @@ data class MixStatResponse(
     val year: Int,
     val plays: Long,
     val uniqueListeners: Long,
-    val totalMinutesPlayed: Long,
+    val totalSecondsPlayed: Long,
     val downloads: Long,
     val uniqueDownloaders: Long
 )
@@ -109,7 +109,7 @@ class AdminMixStatsController(
                 year = mix.year,
                 plays = playEventRepository.countByMixId(mix.id),
                 uniqueListeners = playEventRepository.countDistinctVisitorsByMixId(mix.id),
-                totalMinutesPlayed = playEventRepository.sumSecondsPlayedByMixId(mix.id) / 60,
+                totalSecondsPlayed = playEventRepository.sumSecondsPlayedByMixId(mix.id),
                 downloads = downloadEventRepository.countByMixId(mix.id),
                 uniqueDownloaders = downloadEventRepository.countDistinctVisitorsByMixId(mix.id)
             )
