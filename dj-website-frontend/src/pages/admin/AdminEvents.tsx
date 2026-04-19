@@ -35,6 +35,7 @@ const buildDescription = (partyName: string, hours: string): string =>
 export default function AdminEvents() {
   const navigate = useNavigate()
   const [events, setEvents] = useState<Event[]>([])
+  const [listLoading, setListLoading] = useState(true)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -44,6 +45,7 @@ export default function AdminEvents() {
     const res = await fetch('/api/admin/events', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setEvents(await res.json())
+    setListLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -170,7 +172,7 @@ export default function AdminEvents() {
             )
           })}
           {events.length === 0 && (
-            <tr><td colSpan={7} className={styles.empty}>No events yet</td></tr>
+            <tr><td colSpan={7} className={styles.empty}>{listLoading ? <span className={styles.spinner} style={{ margin: '0 auto' }} /> : 'No events yet'}</td></tr>
           )}
         </tbody>
       </table>

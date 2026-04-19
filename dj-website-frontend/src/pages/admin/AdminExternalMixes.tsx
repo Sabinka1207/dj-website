@@ -80,6 +80,7 @@ function toEmbedUrl(raw: string): string {
 export default function AdminExternalMixes() {
   const navigate = useNavigate()
   const [mixes, setMixes] = useState<ExternalMix[]>([])
+  const [listLoading, setListLoading] = useState(true)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
@@ -89,6 +90,7 @@ export default function AdminExternalMixes() {
     const res = await fetch('/api/admin/external-mixes', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setMixes(await res.json())
+    setListLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -209,7 +211,9 @@ export default function AdminExternalMixes() {
       </div>
 
       {mixes.length === 0 ? (
-        <p className={styles.empty}>No external mixes yet.</p>
+        listLoading
+          ? <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+          : <p className={styles.empty}>No external mixes yet.</p>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
