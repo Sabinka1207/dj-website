@@ -691,18 +691,9 @@ export default function AdminMixes() {
                           <HomeIcon filled={mix.homeFeatured} />
                         </button>
                         {mix.homeFeatured && (
-                          <select
-                            value={mix.homeDisplayOrder || 1}
-                            title="Position on home page"
-                            style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4, color: 'var(--color-accent)', fontSize: '0.8rem', padding: '2px 4px' }}
-                            onChange={e => handleSetHomeOrder(mix, parseInt(e.target.value))}
-                          >
-                            {Array.from({ length: allFeatured.length }, (_, i) => i + 1).map(n => (
-                              <option key={n} value={n} disabled={usedOrders.has(n) && mix.homeDisplayOrder !== n}>
-                                #{n}{usedOrders.has(n) && mix.homeDisplayOrder !== n ? ' ✕' : ''}
-                              </option>
-                            ))}
-                          </select>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 600 }}>
+                            #{mix.homeDisplayOrder || 1}
+                          </span>
                         )}
                       </div>
                     </td>
@@ -759,6 +750,11 @@ export default function AdminMixes() {
                     >
                       <HomeIcon filled={mix.homeFeatured} />
                     </button>
+                    {mix.homeFeatured && (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 600 }}>
+                        #{mix.homeDisplayOrder || 1}
+                      </span>
+                    )}
                     <button className={styles.iconBtn} onClick={() => handleEdit(mix)} title="Edit">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -775,22 +771,6 @@ export default function AdminMixes() {
                     </button>
                   </div>
                 </div>
-                {mix.homeFeatured && (
-                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>Home position:</span>
-                    <select
-                      value={mix.homeDisplayOrder || 1}
-                      style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4, color: 'var(--color-accent)', fontSize: '0.8rem', padding: '2px 6px' }}
-                      onChange={e => handleSetHomeOrder(mix, parseInt(e.target.value))}
-                    >
-                      {Array.from({ length: allFeatured.length }, (_, i) => i + 1).map(n => (
-                        <option key={n} value={n} disabled={usedOrders.has(n) && mix.homeDisplayOrder !== n}>
-                          #{n}{usedOrders.has(n) && mix.homeDisplayOrder !== n ? ' ✕' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             ))}
           </div>
