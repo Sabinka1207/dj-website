@@ -10,6 +10,5 @@ data class MixDownloadEvent(
     val id: Long = 0,
     val mixId: Long = 0,
     val visitorId: String = "",
-    @Column(columnDefinition = "timestamptz")
     val downloadedAt: Instant = Instant.now()
 )

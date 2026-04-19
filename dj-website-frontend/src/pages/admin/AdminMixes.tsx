@@ -10,7 +10,7 @@ type MixStat = {
   year: number
   plays: number
   uniqueListeners: number
-  totalMinutesPlayed: number
+  totalSecondsPlayed: number
   downloads: number
   uniqueDownloaders: number
 }
@@ -138,6 +138,75 @@ function MetaFields({
 }
 
 // ── Component ────────────────────────────────────────────
+// ── StatsTable ───────────────────────────────────────────
+type StatSortKey = 'title' | 'year' | 'plays' | 'uniqueListeners' | 'totalSecondsPlayed' | 'downloads' | 'uniqueDownloaders'
+
+function formatDuration(totalSeconds: number): string {
+  const sec = totalSeconds || 0
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+function StatsTable({ stats }: { stats: MixStat[] }) {
+  const [sortKey, setSortKey] = useState<StatSortKey>('plays')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  const handleSort = (key: StatSortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const sorted = [...stats].sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey]
+    const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number)
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+
+  const arrow = (key: StatSortKey) => sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'
+
+  const th = (key: StatSortKey, label: string) => (
+    <th
+      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+      onClick={() => handleSort(key)}
+    >
+      {label}<span style={{ opacity: sortKey === key ? 1 : 0.35, fontSize: '0.75em' }}>{arrow(key)}</span>
+    </th>
+  )
+
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {th('title', 'Mix')}
+            {th('year', 'Year')}
+            {th('plays', 'Plays')}
+            {th('uniqueListeners', 'Listeners')}
+            {th('totalSecondsPlayed', 'Played')}
+            {th('downloads', 'Downloads')}
+            {th('uniqueDownloaders', 'Downloaders')}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map(s => (
+            <tr key={s.mixId}>
+              <td>{s.title}</td>
+              <td>{s.year || '—'}</td>
+              <td>{s.plays}</td>
+              <td>{s.uniqueListeners}</td>
+              <td>{formatDuration(s.totalSecondsPlayed)}</td>
+              <td>{s.downloads}</td>
+              <td>{s.uniqueDownloaders}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function AdminMixes() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -734,35 +803,7 @@ export default function AdminMixes() {
       {activeTab === 'stats' && stats.length > 0 && (
         <div>
           <h3 className={styles.formTitle} style={{ marginBottom: 16 }}>Play &amp; Download Stats</h3>
-          <div className={styles.tableWrap} style={{ overflowX: 'auto' }}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Mix</th>
-                  <th title="Total play sessions (≥5s)">Plays</th>
-                  <th title="Unique visitors who played">Listeners</th>
-                  <th title="Total minutes played across all sessions">Min played</th>
-                  <th title="Total download clicks">Downloads</th>
-                  <th title="Unique visitors who downloaded">Downloaders</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.map(s => (
-                  <tr key={s.mixId}>
-                    <td>
-                      <span style={{ fontWeight: 500 }}>{s.title}</span>
-                      {s.year > 0 && <span style={{ marginLeft: 6, fontSize: '0.75rem', opacity: 0.5 }}>{s.year}</span>}
-                    </td>
-                    <td className={styles.nowrap}>{s.plays}</td>
-                    <td className={styles.nowrap} style={{ color: 'var(--color-accent)' }}>{s.uniqueListeners}</td>
-                    <td className={styles.nowrap}>{s.totalMinutesPlayed} min</td>
-                    <td className={styles.nowrap}>{s.downloads}</td>
-                    <td className={styles.nowrap} style={{ color: 'var(--color-accent)' }}>{s.uniqueDownloaders}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <StatsTable stats={stats} />
         </div>
       )}
 

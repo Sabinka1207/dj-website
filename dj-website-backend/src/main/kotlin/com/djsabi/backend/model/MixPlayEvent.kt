@@ -11,6 +11,5 @@ data class MixPlayEvent(
     val mixId: Long = 0,
     val visitorId: String = "",
     val secondsPlayed: Int = 0,
-    @Column(columnDefinition = "timestamptz")
     val playedAt: Instant = Instant.now()
 )
