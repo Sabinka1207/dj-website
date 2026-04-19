@@ -251,6 +251,11 @@ export default function AdminMixes() {
     return Promise.resolve()
   }
 
+  const refreshStats = async () => {
+    const r = await fetch('/api/admin/mix-stats', { headers: authHeaders() })
+    if (r.ok) setStats(await r.json())
+  }
+
   useEffect(() => { load() }, [])
 
   // ── Add form handlers ──
@@ -797,13 +802,18 @@ export default function AdminMixes() {
       {activeTab === 'stats' && listLoading && (
         <div className={styles.loadingRow}><span className={styles.spinner} /></div>
       )}
-      {activeTab === 'stats' && !listLoading && stats.length === 0 && (
-        <p className={styles.empty}>No stats yet.</p>
-      )}
-      {activeTab === 'stats' && stats.length > 0 && (
+      {activeTab === 'stats' && !listLoading && (
         <div>
-          <h3 className={styles.formTitle} style={{ marginBottom: 16 }}>Play &amp; Download Stats</h3>
-          <StatsTable stats={stats} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <h3 className={styles.formTitle} style={{ margin: 0 }}>Play &amp; Download Stats</h3>
+            <button className={styles.iconBtn} onClick={refreshStats} title="Refresh stats">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+          </div>
+          {stats.length === 0
+            ? <p className={styles.empty}>No stats yet.</p>
+            : <StatsTable stats={stats} />
+          }
         </div>
       )}
 
