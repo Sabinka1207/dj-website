@@ -349,6 +349,47 @@
   text-align: center;
 }
 
+.loadingRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 48px 0;
+}
+
+.spinner {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: adminSpin 0.8s linear infinite;
+}
+
+@keyframes adminSpin {
+  to { transform: rotate(360deg); }
+}
+
+.reloadBtn {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid #333;
+  padding: 8px 20px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.reloadBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
 .optional {
   font-size: 0.65rem;
   opacity: 0.5;
