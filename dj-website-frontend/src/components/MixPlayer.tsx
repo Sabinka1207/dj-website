@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import logo from '../assets/Sabi logo white s png.png'
+import { getVisitorId } from '../utils/visitorId'
 import styles from './MixPlayer.module.css'
 
 interface Mix {
@@ -34,14 +35,32 @@ export default function MixPlayer({ mix, isPlaying, onPlay }: Props) {
   const [buffered, setBuffered] = useState(0)
   const [volume, setVolume] = useState(1)
   const [muted, setMuted] = useState(false)
+  const playStartRef = useRef<number | null>(null)
+  const reportedSecondsRef = useRef(0)
+
+  const reportPlay = () => {
+    if (playStartRef.current === null) return
+    const seconds = Math.round((Date.now() - playStartRef.current) / 1000)
+    playStartRef.current = null
+    if (seconds >= 5) {
+      reportedSecondsRef.current += seconds
+      fetch(`/api/mixes/${mix.id}/played`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId: getVisitorId(), secondsPlayed: seconds }),
+      }).catch(() => {})
+    }
+  }
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
     if (isPlaying) {
       audio.play().catch(() => {})
+      playStartRef.current = Date.now()
     } else {
       audio.pause()
+      reportPlay()
     }
   }, [isPlaying])
 
@@ -67,6 +86,7 @@ export default function MixPlayer({ mix, isPlaying, onPlay }: Props) {
   }
 
   const handleEnded = () => {
+    reportPlay()
     setCurrentTime(0)
     onPlay() // toggles off
   }
@@ -132,10 +152,8 @@ export default function MixPlayer({ mix, isPlaying, onPlay }: Props) {
               </button>
               <a
                 className={styles.downloadBtn}
-                href={mix.url}
+                href={`/api/mixes/${mix.id}/download?v=${getVisitorId()}`}
                 download
-                target="_blank"
-                rel="noreferrer"
                 aria-label="Download mix"
                 title="Download"
               >

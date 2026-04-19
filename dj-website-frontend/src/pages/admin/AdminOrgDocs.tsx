@@ -35,6 +35,7 @@ type SortDir = 'asc' | 'desc'
 export default function AdminOrgDocs() {
   const navigate = useNavigate()
   const [docs, setDocs] = useState<OrgDoc[]>([])
+  const [listLoading, setListLoading] = useState(true)
   const [sortKey, setSortKey] = useState<SortKey>('docType')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
 
@@ -57,6 +58,7 @@ export default function AdminOrgDocs() {
     const res = await fetch('/api/admin/org-docs', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setDocs(await res.json())
+    setListLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -204,7 +206,9 @@ export default function AdminOrgDocs() {
 
       {/* ── Table ── */}
       {docs.length === 0 ? (
-        <p className={styles.empty}>No document links yet.</p>
+        listLoading
+          ? <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+          : <p className={styles.empty}>No document links yet.</p>
       ) : (
         <div className={styles.tableWrap} style={{ marginTop: 32, overflowX: 'auto' }}>
           <table className={styles.table}>

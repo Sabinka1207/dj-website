@@ -4,6 +4,17 @@ import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
 // ── Types ────────────────────────────────────────────────
+type MixStat = {
+  mixId: number
+  title: string
+  year: number
+  plays: number
+  uniqueListeners: number
+  totalMinutesPlayed: number
+  downloads: number
+  uniqueDownloaders: number
+}
+
 type HostedMix = {
   kind: 'hosted'
   id: number
@@ -135,6 +146,9 @@ export default function AdminMixes() {
 
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
+  const [stats, setStats] = useState<MixStat[]>([])
+  const [listLoading, setListLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'add' | 'stats'>('add')
 
   // ── Add form (always visible) ──
   const [addSourceType, setAddSourceType] = useState<'hosted' | 'external'>('hosted')
@@ -153,15 +167,18 @@ export default function AdminMixes() {
 
   // ── Load ──
   const load = async () => {
-    const [r1, r2] = await Promise.all([
+    const [r1, r2, r3] = await Promise.all([
       fetch('/api/admin/mixes', { headers: authHeaders() }),
       fetch('/api/admin/external-mixes', { headers: authHeaders() }),
+      fetch('/api/admin/mix-stats', { headers: authHeaders() }),
     ])
     if (r1.status === 401 || r2.status === 401) { clearToken(); navigate('/admin/login'); return }
     const hosted: Omit<HostedMix, 'kind'>[] = await r1.json()
     const external: Omit<ExternalMix, 'kind'>[] = await r2.json()
     setHostedMixes(hosted.map(m => ({ ...m, kind: 'hosted' })))
     setExternalMixes(external.map(m => ({ ...m, kind: 'external' })))
+    if (r3.ok) setStats(await r3.json())
+    setListLoading(false)
     return Promise.resolve()
   }
 
@@ -419,9 +436,33 @@ export default function AdminMixes() {
         </h2>
       </div>
 
+      {/* ── Tabs ── */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 28 }}>
+        {([
+          { key: 'add', label: 'Add Mix' },
+          { key: 'stats', label: 'Play & Download Stats' },
+        ] as const).map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            style={{
+              background: 'none', border: 'none',
+              borderBottom: activeTab === key ? '2px solid var(--color-accent)' : '2px solid transparent',
+              color: activeTab === key ? 'var(--color-text)' : 'var(--color-text-muted)',
+              cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: '0.82rem', fontWeight: activeTab === key ? 600 : 400,
+              letterSpacing: '0.05em', marginBottom: -1,
+              padding: '8px 16px', transition: 'color 0.15s, border-color 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* ══ ZONE 1: Add Mix ══════════════════════════════ */}
-      <div className={styles.form}>
-        <h3 className={styles.formTitle}>Add Mix</h3>
+      {activeTab === 'add' && <div className={styles.form}>
 
         <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 24 }}>
           {([
@@ -521,16 +562,19 @@ export default function AdminMixes() {
             </button>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* ══ ZONE 2: Mixes list ═══════════════════════════ */}
+      {activeTab === 'add' && <>
       <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
         Home page: <strong style={{ color: 'var(--color-accent)' }}>{allFeatured.length}</strong> mixes featured
         <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle, then set position)</span>
       </div>
 
       {allMixes.length === 0 ? (
-        <p className={styles.empty}>No mixes yet.</p>
+        listLoading
+          ? <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+          : <p className={styles.empty}>No mixes yet.</p>
       ) : (
         <>
           {/* Desktop table */}
@@ -677,6 +721,49 @@ export default function AdminMixes() {
             ))}
           </div>
         </>
+      )}
+      </>}
+
+      {/* ══ ZONE 3: Play & Download Stats ════════════════ */}
+      {activeTab === 'stats' && listLoading && (
+        <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+      )}
+      {activeTab === 'stats' && !listLoading && stats.length === 0 && (
+        <p className={styles.empty}>No stats yet.</p>
+      )}
+      {activeTab === 'stats' && stats.length > 0 && (
+        <div>
+          <h3 className={styles.formTitle} style={{ marginBottom: 16 }}>Play &amp; Download Stats</h3>
+          <div className={styles.tableWrap} style={{ overflowX: 'auto' }}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Mix</th>
+                  <th title="Total play sessions (≥5s)">Plays</th>
+                  <th title="Unique visitors who played">Listeners</th>
+                  <th title="Total minutes played across all sessions">Min played</th>
+                  <th title="Total download clicks">Downloads</th>
+                  <th title="Unique visitors who downloaded">Downloaders</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.map(s => (
+                  <tr key={s.mixId}>
+                    <td>
+                      <span style={{ fontWeight: 500 }}>{s.title}</span>
+                      {s.year > 0 && <span style={{ marginLeft: 6, fontSize: '0.75rem', opacity: 0.5 }}>{s.year}</span>}
+                    </td>
+                    <td className={styles.nowrap}>{s.plays}</td>
+                    <td className={styles.nowrap} style={{ color: 'var(--color-accent)' }}>{s.uniqueListeners}</td>
+                    <td className={styles.nowrap}>{s.totalMinutesPlayed} min</td>
+                    <td className={styles.nowrap}>{s.downloads}</td>
+                    <td className={styles.nowrap} style={{ color: 'var(--color-accent)' }}>{s.uniqueDownloaders}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* ══ Edit modal ════════════════════════════════════ */}

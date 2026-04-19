@@ -16,6 +16,7 @@ const formatRange = (d: UnavailableDate): string =>
 export default function AdminAvailability() {
   const navigate = useNavigate()
   const [dates, setDates] = useState<UnavailableDate[]>([])
+  const [listLoading, setListLoading] = useState(true)
   const [newDate, setNewDate] = useState('')
   const [newEndDate, setNewEndDate] = useState('')
   const [newNote, setNewNote] = useState('')
@@ -25,6 +26,7 @@ export default function AdminAvailability() {
     const res = await fetch('/api/admin/unavailable-dates', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setDates(await res.json())
+    setListLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -102,7 +104,9 @@ export default function AdminAvailability() {
       </form>
 
       {dates.length === 0 ? (
-        <p className={styles.empty}>No unavailable dates set.</p>
+        listLoading
+          ? <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+          : <p className={styles.empty}>No unavailable dates set.</p>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>

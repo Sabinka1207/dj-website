@@ -59,6 +59,7 @@ function SortablePhoto({
 export default function AdminPhotos() {
   const navigate = useNavigate()
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [listLoading, setListLoading] = useState(true)
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -70,6 +71,7 @@ export default function AdminPhotos() {
     const res = await fetch('/api/admin/photos', { headers: authHeaders() })
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     setPhotos(await res.json())
+    setListLoading(false)
   }
 
   useEffect(() => { load() }, [])
@@ -196,7 +198,10 @@ export default function AdminPhotos() {
         </div>
       )}
 
-      {photos.length === 0 && !uploading && (
+      {photos.length === 0 && !uploading && listLoading && (
+        <div className={styles.loadingRow}><span className={styles.spinner} /></div>
+      )}
+      {photos.length === 0 && !uploading && !listLoading && (
         <p className={styles.empty}>No photos yet. Upload some!</p>
       )}
 

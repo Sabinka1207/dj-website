@@ -50,20 +50,6 @@ export default function AdminLayout() {
         </button>
         <nav className={`${styles.sidebarNav} ${menuOpen ? styles.sidebarNavOpen : ''}`}>
           <NavLink
-            to="/admin/events"
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-            onClick={closeMenu}
-          >
-            Events
-          </NavLink>
-          <NavLink
-            to="/admin/photos"
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-            onClick={closeMenu}
-          >
-            Photos
-          </NavLink>
-          <NavLink
             to="/admin/bookings"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
@@ -74,6 +60,13 @@ export default function AdminLayout() {
             )}
           </NavLink>
           <NavLink
+            to="/admin/events"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Events
+          </NavLink>
+          <NavLink
             to="/admin/availability"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
@@ -81,18 +74,25 @@ export default function AdminLayout() {
             Availability
           </NavLink>
           <NavLink
-            to="/admin/org-docs"
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
-            onClick={closeMenu}
-          >
-            Org Docs
-          </NavLink>
-          <NavLink
             to="/admin/mixes"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
           >
             Mixes
+          </NavLink>
+          <NavLink
+            to="/admin/photos"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Photos
+          </NavLink>
+          <NavLink
+            to="/admin/org-docs"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Org Docs
           </NavLink>
           <NavLink
             to="/admin/tools"

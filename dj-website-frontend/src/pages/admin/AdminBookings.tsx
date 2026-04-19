@@ -99,7 +99,7 @@ export default function AdminBookings() {
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Loading…</p>
+        <div className={styles.loadingRow}><span className={styles.spinner} /></div>
       ) : bookings.length === 0 ? (
         <p className={styles.empty}>No messages yet.</p>
       ) : (
