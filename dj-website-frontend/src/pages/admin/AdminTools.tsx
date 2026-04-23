@@ -65,8 +65,10 @@ function UsageBar({ percent }: { percent: number }) {
 export default function AdminTools() {
   const navigate = useNavigate()
   const [cloudinaryUsage, setCloudinaryUsage] = useState<CloudinaryUsage | null>(null)
+  const [cloudinaryLoading, setCloudinaryLoading] = useState(true)
   const [cloudinaryError, setCloudinaryError] = useState(false)
   const [r2Usage, setR2Usage] = useState<R2Usage | null>(null)
+  const [r2Loading, setR2Loading] = useState(true)
   const [r2Error, setR2Error] = useState(false)
 
   useEffect(() => {
@@ -78,6 +80,7 @@ export default function AdminTools() {
       })
       .then(data => { if (data) setCloudinaryUsage(data) })
       .catch(() => setCloudinaryError(true))
+      .finally(() => setCloudinaryLoading(false))
 
     fetch('/api/admin/r2-usage', { headers: authHeaders() })
       .then(res => {
@@ -88,6 +91,7 @@ export default function AdminTools() {
       })
       .then(data => { if (data) setR2Usage(data) })
       .catch(() => setR2Error(true))
+      .finally(() => setR2Loading(false))
   }, [])
 
   return (
@@ -119,9 +123,9 @@ export default function AdminTools() {
               <span className={styles.toolName}>Stats</span>
               <span className={styles.toolDesc}>Could not load usage data.</span>
             </div>
-          ) : !cloudinaryUsage ? (
-            <div className={styles.statCard}>
-              <span className={styles.toolDesc}>Loading…</span>
+          ) : cloudinaryLoading ? (
+            <div className={styles.statCard} style={{ justifyContent: 'center' }}>
+              <span className={styles.spinner} />
             </div>
           ) : (
             <>
@@ -173,6 +177,10 @@ export default function AdminTools() {
             <div className={styles.statCard}>
               <span className={styles.toolName}>Stats</span>
               <span className={styles.toolDesc}>Could not load usage data.</span>
+            </div>
+          ) : r2Loading ? (
+            <div className={styles.statCard} style={{ justifyContent: 'center' }}>
+              <span className={styles.spinner} />
             </div>
           ) : r2Usage ? (
             <>
