@@ -33,6 +33,8 @@ export default function AdminBookings() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selected, setSelected] = useState<Booking | null>(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'read' | 'answered'>('all')
 
   const load = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
@@ -98,12 +100,44 @@ export default function AdminBookings() {
         </button>
       </div>
 
+      {!loading && bookings.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            className={styles.input}
+            style={{ flex: '1 1 200px', maxWidth: 320, marginBottom: 0 }}
+            placeholder="Search name, email, event…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['all', 'new', 'read', 'answered'] as const).map(s => (
+              <button
+                key={s}
+                className={`${styles.btn} ${styles.btnSm} ${statusFilter === s ? styles.btnActive : styles.btnGhost}`}
+                onClick={() => setStatusFilter(s)}
+              >
+                {s === 'all' ? 'All' : s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className={styles.loadingRow}><span className={styles.spinner} /></div>
       ) : bookings.length === 0 ? (
         <p className={styles.empty}>No messages yet.</p>
       ) : (
         <>
+          {(() => {
+            const q = search.trim().toLowerCase()
+            const filtered = bookings.filter(b => {
+              if (statusFilter !== 'all' && b.status !== statusFilter) return false
+              if (!q) return true
+              return [b.name, b.email, b.event, b.message, b.date].some(v => v?.toLowerCase().includes(q))
+            })
+            return (
+          <>
           {/* Desktop table */}
           <div className={`${styles.tableWrap} ${styles.desktopOnly}`}>
             <table className={styles.table}>
@@ -119,7 +153,9 @@ export default function AdminBookings() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b) => (
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '24px 0' }}>No results.</td></tr>
+                ) : filtered.map((b) => (
                   <tr
                     key={b.id}
                     className={b.status === 'new' ? styles.unreadRow : ''}
@@ -164,7 +200,7 @@ export default function AdminBookings() {
 
           {/* Mobile card list */}
           <div className={styles.mobileCardList}>
-            {bookings.map((b) => (
+            {filtered.map((b) => (
               <div
                 key={b.id}
                 className={`${styles.mobileCard} ${b.status === 'new' ? styles.mobileCardUnread : ''}`}
@@ -198,6 +234,9 @@ export default function AdminBookings() {
               </div>
             ))}
           </div>
+          </>
+            )
+          })()}
         </>
       )}
 

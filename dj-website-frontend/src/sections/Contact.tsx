@@ -42,6 +42,9 @@ export default function Contact() {
         setStatus('success')
         setForm({ name: '', email: '', event: '', date: '', message: '', source: 'contact', language: i18n.language })
         setTimeout(() => setStatus('idle'), 4000)
+        if (typeof window !== 'undefined' && (window as any).umami) {
+          (window as any).umami.track('booking_submitted')
+        }
       } else if (res.status === 429) {
         setStatus('tooMany')
       } else {
