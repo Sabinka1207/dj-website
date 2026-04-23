@@ -13,6 +13,10 @@
       "destination": "https://dj-website-e09j.onrender.com/api/:path*"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "https://dj-website-stage.onrender.com/api/sitemap.xml"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

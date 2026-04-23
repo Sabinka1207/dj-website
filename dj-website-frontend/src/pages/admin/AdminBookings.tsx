@@ -100,8 +100,7 @@ export default function AdminBookings() {
         </button>
       </div>
 
-      {!loading && bookings.length > 0 && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <input
             className={styles.input}
             style={{ flex: '1 1 200px', maxWidth: 320, marginBottom: 0 }}
@@ -121,7 +120,6 @@ export default function AdminBookings() {
             ))}
           </div>
         </div>
-      )}
 
       {loading ? (
         <div className={styles.loadingRow}><span className={styles.spinner} /></div>

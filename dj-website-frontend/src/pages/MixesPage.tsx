@@ -128,7 +128,6 @@ export default function MixesPage() {
   const navigate = useNavigate()
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
-  const [playingId, setPlayingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [serverDown, setServerDown] = useState(false)
   const [showWarmup, setShowWarmup] = useState(false)
@@ -191,8 +190,32 @@ export default function MixesPage() {
     ...externalMixes.map(m => ({ kind: 'embed' as const, data: m })),
   ].sort((a, b) => (b.data.year || 0) - (a.data.year || 0))
 
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'DJ Sabi Mixes',
+    itemListElement: allMixes.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'MusicRecording',
+        name: item.data.title,
+        byArtist: { '@type': 'MusicGroup', name: 'DJ Sabi' },
+        ...(item.data.year > 0 ? { datePublished: String(item.data.year) } : {}),
+        ...(item.kind === 'hosted' ? { duration: `PT${Math.floor(item.data.durationSeconds / 60)}M${item.data.durationSeconds % 60}S` } : {}),
+        ...(item.data.style ? { genre: item.data.style } : {}),
+      },
+    })),
+  }
+
   return (
     <div className={styles.page}>
+      {allMixes.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
       <div className={styles.container}>
         <div className={styles.topBar}>
           <button className={styles.back} onClick={() => navigate('/', { state: { scrollToMixes: true } })}>← DJ Sabi</button>
@@ -232,8 +255,6 @@ export default function MixesPage() {
                 <MixPlayer
                   key={`hosted-${item.data.id}`}
                   mix={item.data}
-                  isPlaying={playingId === item.data.id}
-                  onPlay={() => setPlayingId(prev => prev === item.data.id ? null : item.data.id)}
                 />
               ) : (
                 <EmbedCard

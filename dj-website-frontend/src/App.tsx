@@ -29,6 +29,8 @@ import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminOrgDocs from './pages/admin/AdminOrgDocs'
 import MixesPage from './pages/MixesPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import { PlayerProvider } from './contexts/PlayerContext'
+import GlobalPlayer from './components/GlobalPlayer'
 
 type Consent = 'accepted' | 'declined' | null
 
@@ -103,6 +105,7 @@ function App() {
 
   return (
     <HelmetProvider>
+      <PlayerProvider>
       {!isAdmin && !isLegal && <Navbar />}
       <Routes>
         <Route
@@ -132,8 +135,10 @@ function App() {
           <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
       </Routes>
+      {!isAdmin && <GlobalPlayer />}
       <Analytics />
       <SpeedInsights />
+      </PlayerProvider>
     </HelmetProvider>
   )
 }

@@ -20,7 +20,6 @@ interface Props {
 export default function Mixes({ cookiesAccepted }: Props) {
   const { t } = useTranslation()
   const [items, setItems] = useState<FeaturedItem[]>(FALLBACK_MIXES)
-  const [playingId, setPlayingId] = useState<number | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [serverDown, setServerDown] = useState(false)
@@ -123,8 +122,6 @@ export default function Mixes({ cookiesAccepted }: Props) {
                 <MixPlayer
                   key={`hosted-${item.id}`}
                   mix={item}
-                  isPlaying={playingId === item.id}
-                  onPlay={() => setPlayingId(prev => prev === item.id ? null : item.id)}
                 />
               )
             }

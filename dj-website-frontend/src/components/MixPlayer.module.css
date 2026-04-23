@@ -11,6 +11,10 @@
   transition: border-color 0.2s;
 }
 
+.player.active {
+  border-color: #1a3a66;
+}
+
 /* dissolve header wrapper — cover and right become direct grid children */
 .header {
   display: contents;
@@ -28,11 +32,17 @@
 .progressRow {
   grid-column: 2;
   grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .volumeRow {
   grid-column: 2;
   grid-row: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .topSection {
@@ -58,13 +68,6 @@
 }
 
 .downloadBtn { order: 2; }
-
-.progressRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 
 .cover {
   grid-column: 1;
@@ -176,12 +179,6 @@
   border: 1px solid #2a2a2a;
   border-radius: 4px;
   padding: 2px 8px;
-}
-
-.volumeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .muteBtn {
