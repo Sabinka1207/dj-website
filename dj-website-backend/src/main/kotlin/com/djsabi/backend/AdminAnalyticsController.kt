@@ -12,8 +12,8 @@ import java.net.http.HttpResponse
 @RequestMapping("/api/admin/analytics")
 class AdminAnalyticsController(
     private val authService: AdminAuthService,
-    @Value("\${umami.api-token}") private val apiToken: String,
-    @Value("\${umami.website-id}") private val websiteId: String
+    @Value("\${UMAMI_API_TOKEN:placeholder}") private val apiToken: String,
+    @Value("\${UMAMI_WEBSITE_ID:482b7ced-f627-4fbf-8db8-ab48eaa71449}") private val websiteId: String
 ) {
     private val client = HttpClient.newHttpClient()
     private val baseUrl = "https://api.umami.is/v1"
