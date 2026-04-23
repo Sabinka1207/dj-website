@@ -4,17 +4,6 @@ import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
 // ── Types ────────────────────────────────────────────────
-type MixStat = {
-  mixId: number
-  title: string
-  year: number
-  plays: number
-  uniqueListeners: number
-  totalSecondsPlayed: number
-  downloads: number
-  uniqueDownloaders: number
-}
-
 type HostedMix = {
   kind: 'hosted'
   id: number
@@ -137,76 +126,6 @@ function MetaFields({
   )
 }
 
-// ── Component ────────────────────────────────────────────
-// ── StatsTable ───────────────────────────────────────────
-type StatSortKey = 'title' | 'year' | 'plays' | 'uniqueListeners' | 'totalSecondsPlayed' | 'downloads' | 'uniqueDownloaders'
-
-function formatDuration(totalSeconds: number): string {
-  const sec = totalSeconds || 0
-  const h = Math.floor(sec / 3600)
-  const m = Math.floor((sec % 3600) / 60)
-  const s = sec % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function StatsTable({ stats }: { stats: MixStat[] }) {
-  const [sortKey, setSortKey] = useState<StatSortKey>('year')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-
-  const handleSort = (key: StatSortKey) => {
-    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
-    else { setSortKey(key); setSortDir('desc') }
-  }
-
-  const sorted = [...stats].sort((a, b) => {
-    const av = a[sortKey], bv = b[sortKey]
-    const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number)
-    return sortDir === 'asc' ? cmp : -cmp
-  })
-
-  const arrow = (key: StatSortKey) => sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'
-
-  const th = (key: StatSortKey, label: string) => (
-    <th
-      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-      onClick={() => handleSort(key)}
-    >
-      {label}<span style={{ opacity: sortKey === key ? 1 : 0.35, fontSize: '0.75em' }}>{arrow(key)}</span>
-    </th>
-  )
-
-  return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            {th('title', 'Mix')}
-            {th('year', 'Year')}
-            {th('plays', 'Plays')}
-            {th('uniqueListeners', 'Listeners')}
-            {th('totalSecondsPlayed', 'Played')}
-            {th('downloads', 'Downloads')}
-            {th('uniqueDownloaders', 'Downloaders')}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map(s => (
-            <tr key={s.mixId}>
-              <td>{s.title}</td>
-              <td>{s.year || '—'}</td>
-              <td>{s.plays}</td>
-              <td>{s.uniqueListeners}</td>
-              <td>{formatDuration(s.totalSecondsPlayed)}</td>
-              <td>{s.downloads}</td>
-              <td>{s.uniqueDownloaders}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
 export default function AdminMixes() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -215,9 +134,7 @@ export default function AdminMixes() {
 
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
-  const [stats, setStats] = useState<MixStat[]>([])
   const [listLoading, setListLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'add' | 'stats'>('add')
 
   // ── Add form (always visible) ──
   const [addSourceType, setAddSourceType] = useState<'hosted' | 'external'>('hosted')
@@ -236,24 +153,17 @@ export default function AdminMixes() {
 
   // ── Load ──
   const load = async () => {
-    const [r1, r2, r3] = await Promise.all([
+    const [r1, r2] = await Promise.all([
       fetch('/api/admin/mixes', { headers: authHeaders() }),
       fetch('/api/admin/external-mixes', { headers: authHeaders() }),
-      fetch('/api/admin/mix-stats', { headers: authHeaders() }),
     ])
     if (r1.status === 401 || r2.status === 401) { clearToken(); navigate('/admin/login'); return }
     const hosted: Omit<HostedMix, 'kind'>[] = await r1.json()
     const external: Omit<ExternalMix, 'kind'>[] = await r2.json()
     setHostedMixes(hosted.map(m => ({ ...m, kind: 'hosted' })))
     setExternalMixes(external.map(m => ({ ...m, kind: 'external' })))
-    if (r3.ok) setStats(await r3.json())
     setListLoading(false)
     return Promise.resolve()
-  }
-
-  const refreshStats = async () => {
-    const r = await fetch('/api/admin/mix-stats', { headers: authHeaders() })
-    if (r.ok) setStats(await r.json())
   }
 
   useEffect(() => { load() }, [])
@@ -510,33 +420,9 @@ export default function AdminMixes() {
         </h2>
       </div>
 
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 28 }}>
-        {([
-          { key: 'add', label: 'Add Mix' },
-          { key: 'stats', label: 'Play & Download Stats' },
-        ] as const).map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{
-              background: 'none', border: 'none',
-              borderBottom: activeTab === key ? '2px solid var(--color-accent)' : '2px solid transparent',
-              color: activeTab === key ? 'var(--color-text)' : 'var(--color-text-muted)',
-              cursor: 'pointer', fontFamily: 'inherit',
-              fontSize: '0.82rem', fontWeight: activeTab === key ? 600 : 400,
-              letterSpacing: '0.05em', marginBottom: -1,
-              padding: '8px 16px', transition: 'color 0.15s, border-color 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
 
       {/* ══ ZONE 1: Add Mix ══════════════════════════════ */}
-      {activeTab === 'add' && <div className={styles.form}>
+      {<div className={styles.form}>
 
         <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 24 }}>
           {([
@@ -639,7 +525,7 @@ export default function AdminMixes() {
       </div>}
 
       {/* ══ ZONE 2: Mixes list ═══════════════════════════ */}
-      {activeTab === 'add' && <>
+      {<>
       <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
         Home page: <strong style={{ color: 'var(--color-accent)' }}>{allFeatured.length}</strong> mixes featured
         <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle, then set position)</span>
@@ -777,25 +663,6 @@ export default function AdminMixes() {
         </>
       )}
       </>}
-
-      {/* ══ ZONE 3: Play & Download Stats ════════════════ */}
-      {activeTab === 'stats' && listLoading && (
-        <div className={styles.loadingRow}><span className={styles.spinner} /></div>
-      )}
-      {activeTab === 'stats' && !listLoading && (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <h3 className={styles.formTitle} style={{ margin: 0 }}>Play &amp; Download Stats</h3>
-            <button className={styles.iconBtn} onClick={refreshStats} title="Refresh stats">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            </button>
-          </div>
-          {stats.length === 0
-            ? <p className={styles.empty}>No stats yet.</p>
-            : <StatsTable stats={stats} />
-          }
-        </div>
-      )}
 
       {/* ══ Edit modal ════════════════════════════════════ */}
       {editingMix && (

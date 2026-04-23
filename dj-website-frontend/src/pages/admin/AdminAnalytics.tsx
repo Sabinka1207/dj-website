@@ -2,6 +2,82 @@ import { useEffect, useState } from 'react'
 import { authHeaders } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
+// ── Mix Stats ────────────────────────────────────────────
+type MixStat = {
+  mixId: number
+  title: string
+  year: number
+  plays: number
+  uniqueListeners: number
+  totalSecondsPlayed: number
+  downloads: number
+  uniqueDownloaders: number
+}
+
+type MixStatSortKey = 'title' | 'year' | 'plays' | 'uniqueListeners' | 'totalSecondsPlayed' | 'downloads' | 'uniqueDownloaders'
+
+function formatDuration(totalSeconds: number): string {
+  const sec = totalSeconds || 0
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+function MixStatsTable({ stats }: { stats: MixStat[] }) {
+  const [sortKey, setSortKey] = useState<MixStatSortKey>('plays')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  const handleSort = (key: MixStatSortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const sorted = [...stats].sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey]
+    const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number)
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+
+  const arrow = (key: MixStatSortKey) => sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'
+  const th = (key: MixStatSortKey, label: string) => (
+    <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} onClick={() => handleSort(key)}>
+      {label}<span style={{ opacity: sortKey === key ? 1 : 0.35, fontSize: '0.75em' }}>{arrow(key)}</span>
+    </th>
+  )
+
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {th('title', 'Mix')}
+            {th('year', 'Year')}
+            {th('plays', 'Plays')}
+            {th('uniqueListeners', 'Listeners')}
+            {th('totalSecondsPlayed', 'Played')}
+            {th('downloads', 'Downloads')}
+            {th('uniqueDownloaders', 'Downloaders')}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map(s => (
+            <tr key={s.mixId}>
+              <td>{s.title}</td>
+              <td>{s.year || '—'}</td>
+              <td>{s.plays}</td>
+              <td>{s.uniqueListeners}</td>
+              <td>{formatDuration(s.totalSecondsPlayed)}</td>
+              <td>{s.downloads}</td>
+              <td>{s.uniqueDownloaders}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 const RANGES = [
   { label: '7 days', days: 7, unit: 'day' },
   { label: '30 days', days: 30, unit: 'day' },
@@ -82,7 +158,7 @@ function PageviewsChart({ data }: { data: PageviewPoint[] }) {
         {data.map(point => (
           <div key={point.x} className={styles.analyticsChartCol}>
             <div className={styles.analyticsChartBar} style={{ height: `${Math.max((point.y / max) * 100, 2)}%` }} title={`${point.x}: ${point.y}`} />
-            <div className={styles.analyticsChartLabel}>{point.x.slice(5)}</div>
+            <div className={styles.analyticsChartLabel}>{point.x.slice(5, 10)}</div>
           </div>
         ))}
       </div>
@@ -91,6 +167,7 @@ function PageviewsChart({ data }: { data: PageviewPoint[] }) {
 }
 
 export default function AdminAnalytics() {
+  const [activeTab, setActiveTab] = useState<'website' | 'mixes'>('website')
   const [rangeIdx, setRangeIdx] = useState(1)
   const [stats, setStats] = useState<Stats | null>(null)
   const [countries, setCountries] = useState<Metric[]>([])
@@ -101,6 +178,7 @@ export default function AdminAnalytics() {
   const [referrers, setReferrers] = useState<Metric[]>([])
   const [languages, setLanguages] = useState<Metric[]>([])
   const [pageviews, setPageviews] = useState<PageviewPoint[]>([])
+  const [mixStats, setMixStats] = useState<MixStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -111,6 +189,8 @@ export default function AdminAnalytics() {
     const qs = `startAt=${startAt}&endAt=${endAt}`
     const unit = RANGES[rangeIdx].unit
     const headers = authHeaders()
+
+    fetch('/api/admin/mix-stats', { headers }).then(r => r.ok ? r.json() : []).then(d => setMixStats(Array.isArray(d) ? d : []))
 
     Promise.all([
       fetch(`/api/admin/analytics/stats?${qs}`, { headers }).then(r => r.json()),
@@ -143,47 +223,73 @@ export default function AdminAnalytics() {
   const avgSession = stats ? Math.round(stats.totaltime / Math.max(stats.visits, 1)) : 0
   const prevAvgSession = stats ? Math.round((stats.comparison?.totaltime ?? 0) / Math.max(stats.comparison?.visits ?? 1, 1)) : 0
 
+  const tabStyle = (key: 'website' | 'mixes') => ({
+    background: 'none', border: 'none',
+    borderBottom: activeTab === key ? '2px solid var(--color-accent)' : '2px solid transparent',
+    color: activeTab === key ? 'var(--color-text)' : 'var(--color-text-muted)',
+    cursor: 'pointer', fontFamily: 'inherit',
+    fontSize: '0.82rem', fontWeight: activeTab === key ? 600 : 400,
+    letterSpacing: '0.05em', marginBottom: -1,
+    padding: '8px 16px', transition: 'color 0.15s, border-color 0.15s',
+    whiteSpace: 'nowrap' as const,
+  })
+
   return (
     <div>
       <div className={styles.panelHeader}>
         <h1 className={styles.panelTitle}>Analytics</h1>
-        <div className={styles.analyticsRangePicker}>
-          {RANGES.map((r, i) => (
-            <button
-              key={r.label}
-              className={`${styles.btn} ${styles.btnSm} ${i === rangeIdx ? styles.btnActive : styles.btnGhost}`}
-              onClick={() => setRangeIdx(i)}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        {activeTab === 'website' && (
+          <div className={styles.analyticsRangePicker}>
+            {RANGES.map((r, i) => (
+              <button
+                key={r.label}
+                className={`${styles.btn} ${styles.btnSm} ${i === rangeIdx ? styles.btnActive : styles.btnGhost}`}
+                onClick={() => setRangeIdx(i)}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading && <div className={styles.analyticsEmpty}>Loading...</div>}
-      {error && <div className={styles.analyticsEmpty}>{error}</div>}
+      <div style={{ display: 'flex', borderBottom: '1px solid #2a2a2a', marginBottom: 28 }}>
+        <button style={tabStyle('website')} onClick={() => setActiveTab('website')}>Website Stats</button>
+        <button style={tabStyle('mixes')} onClick={() => setActiveTab('mixes')}>Mix Play &amp; Download Stats</button>
+      </div>
 
-      {!loading && !error && stats && (
+      {activeTab === 'website' && (
         <>
-          <div className={styles.analyticsStats}>
-            <StatCard label="Visitors" value={stats.visitors} prev={stats.comparison?.visitors ?? 0} />
-            <StatCard label="Page Views" value={stats.pageviews} prev={stats.comparison?.pageviews ?? 0} />
-            <StatCard label="Visits" value={stats.visits} prev={stats.comparison?.visits ?? 0} />
-            <StatCard label="Bounce Rate" value={bounceRate} prev={prevBounceRate} format={v => `${v}%`} />
-            <StatCard label="Avg Session" value={avgSession} prev={prevAvgSession} format={fmtTime} />
-          </div>
-
-          <div className={styles.analyticsGrid}>
-            <PageviewsChart data={pageviews} />
-            <MetricTable title="Countries" data={countries} />
-            <MetricTable title="Devices" data={devices} />
-            <MetricTable title="Operating Systems" data={os} />
-            <MetricTable title="Browsers" data={browsers} />
-            <MetricTable title="Top Pages" data={pages} />
-            <MetricTable title="Referrers" data={referrers} />
-            <MetricTable title="Languages" data={languages} />
-          </div>
+          {loading && <div className={styles.loadingRow}><span className={styles.spinner} /></div>}
+          {error && <div className={styles.analyticsEmpty}>{error}</div>}
+          {!loading && !error && stats && (
+            <>
+              <div className={styles.analyticsStats}>
+                <StatCard label="Visitors" value={stats.visitors} prev={stats.comparison?.visitors ?? 0} />
+                <StatCard label="Page Views" value={stats.pageviews} prev={stats.comparison?.pageviews ?? 0} />
+                <StatCard label="Visits" value={stats.visits} prev={stats.comparison?.visits ?? 0} />
+                <StatCard label="Bounce Rate" value={bounceRate} prev={prevBounceRate} format={v => `${v}%`} />
+                <StatCard label="Avg Session" value={avgSession} prev={prevAvgSession} format={fmtTime} />
+              </div>
+              <div className={styles.analyticsGrid}>
+                <PageviewsChart data={pageviews} />
+                <MetricTable title="Countries" data={countries} />
+                <MetricTable title="Devices" data={devices} />
+                <MetricTable title="Operating Systems" data={os} />
+                <MetricTable title="Browsers" data={browsers} />
+                <MetricTable title="Top Pages" data={pages} />
+                <MetricTable title="Referrers" data={referrers} />
+                <MetricTable title="Languages" data={languages} />
+              </div>
+            </>
+          )}
         </>
+      )}
+
+      {activeTab === 'mixes' && (
+        mixStats.length === 0
+          ? <div className={styles.analyticsEmpty}>No stats yet.</div>
+          : <MixStatsTable stats={mixStats} />
       )}
     </div>
   )
