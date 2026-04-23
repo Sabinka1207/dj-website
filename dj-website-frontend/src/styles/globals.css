@@ -15,6 +15,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -22,6 +23,7 @@ body {
   color: var(--color-text);
   font-family: var(--font-main);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 a {

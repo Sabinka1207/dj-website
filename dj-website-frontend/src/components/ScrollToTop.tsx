@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { usePlayer } from '../contexts/PlayerContext'
 import styles from './ScrollToTop.module.css'
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false)
   const { pathname } = useLocation()
+  const { currentMix } = usePlayer()
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400)
@@ -17,6 +19,7 @@ export default function ScrollToTop() {
   return visible ? (
     <button
       className={styles.btn}
+      style={currentMix ? { bottom: 76 } : undefined}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Scroll to top"
     >

@@ -74,6 +74,13 @@ class AdminMixController(
     ): ResponseEntity<MixAdminResponse> {
         if (!authorized(req)) return ResponseEntity.status(401).build()
 
+        val allowedMimeTypes = setOf("audio/mpeg", "audio/mp3", "audio/x-mpeg", "audio/x-mp3", "audio/wave", "audio/wav", "audio/aac", "audio/ogg", "audio/flac")
+        val mime = file.contentType?.lowercase() ?: ""
+        val ext = file.originalFilename?.substringAfterLast('.')?.lowercase() ?: ""
+        if (mime !in allowedMimeTypes && ext !in setOf("mp3", "wav", "aac", "ogg", "flac")) {
+            return ResponseEntity.badRequest().build()
+        }
+
         // Stream via temp file to R2 — avoids loading the entire MP3 into heap memory
         val key = "mixes/${UUID.randomUUID()}.mp3"
         val tempFile = kotlin.io.path.createTempFile("mix-", ".tmp").toFile()

@@ -402,7 +402,7 @@ export default function AdminMixes() {
   const filteredMixes = mixSearch.trim()
     ? sortedMixes.filter(m => {
         const q = mixSearch.trim().toLowerCase()
-        return [m.title, m.style, m.event, m.city].some(v => v?.toLowerCase().includes(q))
+        return [m.title, m.style, m.event, m.city, String(m.year || '')].some(v => v?.toLowerCase().includes(q))
       })
     : sortedMixes
 
@@ -538,7 +538,7 @@ export default function AdminMixes() {
         <input
           className={styles.input}
           style={{ maxWidth: 320, marginBottom: 12 }}
-          placeholder="Search title, style, event, city…"
+          placeholder="Search title, year, style, event, city…"
           value={mixSearch}
           onChange={e => setMixSearch(e.target.value)}
         />
