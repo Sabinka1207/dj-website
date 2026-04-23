@@ -25,6 +25,7 @@ import AdminBookings from './pages/admin/AdminBookings'
 import AdminAvailability from './pages/admin/AdminAvailability'
 import AdminTools from './pages/admin/AdminTools'
 import AdminMixes from './pages/admin/AdminMixes'
+import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminOrgDocs from './pages/admin/AdminOrgDocs'
 import MixesPage from './pages/MixesPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -92,6 +93,12 @@ function App() {
 
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
+
+  useEffect(() => {
+    if (!isAdmin && typeof window !== 'undefined' && (window as any).umami) {
+      (window as any).umami.track()
+    }
+  }, [location.pathname, isAdmin])
   const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy' || location.pathname === '/for-organisers' || location.pathname === '/mixes'
 
   return (
@@ -122,6 +129,7 @@ function App() {
           <Route path="tools" element={<AdminTools />} />
           <Route path="org-docs" element={<AdminOrgDocs />} />
           <Route path="mixes" element={<AdminMixes />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
       </Routes>
       <Analytics />

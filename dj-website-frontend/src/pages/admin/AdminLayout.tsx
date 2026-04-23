@@ -95,6 +95,13 @@ export default function AdminLayout() {
             Org Docs
           </NavLink>
           <NavLink
+            to="/admin/analytics"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Analytics
+          </NavLink>
+          <NavLink
             to="/admin/tools"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
