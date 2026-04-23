@@ -58,6 +58,9 @@ export default function MixPlayer({ mix, isPlaying, onPlay }: Props) {
     if (isPlaying) {
       audio.play().catch(() => {})
       playStartRef.current = Date.now()
+      if (typeof window !== 'undefined' && (window as any).umami) {
+        (window as any).umami.track('mix_played', { title: mix.title, id: mix.id })
+      }
     } else {
       audio.pause()
       reportPlay()
@@ -156,6 +159,11 @@ export default function MixPlayer({ mix, isPlaying, onPlay }: Props) {
                 download
                 aria-label="Download mix"
                 title="Download"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && (window as any).umami) {
+                    (window as any).umami.track('mix_downloaded', { title: mix.title, id: mix.id })
+                  }
+                }}
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
                   <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/>

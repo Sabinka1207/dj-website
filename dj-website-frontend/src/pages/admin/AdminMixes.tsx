@@ -135,6 +135,7 @@ export default function AdminMixes() {
   const [hostedMixes, setHostedMixes] = useState<HostedMix[]>([])
   const [externalMixes, setExternalMixes] = useState<ExternalMix[]>([])
   const [listLoading, setListLoading] = useState(true)
+  const [mixSearch, setMixSearch] = useState('')
 
   // ── Add form (always visible) ──
   const [addSourceType, setAddSourceType] = useState<'hosted' | 'external'>('hosted')
@@ -398,6 +399,13 @@ export default function AdminMixes() {
     return 0
   })
 
+  const filteredMixes = mixSearch.trim()
+    ? sortedMixes.filter(m => {
+        const q = mixSearch.trim().toLowerCase()
+        return [m.title, m.style, m.event, m.city].some(v => v?.toLowerCase().includes(q))
+      })
+    : sortedMixes
+
   const addDetectedType = detectType(addForm.embedUrl)
   const editDetectedType = detectType(editForm.embedUrl)
 
@@ -526,6 +534,15 @@ export default function AdminMixes() {
 
       {/* ══ ZONE 2: Mixes list ═══════════════════════════ */}
       {<>
+      {allMixes.length > 0 && (
+        <input
+          className={styles.input}
+          style={{ maxWidth: 320, marginBottom: 12 }}
+          placeholder="Search title, style, event, city…"
+          value={mixSearch}
+          onChange={e => setMixSearch(e.target.value)}
+        />
+      )}
       <div style={{ marginBottom: 12, fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
         Home page: <strong style={{ color: 'var(--color-accent)' }}>{allFeatured.length}</strong> mixes featured
         <span style={{ marginLeft: 8, opacity: 0.6 }}>(click <HomeIcon filled={true} /> to toggle, then set position)</span>
@@ -554,7 +571,7 @@ export default function AdminMixes() {
                 </tr>
               </thead>
               <tbody>
-                {sortedMixes.map(mix => (
+                {filteredMixes.map(mix => (
                   <tr key={`${mix.kind}-${mix.id}`}>
                     <td>
                       <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.05em' }}>
