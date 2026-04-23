@@ -122,6 +122,8 @@ Copy `.env.example` to `.env` and fill in real values. Never commit `.env`.
 | `R2_SECRET_ACCESS_KEY`  | R2 API token secret                          |
 | `R2_BUCKET_NAME`        | R2 bucket name (e.g. `dj-sabi-mixes`)       |
 | `R2_PUBLIC_URL`         | Public bucket URL (e.g. `https://pub-xxx.r2.dev`) |
+| `UMAMI_API_TOKEN`       | API token from umami.is → Settings → API Keys      |
+| `UMAMI_WEBSITE_ID`      | Website ID from umami.is → Settings → Websites     |
 
 ### Frontend (Vercel env vars — set in Vercel dashboard)
 
@@ -152,16 +154,8 @@ npm run dev
 Uses H2 in-memory database locally — no setup needed. Flyway runs migrations automatically on startup. On first boot it seeds events from `src/main/resources/events.json`.
 
 ```bash
-# Set environment variables first (minimum for local dev)
-export ADMIN_PASSWORD=yourpassword
-export ADMIN_GOOGLE_EMAIL=your@gmail.com
-export RESEND_API_KEY=re_your_api_key
-export CONTACT_EMAIL=your@email.com
-export TELEGRAM_BOT_TOKEN=your_token
-export TELEGRAM_CHAT_ID=your_chat_id
-
 cd dj-website-backend
-./gradlew bootRun
+set -a && source ../.env && set +a && ./gradlew bootRun
 # runs on http://localhost:8080
 ```
 
@@ -225,8 +219,10 @@ Left sidebar navigation:
 - **Events** (`/admin/events`) — create, edit, delete gig bookings
 - **Availability** (`/admin/availability`) — block specific dates so they appear greyed-out and non-clickable in the public events calendar
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
-- **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudinary), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from Cloudinary too). Click any column header (Type, Title, Year, Style, Event, City, Home) to sort. Toggle which mixes appear on the home page and set their display order.
+- **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudflare R2), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from R2 too). Click any column header to sort. Toggle which mixes appear on the home page and set their display order.
 - **External Mixes** (`/admin/external-mixes`) — add YouTube, Mixcloud, or SoundCloud mixes by pasting any direct URL (auto-converted to embed URL server-side). Edit metadata, toggle home page featuring with ordering.
+- **Org Docs** (`/admin/org-docs`) — manage press kit, tech rider, hospitality rider, booking agreements and other organiser documents. Upload/edit/delete per language variant.
+- **Analytics** (`/admin/analytics`) — website analytics powered by Umami. Displays visitors, page views, visits, bounce rate, avg session time, page views chart, and breakdowns by country, device, OS, browser, top pages, referrers, and language. Supports 7/30/90-day ranges with period comparison.
 - **Tools** (`/admin/tools`) — quick links to all services (Vercel, Render, Supabase, Cloudinary, etc.) plus a live Cloudinary storage/bandwidth/objects usage panel fetched from the Cloudinary Admin API.
 
 ### Google Sign-In setup
@@ -502,4 +498,7 @@ cd dj-website-backend
 | PATCH  | /api/admin/external-mixes/:id/home-order | Set home display order                           |
 | DELETE | /api/admin/external-mixes/:id          | Delete external mix                                |
 | GET    | /api/admin/cloudinary-usage            | Cloudinary storage, bandwidth, objects usage stats |
+| GET    | /api/admin/analytics/stats             | Site stats (visitors, pageviews, visits, bounces, avg session) with period comparison |
+| GET    | /api/admin/analytics/pageviews         | Pageviews over time aggregated by unit (day/week/month), timezone-aware |
+| GET    | /api/admin/analytics/metrics           | Breakdown by type: country, device, os, browser, url, referrer, language |
 | POST   | /api/client-error                      | Report frontend JS error → Telegram (rate-limited) |
