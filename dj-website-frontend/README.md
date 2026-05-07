@@ -11,7 +11,7 @@ Personal website for DJ Sabi. Multilingual (DE / EN / UA), fully responsive, wit
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 + TypeScript + Vite |
+| Frontend | React 19 + TypeScript + Vite |
 | Backend | Kotlin + Spring Boot 3 + JPA |
 | Database | Supabase (PostgreSQL) — H2 in-memory for local dev |
 | Photo storage | Cloudinary (free tier: 25 GB storage / 25 GB bandwidth) |

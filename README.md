@@ -222,7 +222,7 @@ Left sidebar navigation:
 - **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudflare R2), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from R2 too). Click any column header to sort. Toggle which mixes appear on the home page and set their display order.
 - **External Mixes** (`/admin/external-mixes`) — add YouTube, Mixcloud, or SoundCloud mixes by pasting any direct URL (auto-converted to embed URL server-side). Edit metadata, toggle home page featuring with ordering.
 - **Org Docs** (`/admin/org-docs`) — manage press kit, tech rider, hospitality rider, booking agreements and other organiser documents. Upload/edit/delete per language variant.
-- **Analytics** (`/admin/analytics`) — website analytics powered by Umami. Displays visitors, page views, visits, bounce rate, avg session time, page views chart, and breakdowns by country, device, OS, browser, top pages, referrers, and language. Supports 7/30/90-day ranges with period comparison.
+- **Analytics** (`/admin/analytics`) — two tabs: **Website Stats** (Umami-powered — visitors, page views, visits, bounce rate, avg session, page views chart with daily/weekly grouping, breakdowns by country, device, OS, browser, top pages, referrers, language; 7/30/90-day ranges with period comparison) and **Mix Play & Download Stats** (internal — per-mix play count, unique listeners, total time played, downloads, unique downloaders; sortable columns).
 - **Tools** (`/admin/tools`) — quick links to all services (Vercel, Render, Supabase, Cloudinary, etc.) plus a live Cloudinary storage/bandwidth/objects usage panel fetched from the Cloudinary Admin API.
 
 ### Google Sign-In setup
