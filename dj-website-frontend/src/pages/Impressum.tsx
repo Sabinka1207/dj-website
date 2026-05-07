@@ -37,7 +37,7 @@ export default function Impressum() {
         <section className={styles.section}>
           <h2>{t('impressum.contactTitle')}</h2>
           <p>
-            E-Mail: <a href="mailto:djsabi_ua@icloud.com" className={styles.emailLink}>djsabi_ua@icloud.com</a>
+            E-Mail: <a href="mailto:djsabi.ua@gmail.com" className={styles.emailLink}>djsabi.ua@gmail.com</a>
           </p>
         </section>
 

@@ -13,7 +13,9 @@
 }
 
 .photo {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .photoImg {
@@ -55,9 +57,10 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .promoLink {
@@ -99,11 +102,6 @@
 @media (max-width: 768px) {
   .container {
     grid-template-columns: 1fr;
-    gap: 48px;
-  }
-
-  .photoPlaceholder {
-    aspect-ratio: 4 / 3;
-    max-height: 320px;
+    gap: 40px;
   }
 }

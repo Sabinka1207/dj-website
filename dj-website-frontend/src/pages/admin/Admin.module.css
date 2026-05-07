@@ -91,6 +91,19 @@
 
 .sidebarFooter {
   padding: 16px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-decoration: none;
+  text-align: center;
 }
 
 .adminContent {
@@ -1262,12 +1275,32 @@
   flex-shrink: 0;
 }
 
+.analyticsChartWrap {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+
+.analyticsChartYAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  padding-bottom: 18px;
+  min-width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
 .analyticsChart {
+  flex: 1;
   display: flex;
   align-items: flex-end;
   gap: 3px;
-  height: 80px;
-  margin-top: 8px;
+  height: 130px;
 }
 
 .analyticsChartCol {
@@ -1275,22 +1308,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   height: 100%;
   justify-content: flex-end;
 }
 
+.analyticsChartBarContainer {
+  width: 100%;
+  position: relative;
+}
+
 .analyticsChartBar {
   width: 100%;
+  height: 100%;
   background: var(--color-accent);
   border-radius: 2px 2px 0 0;
   opacity: 0.8;
-  transition: height 0.4s ease;
-  min-height: 2px;
+}
+
+.analyticsChartCount {
+  font-size: 0.6rem;
+  color: var(--color-text);
+  text-align: center;
+  line-height: 1;
 }
 
 .analyticsChartLabel {
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
