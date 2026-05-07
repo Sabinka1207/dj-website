@@ -206,6 +206,7 @@ function PageviewsChart({ data, days }: { data: PageviewPoint[]; days: number })
   return (
     <div className={styles.analyticsTable} style={{ gridColumn: '1 / -1' }}>
       <div className={styles.analyticsTableTitle}>Page Views Over Time</div>
+      <div className={styles.analyticsChartScroll}>
       <div className={styles.analyticsChart} style={{ gap }}>
           {filled.map(point => (
             <div key={point.x} className={styles.analyticsChartCol}>
@@ -219,6 +220,7 @@ function PageviewsChart({ data, days }: { data: PageviewPoint[]; days: number })
               <div className={styles.analyticsChartLabel}>{fmtChartDate(point.x)}</div>
             </div>
           ))}
+      </div>
       </div>
     </div>
   )
