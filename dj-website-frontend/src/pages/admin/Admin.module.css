@@ -1295,16 +1295,21 @@
   flex-shrink: 0;
 }
 
+.analyticsChartScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .analyticsChart {
-  flex: 1;
   display: flex;
   align-items: flex-end;
   gap: 3px;
   height: 130px;
+  min-width: 100%;
 }
 
 .analyticsChartCol {
-  flex: 1;
+  flex: 1 0 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
