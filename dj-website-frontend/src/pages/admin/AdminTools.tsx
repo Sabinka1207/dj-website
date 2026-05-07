@@ -18,7 +18,6 @@ const TOOLS: Tool[] = [
   // Docs, emails & notifications
   { name: 'Resend', description: 'Transactional email (booking notifications)', url: 'https://resend.com/emails', category: 'Docs, Emails & Notifications' },
   { name: 'Telegram Bot', description: 'Bot for booking alerts', url: 'https://t.me/BotFather', category: 'Docs, Emails & Notifications' },
-  { name: 'DocuSign', description: 'Electronic contract signing', url: 'https://app.docusign.com', category: 'Docs, Emails & Notifications' },
   // Auth
   { name: 'Google Cloud Console', description: 'Google OAuth client (admin login)', url: 'https://console.cloud.google.com', category: 'Auth' },
   // Monitoring

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
@@ -110,7 +110,10 @@ export default function AdminLayout() {
           </NavLink>
         </nav>
         <div className={styles.sidebarFooter}>
-          <button className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm} ${styles.btnGoogle}`} onClick={handleLogout}>
+          <Link to="/" className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm} ${styles.sidebarBtn}`}>
+            ← View site
+          </Link>
+          <button className={`${styles.btn} ${styles.btnGhost} ${styles.btnSm} ${styles.sidebarBtn}`} onClick={handleLogout}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />

@@ -18,13 +18,6 @@ export default function About() {
       <div className={styles.container}>
         <div className={styles.photo}>
           <img src={photo} alt="DJ Sabi" className={styles.photoImg} draggable={false} />
-        </div>
-
-        <div className={styles.text}>
-          <h2 className={styles.title}>{t('about.title')}</h2>
-          {t('about.bio').split('\n\n').map((para, i) => (
-            <p key={i} className={styles.bio}>{para}</p>
-          ))}
           <div className={styles.actions}>
             <a href={pressKitUrl} download className={styles.promoLink}>
               {t('about.downloadPressKit')}
@@ -33,6 +26,13 @@ export default function About() {
               {t('about.forOrganisers')}
             </Link>
           </div>
+        </div>
+
+        <div className={styles.text}>
+          <h2 className={styles.title}>{t('about.title')}</h2>
+          {t('about.bio').split('\n\n').map((para, i) => (
+            <p key={i} className={styles.bio}>{para}</p>
+          ))}
         </div>
       </div>
     </section>

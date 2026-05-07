@@ -30,7 +30,7 @@ export default function Privacy() {
             Sabina Abdulaliieva<br />
             Karoline-Veith-Strasse 37<br />
             60486 Frankfurt am Main<br />
-            E-Mail: <a href="mailto:djsabi_ua@icloud.com" className={styles.emailLink}>djsabi_ua@icloud.com</a>
+            E-Mail: <a href="mailto:djsabi.ua@gmail.com" className={styles.emailLink}>djsabi.ua@gmail.com</a>
           </p>
         </section>
 
@@ -61,22 +61,11 @@ export default function Privacy() {
           <h2>{t('privacy.s5Title')}</h2>
           <p>{t('privacy.s5p1')}</p>
           <p>
-            <a href="mailto:djsabi_ua@icloud.com" className={styles.emailLink}>djsabi_ua@icloud.com</a>
+            <a href="mailto:djsabi.ua@gmail.com" className={styles.emailLink}>djsabi.ua@gmail.com</a>
           </p>
           <p>{t('privacy.s5p3')}</p>
         </section>
 
-        <section className={styles.section}>
-          <h2>{t('privacy.s6Title')}</h2>
-          <p>{t('privacy.s6p1')}</p>
-          <p>{t('privacy.s6p2')}</p>
-          <p>
-            {t('privacy.s6p3').split('https://')[0]}
-            <a href="https://www.docusign.com/company/privacy-policy" target="_blank" rel="noopener noreferrer" className={styles.emailLink}>
-              https://www.docusign.com/company/privacy-policy
-            </a>
-          </p>
-        </section>
       </div>
     </div>
   )

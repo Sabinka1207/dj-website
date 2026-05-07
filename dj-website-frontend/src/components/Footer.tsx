@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import styles from './Footer.module.css'
 import qrWhatsApp from '../assets/WhatsApp.jpeg'
@@ -61,6 +61,7 @@ const SOCIAL_LINKS = [
 
 export default function Footer() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const year = new Date().getFullYear()
 
   return (
@@ -103,6 +104,9 @@ export default function Footer() {
         </nav>
 
         <p className={styles.copy}>© {year} DJ Sabi</p>
+        <button className={styles.adminLink} onClick={() => navigate('/admin/login')} aria-hidden="true" tabIndex={-1}>
+          ·
+        </button>
       </div>
     </footer>
   )

@@ -113,18 +113,20 @@ function fmtTime(seconds: number) {
   return `${m}m ${s}s`
 }
 
-function StatCard({ label, value, prev, format }: { label: string; value: number; prev: number; format?: (v: number) => string }) {
+function StatCard({ label, value, prev, format, noPrev }: { label: string; value: number; prev: number; format?: (v: number) => string; noPrev?: boolean }) {
   const change = pct(value, prev)
   const display = format ? format(value) : (value ?? 0).toLocaleString()
   return (
     <div className={styles.analyticsCard}>
       <div className={styles.analyticsCardLabel}>{label}</div>
       <div className={styles.analyticsCardValue}>{display}</div>
-      {change !== null && (
+      {change !== null ? (
         <div className={`${styles.analyticsCardChange} ${change >= 0 ? styles.positive : styles.negative}`}>
           {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(1)}%
         </div>
-      )}
+      ) : noPrev ? (
+        <div className={styles.analyticsCardChange} style={{ opacity: 0.3 }}>— no prev data</div>
+      ) : null}
     </div>
   )
 }
@@ -148,19 +150,75 @@ function MetricTable({ title, data }: { title: string; data: Metric[] }) {
   )
 }
 
-function PageviewsChart({ data }: { data: PageviewPoint[] }) {
-  if (!data.length) return null
-  const max = Math.max(...data.map(d => d.y), 1)
+function toDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function fmtChartDate(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  return date.toLocaleDateString('en', { month: 'short', day: 'numeric' })
+}
+
+function getMonday(d: Date): Date {
+  const copy = new Date(d)
+  const day = copy.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  copy.setDate(copy.getDate() + diff)
+  copy.setHours(0, 0, 0, 0)
+  return copy
+}
+
+function aggregateToWeeks(daily: Array<{ x: string; y: number }>): Array<{ x: string; y: number }> {
+  const weekMap = new Map<string, number>()
+  for (const point of daily) {
+    const [y, m, d] = point.x.split('-').map(Number)
+    const monday = getMonday(new Date(y, m - 1, d))
+    const key = toDateKey(monday)
+    weekMap.set(key, (weekMap.get(key) ?? 0) + point.y)
+  }
+  return Array.from(weekMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([x, y]) => ({ x, y }))
+}
+
+function fillMissingDates(data: PageviewPoint[], days: number): Array<{ x: string; y: number }> {
+  const existing = new Map<string, number>()
+  data.forEach(p => existing.set(toDateKey(new Date(p.x)), p.y))
+
+  const result: Array<{ x: string; y: number }> = []
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = toDateKey(d)
+    result.push({ x: key, y: existing.get(key) ?? 0 })
+  }
+  return result
+}
+
+
+function PageviewsChart({ data, days }: { data: PageviewPoint[]; days: number }) {
+  const daily = fillMissingDates(data, days)
+  const filled = days >= 90 ? aggregateToWeeks(daily) : daily
+  if (!filled.length) return null
+  const max = Math.max(...filled.map(d => d.y), 1)
+  const gap = days === 7 ? '16px' : days >= 90 ? '8px' : '3px'
   return (
     <div className={styles.analyticsTable} style={{ gridColumn: '1 / -1' }}>
       <div className={styles.analyticsTableTitle}>Page Views Over Time</div>
-      <div className={styles.analyticsChart}>
-        {data.map(point => (
-          <div key={point.x} className={styles.analyticsChartCol}>
-            <div className={styles.analyticsChartBar} style={{ height: `${Math.max((point.y / max) * 100, 2)}%` }} title={`${point.x}: ${point.y}`} />
-            <div className={styles.analyticsChartLabel}>{point.x.slice(5, 10)}</div>
-          </div>
-        ))}
+      <div className={styles.analyticsChart} style={{ gap }}>
+          {filled.map(point => (
+            <div key={point.x} className={styles.analyticsChartCol}>
+              <div className={styles.analyticsChartCount}>{point.y}</div>
+              <div
+                className={styles.analyticsChartBarContainer}
+                style={{ height: `${point.y === 0 ? 0 : Math.max((point.y / max) * 100, 2)}%` }}
+              >
+                {point.y > 0 && <div className={styles.analyticsChartBar} />}
+              </div>
+              <div className={styles.analyticsChartLabel}>{fmtChartDate(point.x)}</div>
+            </div>
+          ))}
       </div>
     </div>
   )
@@ -178,6 +236,7 @@ export default function AdminAnalytics() {
   const [referrers, setReferrers] = useState<Metric[]>([])
   const [languages, setLanguages] = useState<Metric[]>([])
   const [pageviews, setPageviews] = useState<PageviewPoint[]>([])
+  const [prevStats, setPrevStats] = useState<Stats | null>(null)
   const [mixStats, setMixStats] = useState<MixStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -187,10 +246,12 @@ export default function AdminAnalytics() {
     setError(null)
     const { startAt, endAt } = rangeMs(RANGES[rangeIdx].days)
     const qs = `startAt=${startAt}&endAt=${endAt}`
+    const prevQs = `startAt=${startAt - RANGES[rangeIdx].days * 86400000}&endAt=${startAt}`
     const unit = RANGES[rangeIdx].unit
     const headers = authHeaders()
 
     fetch('/api/admin/mix-stats', { headers }).then(r => r.ok ? r.json() : []).then(d => setMixStats(Array.isArray(d) ? d : []))
+    fetch(`/api/admin/analytics/stats?${prevQs}`, { headers }).then(r => r.ok ? r.json() : null).then(d => setPrevStats(d)).catch(() => {})
 
     Promise.all([
       fetch(`/api/admin/analytics/stats?${qs}`, { headers }).then(r => r.json()),
@@ -219,9 +280,10 @@ export default function AdminAnalytics() {
   }, [rangeIdx])
 
   const bounceRate = stats ? Math.round((stats.bounces / Math.max(stats.visits, 1)) * 100) : 0
-  const prevBounceRate = stats ? Math.round(((stats.comparison?.bounces ?? 0) / Math.max(stats.comparison?.visits ?? 1, 1)) * 100) : 0
+  const prevBounceRate = prevStats ? Math.round((prevStats.bounces / Math.max(prevStats.visits, 1)) * 100) : 0
   const avgSession = stats ? Math.round(stats.totaltime / Math.max(stats.visits, 1)) : 0
-  const prevAvgSession = stats ? Math.round((stats.comparison?.totaltime ?? 0) / Math.max(stats.comparison?.visits ?? 1, 1)) : 0
+  const prevAvgSession = prevStats ? Math.round(prevStats.totaltime / Math.max(prevStats.visits, 1)) : 0
+  const noPrev = !prevStats || (prevStats.visitors === 0 && prevStats.pageviews === 0 && prevStats.visits === 0)
 
   const tabStyle = (key: 'website' | 'mixes') => ({
     background: 'none', border: 'none',
@@ -265,14 +327,14 @@ export default function AdminAnalytics() {
           {!loading && !error && stats && (
             <>
               <div className={styles.analyticsStats}>
-                <StatCard label="Visitors" value={stats.visitors} prev={stats.comparison?.visitors ?? 0} />
-                <StatCard label="Page Views" value={stats.pageviews} prev={stats.comparison?.pageviews ?? 0} />
-                <StatCard label="Visits" value={stats.visits} prev={stats.comparison?.visits ?? 0} />
-                <StatCard label="Bounce Rate" value={bounceRate} prev={prevBounceRate} format={v => `${v}%`} />
-                <StatCard label="Avg Session" value={avgSession} prev={prevAvgSession} format={fmtTime} />
+                <StatCard label="Visitors" value={stats.visitors} prev={prevStats?.visitors ?? 0} noPrev={noPrev} />
+                <StatCard label="Page Views" value={stats.pageviews} prev={prevStats?.pageviews ?? 0} noPrev={noPrev} />
+                <StatCard label="Visits" value={stats.visits} prev={prevStats?.visits ?? 0} noPrev={noPrev} />
+                <StatCard label="Bounce Rate" value={bounceRate} prev={prevBounceRate} format={v => `${v}%`} noPrev={noPrev} />
+                <StatCard label="Avg Session" value={avgSession} prev={prevAvgSession} format={fmtTime} noPrev={noPrev} />
               </div>
               <div className={styles.analyticsGrid}>
-                <PageviewsChart data={pageviews} />
+                <PageviewsChart data={pageviews} days={RANGES[rangeIdx].days} />
                 <MetricTable title="Countries" data={countries} />
                 <MetricTable title="Devices" data={devices} />
                 <MetricTable title="Operating Systems" data={os} />
