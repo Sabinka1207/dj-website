@@ -5,7 +5,7 @@
       "headers": [
         { "key": "Cross-Origin-Opener-Policy", "value": "unsafe-none" },
         { "key": "Permissions-Policy", "value": "encrypted-media=*" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: res.cloudinary.com *.cloudinary.com; frame-src www.youtube.com open.spotify.com w.soundcloud.com soundcloud.com mixcloud.com www.mixcloud.com player-widget.mixcloud.com *.mixcloud.com; connect-src 'self' accounts.google.com vitals.vercel-insights.com *.vercel-insights.com; font-src 'self' data:; object-src 'none'" }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' accounts.google.com cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: res.cloudinary.com *.cloudinary.com; frame-src www.youtube.com open.spotify.com w.soundcloud.com soundcloud.com mixcloud.com www.mixcloud.com player-widget.mixcloud.com *.mixcloud.com; connect-src 'self' accounts.google.com vitals.vercel-insights.com *.vercel-insights.com cloud.umami.is; font-src 'self' data:; object-src 'none'" }
       ]
     }
   ],
