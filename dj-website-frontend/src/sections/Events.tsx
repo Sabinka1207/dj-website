@@ -11,6 +11,9 @@ type Event = {
   city: string
   country: string
   description: string
+  posterUrl: string
+  posterFocusX: number
+  posterFocusY: number
 }
 
 const getLocale = (lang: string) =>
@@ -63,8 +66,8 @@ export default function Events() {
   useEffect(() => {
     const fetchEvents = () => {
       Promise.all([
-        fetch('/api/events').then((r) => r.json()),
-        fetch('/api/unavailable-dates').then((r) => r.json()),
+        fetch('/api/events').then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json() }),
+        fetch('/api/unavailable-dates').then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json() }),
       ])
         .then(([eventsData, unavailableData]: [Event[], { date: string; note: string | null }[]]) => {
           setEvents(eventsData)
@@ -315,12 +318,22 @@ function EventDetailsModal({
     <div className={styles.backdrop} onClick={handleBackdrop} role="dialog" aria-modal="true">
       <div className={styles.detailsModal}>
         <button className={styles.detailsClose} onClick={onClose} aria-label={t('modal.close')}>✕</button>
-        <p className={styles.detailsDate}>{formattedDate}</p>
-        <h2 className={styles.detailsVenue}>{event.venue}</h2>
-        <p className={styles.detailsCity}>{event.city}, {event.country}</p>
-        {event.description && (
-          <p className={styles.detailsDesc}>{event.description}</p>
+        {event.posterUrl && (
+          <img
+            src={event.posterUrl}
+            alt={event.venue}
+            className={styles.detailsPoster}
+            style={{ objectPosition: `${event.posterFocusX ?? 50}% ${event.posterFocusY ?? 50}%` }}
+          />
         )}
+        <div className={styles.detailsBody}>
+          <p className={styles.detailsDate}>{formattedDate}</p>
+          <h2 className={styles.detailsVenue}>{event.venue}</h2>
+          <p className={styles.detailsCity}>{event.city}, {event.country}</p>
+          {event.description && (
+            <p className={styles.detailsDesc}>{event.description}</p>
+          )}
+        </div>
       </div>
     </div>
   )

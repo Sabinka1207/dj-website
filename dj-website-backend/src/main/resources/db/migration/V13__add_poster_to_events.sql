@@ -1,0 +1,2 @@
+ALTER TABLE events ADD COLUMN poster_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE events ADD COLUMN poster_public_id TEXT NOT NULL DEFAULT '';
