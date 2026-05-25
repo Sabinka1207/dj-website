@@ -216,7 +216,7 @@ Available at `/admin`. Login with password or Google Sign-In. Session expires af
 
 Left sidebar navigation:
 - **Bookings** (`/admin/bookings`) — view all booking inquiries submitted via the contact/calendar form. New requests are highlighted and counted in the sidebar badge. Open a request to read, reply by email, mark as answered, or delete.
-- **Events** (`/admin/events`) — create, edit, delete gig bookings
+- **Events** (`/admin/events`) — create, edit, delete gig bookings. Optionally attach a poster image (uploaded to Cloudinary under `dj-sabi/event-posters`). After uploading a poster, click **Set visible area** to open a full-screen crop picker: drag the 3:4 rectangle over the image to choose which part is shown in the public event details modal.
 - **Availability** (`/admin/availability`) — block specific dates so they appear greyed-out and non-clickable in the public events calendar
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
 - **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudflare R2), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from R2 too). Click any column header to sort. Toggle which mixes appear on the home page and set their display order.
@@ -473,6 +473,9 @@ cd dj-website-backend
 | POST   | /api/admin/events                      | Create event                                       |
 | PUT    | /api/admin/events/:id                  | Update event                                       |
 | DELETE | /api/admin/events/:id                  | Delete event                                       |
+| POST   | /api/admin/events/:id/poster           | Upload poster image (multipart) → Cloudinary       |
+| DELETE | /api/admin/events/:id/poster           | Remove poster from Cloudinary + clear fields       |
+| PATCH  | /api/admin/events/:id/poster-focus     | Set crop focal point `{ focusX, focusY }` (0–100) |
 | GET    | /api/admin/photos                      | List all photos                                    |
 | POST   | /api/admin/photos/upload               | Upload photo (multipart) → Cloudinary              |
 | POST   | /api/admin/photos/sync                 | Import existing Cloudinary photos from `dj-sabi/gallery` |

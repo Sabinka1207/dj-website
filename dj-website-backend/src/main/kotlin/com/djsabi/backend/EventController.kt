@@ -13,5 +13,5 @@ class EventController(private val eventRepository: EventRepository) {
     fun events(): List<EventResponse> =
         eventRepository.findAll()
             .sortedBy { it.date }
-            .map { EventResponse(it.id.toString(), it.date, it.venue, it.city, it.country, it.description) }
+            .map { EventResponse(it.id.toString(), it.date, it.venue, it.city, it.country, it.description, it.posterUrl, it.posterFocusX, it.posterFocusY) }
 }

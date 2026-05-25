@@ -7,4 +7,7 @@ data class EventResponse(
     val city: String,
     val country: String,
     val description: String,
+    val posterUrl: String = "",
+    val posterFocusX: Int = 50,
+    val posterFocusY: Int = 50,
 )

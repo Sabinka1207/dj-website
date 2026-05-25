@@ -11,5 +11,11 @@ data class Event(
     var venue: String = "",
     var city: String = "",
     var country: String = "",
-    var description: String = ""
+    var description: String = "",
+    var posterUrl: String = "",
+    var posterPublicId: String = "",
+    @Column(name = "poster_focus_x")
+    var posterFocusX: Int = 50,
+    @Column(name = "poster_focus_y")
+    var posterFocusY: Int = 50
 )
