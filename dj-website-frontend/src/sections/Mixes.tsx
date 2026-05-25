@@ -139,7 +139,7 @@ export default function Mixes({ cookiesAccepted }: Props) {
               <iframe
                 key={`ext-${item.id}`}
                 className={item.embedType === 'soundcloud' ? styles.scPlayer : styles.mcPlayer}
-                src={item.embedUrl} title={item.title} allow="autoplay"
+                src={item.embedUrl} title={item.title} allow="autoplay; encrypted-media"
               />
             )
           })}
