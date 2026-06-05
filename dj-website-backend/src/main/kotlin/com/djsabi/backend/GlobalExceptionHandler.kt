@@ -1,5 +1,7 @@
 package com.djsabi.backend
 
+import com.djsabi.backend.model.ErrorLogEntry
+import com.djsabi.backend.repository.ErrorLogEntryRepository
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.ErrorResponse
@@ -9,7 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import jakarta.servlet.http.HttpServletRequest
 
 @RestControllerAdvice
-class GlobalExceptionHandler(private val telegram: TelegramService) {
+class GlobalExceptionHandler(
+    private val telegram: TelegramService,
+    private val errorLogEntryRepository: ErrorLogEntryRepository,
+) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -36,6 +41,24 @@ class GlobalExceptionHandler(private val telegram: TelegramService) {
             append("\n```")
         }
         runCatching { telegram.sendErrorAlert("Backend exception: ${ex.javaClass.simpleName}", detail) }
+        runCatching {
+            errorLogEntryRepository.save(
+                ErrorLogEntry(
+                    errorType  = ex.javaClass.simpleName,
+                    message    = ex.message?.take(500),
+                    method     = request.method,
+                    uri        = request.requestURI,
+                    ip         = resolveClientIp(request),
+                    userAgent  = request.getHeader("User-Agent")?.take(300),
+                    stackTrace = ex.stackTraceToString().take(3000),
+                )
+            )
+        }
         return ResponseEntity.internalServerError().body(mapOf("error" to "Internal server error"))
+    }
+
+    private fun resolveClientIp(request: HttpServletRequest): String {
+        val forwarded = request.getHeader("X-Forwarded-For")
+        return (forwarded?.split(",")?.firstOrNull()?.trim() ?: request.remoteAddr).take(64)
     }
 }

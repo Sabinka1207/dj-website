@@ -26,6 +26,7 @@ import AdminAvailability from './pages/admin/AdminAvailability'
 import AdminTools from './pages/admin/AdminTools'
 import AdminMixes from './pages/admin/AdminMixes'
 import AdminAnalytics from './pages/admin/AdminAnalytics'
+import AdminErrorLog from './pages/admin/AdminErrorLog'
 import AdminOrgDocs from './pages/admin/AdminOrgDocs'
 import MixesPage from './pages/MixesPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -133,6 +134,7 @@ function App() {
           <Route path="org-docs" element={<AdminOrgDocs />} />
           <Route path="mixes" element={<AdminMixes />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="error-log" element={<AdminErrorLog />} />
         </Route>
       </Routes>
       {!isAdmin && <GlobalPlayer />}

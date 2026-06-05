@@ -102,6 +102,13 @@ export default function AdminLayout() {
             Analytics
           </NavLink>
           <NavLink
+            to="/admin/error-log"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            onClick={closeMenu}
+          >
+            Error Log
+          </NavLink>
+          <NavLink
             to="/admin/tools"
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             onClick={closeMenu}
