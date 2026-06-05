@@ -6,10 +6,13 @@ import com.djsabi.backend.repository.MixDownloadEventRepository
 import com.djsabi.backend.repository.MixPlayEventRepository
 import com.djsabi.backend.repository.MixRepository
 import jakarta.servlet.http.HttpServletResponse
+import java.io.IOException
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException
 import org.springframework.web.server.ResponseStatusException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
@@ -40,6 +43,13 @@ data class MixStatResponse(
     val uniqueDownloaders: Long
 )
 
+private val CLIENT_DISCONNECT_MESSAGES = setOf("broken pipe", "connection reset by peer")
+
+private fun isClientDisconnect(e: Throwable): Boolean =
+    e is AsyncRequestNotUsableException ||
+        (e is IOException && CLIENT_DISCONNECT_MESSAGES.any { e.message?.lowercase()?.contains(it) == true }) ||
+        (e.cause != null && isClientDisconnect(e.cause!!))
+
 @RestController
 @RequestMapping("/api/mixes")
 class MixController(
@@ -49,6 +59,7 @@ class MixController(
     private val s3Client: S3Client,
     @Value("\${r2.bucket-name:}") private val r2BucketName: String,
 ) {
+    private val log = LoggerFactory.getLogger(MixController::class.java)
 
     private fun toResponse(m: com.djsabi.backend.model.Mix) =
         MixResponse(m.id, m.url, m.coverUrl, m.title, m.year, m.style, m.event, m.city, m.durationSeconds, m.displayOrder)
@@ -83,13 +94,22 @@ class MixController(
             if (mix.year > 0) append(", ${mix.year}")
         }.replace(Regex("[/\\\\:*?\"<>|]"), "_")
 
-        val s3Response = s3Client.getObject(
+        s3Client.getObject(
             GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
-        )
-
-        response.contentType = "audio/mpeg"
-        response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
-        s3Response.transferTo(response.outputStream)
+        ).use { s3Response ->
+            response.contentType = "audio/mpeg"
+            response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
+            try {
+                s3Response.transferTo(response.outputStream)
+            } catch (e: Exception) {
+                if (isClientDisconnect(e)) {
+                    log.debug("Client disconnected during download of mix {}", id)
+                } else {
+                    log.error("Unexpected error streaming mix {} from S3", id, e)
+                    throw e
+                }
+            }
+        }
     }
 }
 
