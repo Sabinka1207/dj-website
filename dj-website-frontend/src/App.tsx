@@ -97,11 +97,7 @@ function App() {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
 
-  useEffect(() => {
-    if (!isAdmin && typeof window !== 'undefined' && (window as any).umami) {
-      (window as any).umami.track()
-    }
-  }, [location.pathname, isAdmin])
+
   const isLegal = location.pathname === '/impressum' || location.pathname === '/privacy' || location.pathname === '/for-organisers' || location.pathname === '/mixes'
 
   return (
