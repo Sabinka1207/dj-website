@@ -1,6 +1,6 @@
 CREATE TABLE error_log (
     id          BIGSERIAL PRIMARY KEY,
-    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMP NOT NULL DEFAULT NOW(),
     error_type  VARCHAR(255) NOT NULL,
     message     TEXT,
     method      VARCHAR(10),
@@ -11,5 +11,3 @@ CREATE TABLE error_log (
 );
 
 CREATE INDEX idx_error_log_occurred_at ON error_log(occurred_at DESC);
-
-ALTER TABLE error_log ENABLE ROW LEVEL SECURITY;

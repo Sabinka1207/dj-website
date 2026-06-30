@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { authHeaders, clearToken } from '../../utils/adminAuth'
 import styles from './Admin.module.css'
 
+type DriveLink = { id: number; linkKey: string; url: string }
+
+const DRIVE_LINK_LABELS: Record<string, string> = {
+  'all': 'All Files folder',
+  'videos': 'Live Videos folder',
+  'logo-jpg': 'Logo JPG file',
+  'logo-png': 'Logo PNG file',
+}
+
 type OrgDoc = {
   id: number
   docType: string
@@ -39,6 +48,12 @@ export default function AdminOrgDocs() {
   const [sortKey, setSortKey] = useState<SortKey>('docType')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
 
+  // Drive links
+  const [driveLinks, setDriveLinks] = useState<DriveLink[]>([])
+  const [driveEditing, setDriveEditing] = useState<number | null>(null)
+  const [driveDraft, setDriveDraft] = useState('')
+  const [driveSaving, setDriveSaving] = useState(false)
+
   // Add form
   const [addDocType, setAddDocType] = useState(DOC_TYPES[0].value)
   const [addLanguage, setAddLanguage] = useState('en')
@@ -61,7 +76,32 @@ export default function AdminOrgDocs() {
     setListLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  const loadDriveLinks = async () => {
+    const res = await fetch('/api/admin/drive-links', { headers: authHeaders() })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    setDriveLinks(await res.json())
+  }
+
+  useEffect(() => { load(); loadDriveLinks() }, [])
+
+  // ── Drive links ───────────────────────────────────────────
+  const startDriveEdit = (dl: DriveLink) => { setDriveEditing(dl.id); setDriveDraft(dl.url) }
+  const cancelDriveEdit = () => { setDriveEditing(null); setDriveDraft('') }
+
+  const saveDriveLink = async (id: number) => {
+    if (!driveDraft.trim()) return
+    setDriveSaving(true)
+    const res = await fetch(`/api/admin/drive-links/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(true),
+      body: JSON.stringify({ url: driveDraft.trim() }),
+    })
+    if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
+    const saved: DriveLink = await res.json()
+    setDriveLinks(prev => prev.map(dl => dl.id === id ? saved : dl))
+    setDriveSaving(false)
+    cancelDriveEdit()
+  }
 
   // ── Add ──────────────────────────────────────────────────
   const handleAdd = async (e: React.FormEvent) => {
@@ -167,7 +207,50 @@ export default function AdminOrgDocs() {
         Manage Google Drive links for organiser documents. Each entry is a doc type + language + URL.
       </p>
 
+      {/* ── Drive Links ── */}
+      <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 12 }}>Google Drive Links</h2>
+      <div style={{ marginBottom: 32 }}>
+        {driveLinks.length === 0
+          ? <p className={styles.muted}>Loading…</p>
+          : driveLinks.map(dl => (
+            <div key={dl.id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+              <span style={{ minWidth: 160, fontWeight: 500, fontSize: '0.9rem' }}>
+                {DRIVE_LINK_LABELS[dl.linkKey] ?? dl.linkKey}
+              </span>
+              {driveEditing === dl.id ? (
+                <>
+                  <input
+                    className={styles.input}
+                    type="url"
+                    value={driveDraft}
+                    onChange={e => setDriveDraft(e.target.value)}
+                    style={{ flex: '1 1 300px', minWidth: 0 }}
+                    autoFocus
+                  />
+                  <button className={styles.btn} onClick={() => saveDriveLink(dl.id)} disabled={driveSaving || !driveDraft.trim()}>
+                    {driveSaving ? '…' : 'Save'}
+                  </button>
+                  <button className={`${styles.btn} ${styles.btnGhost}`} onClick={cancelDriveEdit} disabled={driveSaving}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a href={dl.url} target="_blank" rel="noopener noreferrer" className={styles.muted} style={{ fontSize: '0.8rem', flex: '1 1 200px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {dl.url}
+                  </a>
+                  <button className={styles.iconBtn} onClick={() => startDriveEdit(dl)} title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </>
+              )}
+            </div>
+          ))
+        }
+      </div>
+
       {/* ── Add form ── */}
+      <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 16 }}>Document Links</h2>
       <form className={styles.form} onSubmit={handleAdd} style={{ maxWidth: 560 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 180px', minWidth: 0 }}>
