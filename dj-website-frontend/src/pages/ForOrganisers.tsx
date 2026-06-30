@@ -6,12 +6,8 @@ import styles from './ForOrganisers.module.css'
 
 const LANGUAGES = [{ code: 'de', label: 'DE' }, { code: 'en', label: 'EN' }, { code: 'ua', label: 'UA' }]
 
-const DRIVE_ALL = 'https://drive.google.com/drive/folders/1RYumv92KptJof1S8VxUxFACzLMepBJC9?usp=drive_link'
-const DRIVE_VIDEOS = 'https://drive.google.com/drive/folders/1-C07PmLCBMsC0qDdPN0il7ztRTyrPpYL?usp=drive_link'
-const DRIVE_LOGO_JPG = 'https://drive.google.com/file/d/1p7F_5byvk_9hpbhPeR83wvIOj_pV1l8S/view?usp=drive_link'
-const DRIVE_LOGO_PNG = 'https://drive.google.com/file/d/1T6hysXCj5ZKqeRa4T18XXBzoMDJy6NgD/view?usp=drive_link'
-
 type OrgDoc = { id: number; docType: string; language: string; url: string }
+type DriveLinks = Record<string, string>
 
 function DriveLink({ href, label }: { href: string; label: string }) {
   return (
@@ -39,6 +35,7 @@ export default function ForOrganisers() {
   const navigate = useNavigate()
   const [contactOpen, setContactOpen] = useState(false)
   const [docs, setDocs] = useState<OrgDoc[]>([])
+  const [driveLinks, setDriveLinks] = useState<DriveLinks>({})
   const [loading, setLoading] = useState(true)
   const [showWarmup, setShowWarmup] = useState(false)
   const [showReload, setShowReload] = useState(false)
@@ -47,6 +44,10 @@ export default function ForOrganisers() {
   const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
+
+  useEffect(() => {
+    fetch('/api/drive-links').then(r => r.ok ? r.json() : {}).then(setDriveLinks).catch(() => {})
+  }, [])
 
   useEffect(() => {
     warmupTimerRef.current = setTimeout(() => setShowWarmup(true), 3000)
@@ -110,7 +111,7 @@ export default function ForOrganisers() {
 
         <div className={styles.allFilesBox}>
           <p className={styles.allFilesText}>{t('organisers.allFilesText')}</p>
-          <a className={styles.allFilesLink} href={DRIVE_ALL} target="_blank" rel="noopener noreferrer">
+          <a className={styles.allFilesLink} href={driveLinks['all'] ?? '#'} target="_blank" rel="noopener noreferrer">
             {t('organisers.allFiles')}
           </a>
         </div>
@@ -137,8 +138,8 @@ export default function ForOrganisers() {
             <p className={styles.cardTitle}>{t('organisers.logo')}</p>
             <p className={styles.cardDesc}>{t('organisers.logoDesc')}</p>
             <div className={styles.downloadGroup}>
-              <DriveLink href={DRIVE_LOGO_JPG} label={t('organisers.logoJpg')} />
-              <DriveLink href={DRIVE_LOGO_PNG} label={t('organisers.logoPng')} />
+              <DriveLink href={driveLinks['logo-jpg'] ?? '#'} label={t('organisers.logoJpg')} />
+              <DriveLink href={driveLinks['logo-png'] ?? '#'} label={t('organisers.logoPng')} />
             </div>
           </div>
 
@@ -146,7 +147,7 @@ export default function ForOrganisers() {
             <p className={styles.cardTitle}>{t('organisers.liveVideos')}</p>
             <p className={styles.cardDesc}>{t('organisers.liveVideosDesc')}</p>
             <div className={styles.downloadGroup}>
-              <DriveLink href={DRIVE_VIDEOS} label={t('organisers.openLink')} />
+              <DriveLink href={driveLinks['videos'] ?? '#'} label={t('organisers.openLink')} />
             </div>
           </div>
 

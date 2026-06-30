@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import styles from './Navbar.module.css'
 import logo from '../assets/Sabi logo white s png.png'
 
@@ -13,6 +14,7 @@ const LANGUAGES = [
 
 export default function Navbar() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -45,6 +47,12 @@ export default function Navbar() {
             {t(`nav.${id}`)}
           </button>
         ))}
+        <button
+          className={styles.navLink}
+          onClick={() => { setMenuOpen(false); navigate('/for-organisers') }}
+        >
+          {t('nav.forOrganisers')}
+        </button>
 
         <div className={styles.langSwitcher}>
           {LANGUAGES.map(({ code, label }) => (
