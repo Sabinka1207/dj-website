@@ -43,16 +43,20 @@ export default function Navbar() {
       <nav className={`${styles.nav} ${menuOpen ? styles.open : ''}`}>
         <button className={styles.closeBtn} onClick={() => setMenuOpen(false)} aria-label="Close menu">✕</button>
         {NAV_LINKS.map((id) => (
-          <button key={id} className={styles.navLink} onClick={() => handleNavClick(id)}>
-            {t(`nav.${id}`)}
-          </button>
+          <>
+            <button key={id} className={styles.navLink} onClick={() => handleNavClick(id)}>
+              {t(`nav.${id}`)}
+            </button>
+            {id === 'about' && (
+              <button
+                className={styles.navLink}
+                onClick={() => { setMenuOpen(false); navigate('/for-organisers') }}
+              >
+                {t('nav.forOrganisers')}
+              </button>
+            )}
+          </>
         ))}
-        <button
-          className={styles.navLink}
-          onClick={() => { setMenuOpen(false); navigate('/for-organisers') }}
-        >
-          {t('nav.forOrganisers')}
-        </button>
 
         <div className={styles.langSwitcher}>
           {LANGUAGES.map(({ code, label }) => (
