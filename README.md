@@ -14,7 +14,7 @@ Built with React (frontend) and Spring Boot + Kotlin (backend).
 | Routing      | React Router v7                                     |
 | Backend      | Spring Boot 3.4, Kotlin, Spring Data JPA            |
 | Validation   | Jakarta Bean Validation (`@Valid`), Bucket4j rate limiting (5 req/hour/IP) |
-| Database     | PostgreSQL (Supabase) — H2 in-memory for local dev  |
+| Database     | PostgreSQL (Supabase) — local PostgreSQL via Homebrew for dev |
 | Migrations   | Flyway (`db/migration/`)                            |
 | Auth         | Password + Google Sign-In (admin panel)             |
 | Email        | Resend API                                          |
@@ -49,8 +49,8 @@ dj-website/
 │   └── Dockerfile
 └── dj-website-backend/
     ├── src/main/kotlin/com/djsabi/backend/
-    │   ├── model/                  ← Event.kt, Photo.kt, BookingRequest.kt, UnavailableDate.kt, Mix.kt, ExternalMix.kt
-    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt, MixRepository.kt, ExternalMixRepository.kt
+    │   ├── model/                  ← Event.kt, Photo.kt, BookingRequest.kt, UnavailableDate.kt, Mix.kt, ExternalMix.kt, DriveLink.kt
+    │   ├── repository/             ← EventRepository.kt, PhotoRepository.kt, BookingRequestRepository.kt, UnavailableDateRepository.kt, MixRepository.kt, ExternalMixRepository.kt, DriveLinkRepository.kt
     │   ├── DjWebsiteBackendApplication.kt
     │   ├── ContactController.kt
     │   ├── ContactRequest.kt
@@ -69,6 +69,10 @@ dj-website/
     │   ├── AdminCloudinaryController.kt ← GET /api/admin/cloudinary-usage (storage/bandwidth stats)
     │   ├── ExternalMixController.kt    ← public external mixes + featured endpoint
     │   ├── AdminExternalMixController.kt ← CRUD for external mixes, auto URL conversion
+    │   ├── OrgDocController.kt
+    │   ├── AdminOrgDocController.kt
+    │   ├── DriveLinkController.kt      ← public GET /api/drive-links (Google Drive URLs)
+    │   ├── AdminDriveLinkController.kt ← admin GET + PUT /api/admin/drive-links
     │   ├── ClientErrorController.kt    ← POST /api/client-error (frontend JS crash reporting → Telegram)
     │   ├── AdminAuthController.kt
     │   ├── AdminAuthService.kt
@@ -87,7 +91,15 @@ dj-website/
     │       ├── V5__add_home_display_order_to_external_mixes.sql
     │       ├── V6__add_home_featured_to_mixes.sql
     │       ├── V7__add_cover_url_to_mixes.sql
-    │       └── V8__add_cover_public_id_to_mixes.sql
+    │       ├── V8__add_cover_public_id_to_mixes.sql
+    │       ├── V9__create_org_docs_table.sql
+    │       ├── V10__add_created_at_to_org_docs.sql
+    │       ├── V11__create_mix_event_tables.sql
+    │       ├── V12__enable_rls.sql
+    │       ├── V13__add_poster_to_events.sql
+    │       ├── V14__add_poster_focus_to_events.sql
+    │       ├── V15__create_error_log_table.sql
+    │       └── V16__create_drive_links_table.sql
     └── Dockerfile
 ```
 
@@ -151,13 +163,21 @@ npm run dev
 
 ### Backend
 
-Uses H2 in-memory database locally — no setup needed. Flyway runs migrations automatically on startup. On first boot it seeds events from `src/main/resources/events.json`.
+Uses a local PostgreSQL database. Install once with Homebrew, then run with the `local` profile:
 
 ```bash
+# One-time setup
+brew install postgresql@16
+brew services start postgresql@16
+createdb djsabi_local
+
+# Run backend
 cd dj-website-backend
-set -a && source ../.env && set +a && ./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=local'
 # runs on http://localhost:8080
 ```
+
+The `application-local.properties` file (gitignored) overrides the datasource to use local PostgreSQL. Flyway runs all migrations automatically on startup.
 
 ### Run both together (local)
 
@@ -200,12 +220,12 @@ Language switcher is in the Navbar. The selected language is saved to `localStor
 
 ## For Organisers page
 
-Available at `/for-organisers`. Contains:
+Available at `/for-organisers`. Linked from the navbar (DE/EN/UA). Contains:
+- Google Drive "All Files" folder link (editable from admin → Org Docs → Drive Links)
 - Press kit downloads (language-aware PDF per DE/EN/UA)
-- Press photos (Google Drive link)
-- Logo downloads (JPG / PNG)
-- Live videos & examples
-- Hospitality Rider, Technical Rider, Contract (language variants planned)
+- Logo downloads (JPG / PNG — links editable from admin)
+- Live videos & examples (link editable from admin)
+- Hospitality Rider, Technical Rider, Contract (language variants)
 - Contact modal for quick questions
 
 ---
@@ -221,7 +241,7 @@ Left sidebar navigation:
 - **Photos** (`/admin/photos`) — upload originals (auto-compressed by Cloudinary), drag to reorder, delete individual or delete all. Use **Sync from Cloudinary** to import photos already in the `dj-sabi/gallery` folder on Cloudinary without re-uploading. Changes reflect immediately in the public gallery.
 - **Mixes** (`/admin/mixes`) — upload MP3s (stored on Cloudflare R2), add optional cover image, edit metadata (title, year, style, event, city), delete (removes from R2 too). Click any column header to sort. Toggle which mixes appear on the home page and set their display order.
 - **External Mixes** (`/admin/external-mixes`) — add YouTube, Mixcloud, or SoundCloud mixes by pasting any direct URL (auto-converted to embed URL server-side). Edit metadata, toggle home page featuring with ordering.
-- **Org Docs** (`/admin/org-docs`) — manage press kit, tech rider, hospitality rider, booking agreements and other organiser documents. Upload/edit/delete per language variant.
+- **Org Docs** (`/admin/org-docs`) — two sections: **Google Drive Links** (edit the 4 Drive URLs: All Files folder, Live Videos folder, Logo JPG, Logo PNG — shown on the For Organisers page) and **Document Links** (manage press kit, tech rider, hospitality rider, booking agreements and other organiser documents per language variant).
 - **Analytics** (`/admin/analytics`) — two tabs: **Website Stats** (Umami-powered — visitors, page views, visits, bounce rate, avg session, page views chart with daily/weekly grouping, breakdowns by country, device, OS, browser, top pages, referrers, language; 7/30/90-day ranges with period comparison) and **Mix Play & Download Stats** (internal — per-mix play count, unique listeners, total time played, downloads, unique downloaders; sortable columns).
 - **Tools** (`/admin/tools`) — quick links to all services (Vercel, Render, Supabase, Cloudinary, etc.) plus a live Cloudinary storage/bandwidth/objects usage panel fetched from the Cloudinary Admin API.
 
@@ -454,7 +474,8 @@ cd dj-website-backend
 | GET    | /api/mixes                     | List all hosted mixes (sorted by display order)  |
 | GET    | /api/mixes/featured            | List home-featured hosted mixes                  |
 | GET    | /api/external-mixes            | List all external mixes (sorted by year desc)    |
-| GET    | /api/external-mixes/featured   | List home-featured external mixes                |
+| GET    | /api/org-docs                  | List organiser document links                    |
+| GET    | /api/drive-links               | List Google Drive URLs (all, videos, logo-jpg, logo-png) |
 
 ### Admin (requires `Authorization: Bearer <token>`)
 
@@ -500,7 +521,12 @@ cd dj-website-backend
 | PATCH  | /api/admin/external-mixes/:id/featured | Toggle home page featuring                         |
 | PATCH  | /api/admin/external-mixes/:id/home-order | Set home display order                           |
 | DELETE | /api/admin/external-mixes/:id          | Delete external mix                                |
-| GET    | /api/admin/cloudinary-usage            | Cloudinary storage, bandwidth, objects usage stats |
+| GET    | /api/admin/org-docs                    | List all org doc links                             |
+| POST   | /api/admin/org-docs                    | Add org doc link                                   |
+| PUT    | /api/admin/org-docs/:id                | Update org doc link                                |
+| DELETE | /api/admin/org-docs/:id                | Delete org doc link                                |
+| GET    | /api/admin/drive-links                 | List Google Drive URLs                             |
+| PUT    | /api/admin/drive-links/:id             | Update a Google Drive URL                          |
 | GET    | /api/admin/analytics/stats             | Site stats (visitors, pageviews, visits, bounces, avg session) with period comparison |
 | GET    | /api/admin/analytics/pageviews         | Pageviews over time aggregated by unit (day/week/month), timezone-aware |
 | GET    | /api/admin/analytics/metrics           | Breakdown by type: country, device, os, browser, url, referrer, language |
