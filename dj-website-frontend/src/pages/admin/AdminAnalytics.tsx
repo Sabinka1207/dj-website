@@ -96,7 +96,7 @@ interface Stats {
   visits: number
   bounces: number
   totaltime: number
-  comparison: { pageviews: number; visitors: number; visits: number; bounces: number; totaltime: number }
+  comparison?: { pageviews: number; visitors: number; visits: number; bounces: number; totaltime: number }
 }
 interface Metric { x: string; y: number }
 interface PageviewPoint { x: string; y: number }
@@ -238,7 +238,6 @@ export default function AdminAnalytics() {
   const [referrers, setReferrers] = useState<Metric[]>([])
   const [languages, setLanguages] = useState<Metric[]>([])
   const [pageviews, setPageviews] = useState<PageviewPoint[]>([])
-  const [prevStats, setPrevStats] = useState<Stats | null>(null)
   const [mixStats, setMixStats] = useState<MixStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -248,23 +247,21 @@ export default function AdminAnalytics() {
     setError(null)
     const { startAt, endAt } = rangeMs(RANGES[rangeIdx].days)
     const qs = `startAt=${startAt}&endAt=${endAt}`
-    const prevQs = `startAt=${startAt - RANGES[rangeIdx].days * 86400000}&endAt=${startAt}`
     const unit = RANGES[rangeIdx].unit
     const headers = authHeaders()
 
     fetch('/api/admin/mix-stats', { headers }).then(r => r.ok ? r.json() : []).then(d => setMixStats(Array.isArray(d) ? d : []))
-    fetch(`/api/admin/analytics/stats?${prevQs}`, { headers }).then(r => r.ok ? r.json() : null).then(d => setPrevStats(d)).catch(() => {})
 
     Promise.all([
-      fetch(`/api/admin/analytics/stats?${qs}`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/pageviews?${qs}&unit=${unit}&timezone=Europe%2FBerlin`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=country`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=device`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=os`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=browser`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=url`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=referrer`, { headers }).then(r => r.json()),
-      fetch(`/api/admin/analytics/metrics?${qs}&type=language`, { headers }).then(r => r.json()),
+      fetch(`/api/admin/analytics/stats?${qs}`, { headers }).then(r => r.ok ? r.json() : Promise.reject(`stats: ${r.status}`)),
+      fetch(`/api/admin/analytics/pageviews?${qs}&unit=${unit}&timezone=Europe%2FBerlin`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=country`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=device`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=os`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=browser`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=url`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=referrer`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`/api/admin/analytics/metrics?${qs}&type=language`, { headers }).then(r => r.ok ? r.json() : []),
     ])
       .then(([s, pv, c, d, o, b, p, ref, lang]) => {
         setStats(s)
@@ -282,10 +279,11 @@ export default function AdminAnalytics() {
   }, [rangeIdx])
 
   const bounceRate = stats ? Math.round((stats.bounces / Math.max(stats.visits, 1)) * 100) : 0
-  const prevBounceRate = prevStats ? Math.round((prevStats.bounces / Math.max(prevStats.visits, 1)) * 100) : 0
+  const cmp = stats?.comparison
+  const prevBounceRate = cmp ? Math.round((cmp.bounces / Math.max(cmp.visits, 1)) * 100) : 0
   const avgSession = stats ? Math.round(stats.totaltime / Math.max(stats.visits, 1)) : 0
-  const prevAvgSession = prevStats ? Math.round(prevStats.totaltime / Math.max(prevStats.visits, 1)) : 0
-  const noPrev = !prevStats || (prevStats.visitors === 0 && prevStats.pageviews === 0 && prevStats.visits === 0)
+  const prevAvgSession = cmp ? Math.round(cmp.totaltime / Math.max(cmp.visits, 1)) : 0
+  const noPrev = !cmp || (cmp.visitors === 0 && cmp.pageviews === 0 && cmp.visits === 0)
 
   const tabStyle = (key: 'website' | 'mixes') => ({
     background: 'none', border: 'none',
@@ -329,9 +327,9 @@ export default function AdminAnalytics() {
           {!loading && !error && stats && (
             <>
               <div className={styles.analyticsStats}>
-                <StatCard label="Visitors" value={stats.visitors} prev={prevStats?.visitors ?? 0} noPrev={noPrev} />
-                <StatCard label="Page Views" value={stats.pageviews} prev={prevStats?.pageviews ?? 0} noPrev={noPrev} />
-                <StatCard label="Visits" value={stats.visits} prev={prevStats?.visits ?? 0} noPrev={noPrev} />
+                <StatCard label="Visitors" value={stats.visitors} prev={cmp?.visitors ?? 0} noPrev={noPrev} />
+                <StatCard label="Page Views" value={stats.pageviews} prev={cmp?.pageviews ?? 0} noPrev={noPrev} />
+                <StatCard label="Visits" value={stats.visits} prev={cmp?.visits ?? 0} noPrev={noPrev} />
                 <StatCard label="Bounce Rate" value={bounceRate} prev={prevBounceRate} format={v => `${v}%`} noPrev={noPrev} />
                 <StatCard label="Avg Session" value={avgSession} prev={prevAvgSession} format={fmtTime} noPrev={noPrev} />
               </div>
