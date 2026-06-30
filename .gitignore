@@ -12,3 +12,4 @@ dj-website-backend/.kotlin/
 
 # OS
 .DS_Store
+dj-website-backend/src/main/resources/application-local.properties
