@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
+import java.util.concurrent.CompletableFuture
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -116,9 +117,16 @@ class MixController(
         val rawFile = Files.createTempFile("mix-$id-", ".mp3")
         val taggedFile = Files.createTempFile("mix-$id-tagged-", ".mp3")
         try {
-            s3Client.getObject(
-                GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
-            ).use { s3Response -> Files.copy(s3Response, rawFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+            // fetch R2 and cover image in parallel
+            val s3Future = CompletableFuture.supplyAsync {
+                s3Client.getObject(
+                    GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
+                ).use { s3Response -> Files.copy(s3Response, rawFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+            }
+            val coverFuture = CompletableFuture.supplyAsync { fetchCover(mix.coverUrl, id) }
+
+            s3Future.join()
+            val (coverBytes, coverMime) = coverFuture.join()
 
             val mp3 = Mp3File(rawFile.toFile())
             val tag = ID3v24Tag()
@@ -127,8 +135,6 @@ class MixController(
             tag.albumArtist = "DJ SABI"
             if (mix.year > 0) tag.year = mix.year.toString()
             if (mix.style.isNotBlank()) tag.genreDescription = mix.style.split(",").joinToString(", ") { it.trim() }
-
-            val (coverBytes, coverMime) = fetchCover(mix.coverUrl, id)
             tag.setAlbumImage(coverBytes, coverMime)
 
             mp3.id3v2Tag = tag
