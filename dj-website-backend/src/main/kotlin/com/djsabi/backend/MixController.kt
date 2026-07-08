@@ -19,7 +19,6 @@ import org.springframework.web.context.request.async.AsyncRequestNotUsableExcept
 import org.springframework.web.server.ResponseStatusException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 
 data class MixResponse(
     val id: Long,
@@ -124,58 +123,60 @@ class MixController(
         val namePart = ("DJ SABI - " + mix.title.ifBlank { "mix" })
             .replace(Regex("[/\\\\:*?\"<>|]"), "_")
 
-        // fetch cover and S3 object size in parallel
+        // fetch cover and S3 object in parallel
         val coverFuture = CompletableFuture.supplyAsync { fetchCover(mix.coverUrl, id) }
-        val s3SizeFuture = CompletableFuture.supplyAsync {
-            s3Client.headObject(HeadObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()).contentLength()
-        }
 
         val (coverBytes, coverMime) = coverFuture.join()
-        val s3Size = s3SizeFuture.join()
-
         val tagBytes = buildTagBytes(mix, namePart, coverBytes, coverMime)
 
-        // detect and skip existing ID3 tag at the start of the S3 file
-        val existingTagSize = s3Client.getObject(
+        s3Client.getObject(
             GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
         ).use { s3Stream ->
+            // read first 10 bytes to detect existing ID3 tag without a separate HeadObject call
             val header = ByteArray(10)
-            val read = s3Stream.read(header)
-            if (read == 10 && header[0] == 'I'.code.toByte() && header[1] == 'D'.code.toByte() && header[2] == '3'.code.toByte()) {
-                // syncsafe integer decode
+            val headerRead = s3Stream.read(header)
+            val existingTagSize = if (
+                headerRead == 10 &&
+                header[0] == 'I'.code.toByte() &&
+                header[1] == 'D'.code.toByte() &&
+                header[2] == '3'.code.toByte()
+            ) {
                 val b0 = header[6].toInt() and 0x7F
                 val b1 = header[7].toInt() and 0x7F
                 val b2 = header[8].toInt() and 0x7F
                 val b3 = header[9].toInt() and 0x7F
                 10 + (b0 shl 21 or (b1 shl 14) or (b2 shl 7) or b3)
             } else 0
-        }
 
-        val audioSize = s3Size - existingTagSize
-        val totalSize = tagBytes.size + audioSize
+            val s3Size = s3Stream.response().contentLength()
+            val audioSize = s3Size - existingTagSize
+            val totalSize = tagBytes.size + audioSize
 
-        response.contentType = "audio/mpeg"
-        response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
-        response.setContentLengthLong(totalSize)
+            response.contentType = "audio/mpeg"
+            response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
+            response.setContentLengthLong(totalSize)
 
-        val out = response.outputStream
-        try {
-            out.write(tagBytes)
-            out.flush()
+            val out = response.outputStream
+            try {
+                out.write(tagBytes)
+                out.flush()
 
-            s3Client.getObject(
-                GetObjectRequest.builder()
-                    .bucket(r2BucketName)
-                    .key(mix.publicId)
-                    .range("bytes=$existingTagSize-${s3Size - 1}")
-                    .build()
-            ).use { s3Stream -> s3Stream.transferTo(out) }
-        } catch (e: Exception) {
-            if (isClientDisconnect(e)) {
-                log.debug("Client disconnected during download of mix {}", id)
-            } else {
-                log.error("Unexpected error streaming mix {} from S3", id, e)
-                throw e
+                // skip remaining bytes of the existing tag (already consumed the 10-byte header above)
+                val alreadyConsumed = if (existingTagSize > 0) headerRead.toLong() else 0L
+                val toSkip = existingTagSize - alreadyConsumed
+                if (toSkip > 0) s3Stream.skip(toSkip)
+
+                // if there was no existing tag, write back the 10 header bytes we already read
+                if (existingTagSize == 0 && headerRead > 0) out.write(header, 0, headerRead)
+
+                s3Stream.transferTo(out)
+            } catch (e: Exception) {
+                if (isClientDisconnect(e)) {
+                    log.debug("Client disconnected during download of mix {}", id)
+                } else {
+                    log.error("Unexpected error streaming mix {} from S3", id, e)
+                    throw e
+                }
             }
         }
     }
