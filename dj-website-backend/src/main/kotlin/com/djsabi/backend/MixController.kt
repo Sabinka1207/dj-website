@@ -6,11 +6,9 @@ import com.djsabi.backend.repository.MixDownloadEventRepository
 import com.djsabi.backend.repository.MixPlayEventRepository
 import com.djsabi.backend.repository.MixRepository
 import com.mpatric.mp3agic.ID3v24Tag
-import com.mpatric.mp3agic.Mp3File
 import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
 import java.net.URI
-import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -21,6 +19,7 @@ import org.springframework.web.context.request.async.AsyncRequestNotUsableExcept
 import org.springframework.web.server.ResponseStatusException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 
 data class MixResponse(
     val id: Long,
@@ -102,6 +101,17 @@ class MixController(
         }
     }
 
+    private fun buildTagBytes(mix: com.djsabi.backend.model.Mix, namePart: String, coverBytes: ByteArray, coverMime: String): ByteArray {
+        val tag = ID3v24Tag()
+        tag.title = mix.title.ifBlank { namePart }
+        tag.artist = "DJ SABI"
+        tag.albumArtist = "DJ SABI"
+        if (mix.year > 0) tag.year = mix.year.toString()
+        if (mix.style.isNotBlank()) tag.genreDescription = mix.style.split(",").joinToString(", ") { it.trim() }
+        tag.setAlbumImage(coverBytes, coverMime)
+        return tag.toBytes()
+    }
+
     @GetMapping("/{id}/download")
     fun download(@PathVariable id: Long, @RequestParam(defaultValue = "") v: String, response: HttpServletResponse) {
         val mix = mixRepository.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
@@ -114,49 +124,59 @@ class MixController(
         val namePart = ("DJ SABI - " + mix.title.ifBlank { "mix" })
             .replace(Regex("[/\\\\:*?\"<>|]"), "_")
 
-        val rawFile = Files.createTempFile("mix-$id-", ".mp3")
-        val taggedFile = Files.createTempFile("mix-$id-tagged-", ".mp3")
+        // fetch cover and S3 object size in parallel
+        val coverFuture = CompletableFuture.supplyAsync { fetchCover(mix.coverUrl, id) }
+        val s3SizeFuture = CompletableFuture.supplyAsync {
+            s3Client.headObject(HeadObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()).contentLength()
+        }
+
+        val (coverBytes, coverMime) = coverFuture.join()
+        val s3Size = s3SizeFuture.join()
+
+        val tagBytes = buildTagBytes(mix, namePart, coverBytes, coverMime)
+
+        // detect and skip existing ID3 tag at the start of the S3 file
+        val existingTagSize = s3Client.getObject(
+            GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
+        ).use { s3Stream ->
+            val header = ByteArray(10)
+            val read = s3Stream.read(header)
+            if (read == 10 && header[0] == 'I'.code.toByte() && header[1] == 'D'.code.toByte() && header[2] == '3'.code.toByte()) {
+                // syncsafe integer decode
+                val b0 = header[6].toInt() and 0x7F
+                val b1 = header[7].toInt() and 0x7F
+                val b2 = header[8].toInt() and 0x7F
+                val b3 = header[9].toInt() and 0x7F
+                10 + (b0 shl 21 or (b1 shl 14) or (b2 shl 7) or b3)
+            } else 0
+        }
+
+        val audioSize = s3Size - existingTagSize
+        val totalSize = tagBytes.size + audioSize
+
+        response.contentType = "audio/mpeg"
+        response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
+        response.setContentLengthLong(totalSize)
+
+        val out = response.outputStream
         try {
-            // fetch R2 and cover image in parallel
-            val s3Future = CompletableFuture.supplyAsync {
-                s3Client.getObject(
-                    GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
-                ).use { s3Response -> Files.copy(s3Response, rawFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+            out.write(tagBytes)
+            out.flush()
+
+            s3Client.getObject(
+                GetObjectRequest.builder()
+                    .bucket(r2BucketName)
+                    .key(mix.publicId)
+                    .range("bytes=$existingTagSize-${s3Size - 1}")
+                    .build()
+            ).use { s3Stream -> s3Stream.transferTo(out) }
+        } catch (e: Exception) {
+            if (isClientDisconnect(e)) {
+                log.debug("Client disconnected during download of mix {}", id)
+            } else {
+                log.error("Unexpected error streaming mix {} from S3", id, e)
+                throw e
             }
-            val coverFuture = CompletableFuture.supplyAsync { fetchCover(mix.coverUrl, id) }
-
-            s3Future.join()
-            val (coverBytes, coverMime) = coverFuture.join()
-
-            val mp3 = Mp3File(rawFile.toFile())
-            val tag = ID3v24Tag()
-            tag.title = mix.title.ifBlank { namePart }
-            tag.artist = "DJ SABI"
-            tag.albumArtist = "DJ SABI"
-            if (mix.year > 0) tag.year = mix.year.toString()
-            if (mix.style.isNotBlank()) tag.genreDescription = mix.style.split(",").joinToString(", ") { it.trim() }
-            tag.setAlbumImage(coverBytes, coverMime)
-
-            mp3.id3v2Tag = tag
-            mp3.save(taggedFile.toString())
-
-            val fileSize = Files.size(taggedFile)
-            response.contentType = "audio/mpeg"
-            response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
-            response.setContentLengthLong(fileSize)
-            try {
-                Files.newInputStream(taggedFile).use { it.transferTo(response.outputStream) }
-            } catch (e: Exception) {
-                if (isClientDisconnect(e)) {
-                    log.debug("Client disconnected during download of mix {}", id)
-                } else {
-                    log.error("Unexpected error streaming mix {} from S3", id, e)
-                    throw e
-                }
-            }
-        } finally {
-            Files.deleteIfExists(rawFile)
-            Files.deleteIfExists(taggedFile)
         }
     }
 }
