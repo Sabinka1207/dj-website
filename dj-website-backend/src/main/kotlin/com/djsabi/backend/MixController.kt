@@ -5,8 +5,12 @@ import com.djsabi.backend.model.MixPlayEvent
 import com.djsabi.backend.repository.MixDownloadEventRepository
 import com.djsabi.backend.repository.MixPlayEventRepository
 import com.djsabi.backend.repository.MixRepository
+import com.mpatric.mp3agic.ID3v24Tag
+import com.mpatric.mp3agic.Mp3File
 import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
+import java.net.URI
+import java.nio.file.Files
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -94,13 +98,49 @@ class MixController(
             if (mix.year > 0) append(", ${mix.year}")
         }.replace(Regex("[/\\\\:*?\"<>|]"), "_")
 
-        s3Client.getObject(
-            GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
-        ).use { s3Response ->
+        val rawFile = Files.createTempFile("mix-$id-", ".mp3")
+        val taggedFile = Files.createTempFile("mix-$id-tagged-", ".mp3")
+        try {
+            s3Client.getObject(
+                GetObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
+            ).use { s3Response -> Files.copy(s3Response, rawFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+
+            val mp3 = Mp3File(rawFile.toFile())
+            val tag = ID3v24Tag()
+            tag.title = mix.title.ifBlank { namePart }
+            tag.artist = "DJ SABI"
+            tag.albumArtist = "DJ SABI"
+            if (mix.year > 0) tag.year = mix.year.toString()
+            if (mix.style.isNotBlank()) tag.genreDescription = mix.style.split(",").joinToString(", ") { it.trim() }
+
+            val coverBytes: ByteArray
+            val coverMime: String
+            if (mix.coverUrl.isNotBlank()) {
+                try {
+                    coverBytes = URI(mix.coverUrl).toURL().readBytes()
+                    coverMime = if (mix.coverUrl.contains(".png", ignoreCase = true)) "image/png" else "image/jpeg"
+                } catch (e: Exception) {
+                    log.warn("Could not fetch cover image for mix {}: {}", id, e.message)
+                    val fallback = javaClass.classLoader.getResourceAsStream("default-cover.png")
+                        ?: throw IllegalStateException("default-cover.png missing from resources")
+                    coverBytes = fallback.readBytes()
+                    coverMime = "image/png"
+                }
+            } else {
+                val fallback = javaClass.classLoader.getResourceAsStream("default-cover.png")
+                    ?: throw IllegalStateException("default-cover.png missing from resources")
+                coverBytes = fallback.readBytes()
+                coverMime = "image/png"
+            }
+            tag.setAlbumImage(coverBytes, coverMime)
+
+            mp3.id3v2Tag = tag
+            mp3.save(taggedFile.toString())
+
             response.contentType = "audio/mpeg"
             response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
             try {
-                s3Response.transferTo(response.outputStream)
+                Files.newInputStream(taggedFile).use { it.transferTo(response.outputStream) }
             } catch (e: Exception) {
                 if (isClientDisconnect(e)) {
                     log.debug("Client disconnected during download of mix {}", id)
@@ -109,6 +149,9 @@ class MixController(
                     throw e
                 }
             }
+        } finally {
+            Files.deleteIfExists(rawFile)
+            Files.deleteIfExists(taggedFile)
         }
     }
 }
