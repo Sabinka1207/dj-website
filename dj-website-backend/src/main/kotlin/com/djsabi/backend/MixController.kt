@@ -110,11 +110,8 @@ class MixController(
             downloadEventRepository.save(MixDownloadEvent(mixId = id, visitorId = v))
         }
 
-        val namePart = buildString {
-            append("DJ SABI - ")
-            append(mix.title.ifBlank { "mix" })
-            if (mix.year > 0) append(", ${mix.year}")
-        }.replace(Regex("[/\\\\:*?\"<>|]"), "_")
+        val namePart = ("DJ SABI - " + mix.title.ifBlank { "mix" })
+            .replace(Regex("[/\\\\:*?\"<>|]"), "_")
 
         val rawFile = Files.createTempFile("mix-$id-", ".mp3")
         val taggedFile = Files.createTempFile("mix-$id-tagged-", ".mp3")
@@ -137,8 +134,10 @@ class MixController(
             mp3.id3v2Tag = tag
             mp3.save(taggedFile.toString())
 
+            val fileSize = Files.size(taggedFile)
             response.contentType = "audio/mpeg"
             response.setHeader("Content-Disposition", "attachment; filename=\"$namePart.mp3\"")
+            response.setContentLengthLong(fileSize)
             try {
                 Files.newInputStream(taggedFile).use { it.transferTo(response.outputStream) }
             } catch (e: Exception) {

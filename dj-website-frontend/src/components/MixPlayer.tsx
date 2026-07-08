@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import logo from '../assets/Sabi logo white s png.png'
 import { getVisitorId } from '../utils/visitorId'
 import { usePlayer, PlayerMix } from '../contexts/PlayerContext'
@@ -17,6 +18,7 @@ interface Props {
 
 export default function MixPlayer({ mix }: Props) {
   const { currentMix, isPlaying, currentTime, duration, buffered, volume, muted, toggleMix, seek, setVolume, toggleMute } = usePlayer()
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null)
 
   const isActive = currentMix?.id === mix.id
   const playing = isActive && isPlaying
@@ -56,22 +58,58 @@ export default function MixPlayer({ mix }: Props) {
                   </svg>
                 )}
               </button>
-              <a
+              <button
                 className={styles.downloadBtn}
-                href={`/api/mixes/${mix.id}/download?v=${getVisitorId()}`}
-                download
                 aria-label="Download mix"
                 title="Download"
-                onClick={() => {
-                  if (typeof window !== 'undefined' && (window as any).umami) {
-                    (window as any).umami.track('mix_downloaded', { title: mix.title, id: mix.id })
+                disabled={downloadProgress !== null}
+                onClick={async () => {
+                  if (downloadProgress !== null) return
+                  setDownloadProgress(0)
+                  try {
+                    if (typeof window !== 'undefined' && (window as any).umami) {
+                      (window as any).umami.track('mix_downloaded', { title: mix.title, id: mix.id })
+                    }
+                    const res = await fetch(`/api/mixes/${mix.id}/download?v=${getVisitorId()}`)
+                    if (!res.ok || !res.body) throw new Error('Download failed')
+
+                    const total = Number(res.headers.get('Content-Length') ?? 0)
+                    const reader = res.body.getReader()
+                    const chunks: Uint8Array[] = []
+                    let received = 0
+
+                    while (true) {
+                      const { done, value } = await reader.read()
+                      if (done) break
+                      chunks.push(value)
+                      received += value.length
+                      if (total > 0) setDownloadProgress(Math.round((received / total) * 100))
+                    }
+
+                    const blob = new Blob(chunks, { type: 'audio/mpeg' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    const disposition = res.headers.get('Content-Disposition') ?? ''
+                    const match = disposition.match(/filename="([^"]+)"/)
+                    a.download = match ? match[1] : `${mix.title}.mp3`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  } finally {
+                    setDownloadProgress(null)
                   }
                 }}
               >
-                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-                  <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/>
-                </svg>
-              </a>
+                {downloadProgress !== null ? (
+                  <span className={styles.downloadProgress}>
+                    {downloadProgress > 0 ? `${downloadProgress}%` : '…'}
+                  </span>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                    <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/>
+                  </svg>
+                )}
+              </button>
             </div>
 
             <div className={styles.meta}>
