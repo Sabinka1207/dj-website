@@ -83,6 +83,24 @@ class MixController(
         return ResponseEntity.ok().build()
     }
 
+    private fun defaultCover(): Pair<ByteArray, String> {
+        val bytes = javaClass.classLoader.getResourceAsStream("default-cover.png")
+            ?.readBytes() ?: throw IllegalStateException("default-cover.png missing from resources")
+        return bytes to "image/png"
+    }
+
+    private fun fetchCover(coverUrl: String, mixId: Long): Pair<ByteArray, String> {
+        if (coverUrl.isBlank()) return defaultCover()
+        return try {
+            val bytes = URI(coverUrl).toURL().readBytes()
+            val mime = if (coverUrl.contains(".png", ignoreCase = true)) "image/png" else "image/jpeg"
+            bytes to mime
+        } catch (e: Exception) {
+            log.warn("Could not fetch cover image for mix {}: {}", mixId, e.message)
+            defaultCover()
+        }
+    }
+
     @GetMapping("/{id}/download")
     fun download(@PathVariable id: Long, @RequestParam(defaultValue = "") v: String, response: HttpServletResponse) {
         val mix = mixRepository.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
@@ -113,25 +131,7 @@ class MixController(
             if (mix.year > 0) tag.year = mix.year.toString()
             if (mix.style.isNotBlank()) tag.genreDescription = mix.style.split(",").joinToString(", ") { it.trim() }
 
-            val coverBytes: ByteArray
-            val coverMime: String
-            if (mix.coverUrl.isNotBlank()) {
-                try {
-                    coverBytes = URI(mix.coverUrl).toURL().readBytes()
-                    coverMime = if (mix.coverUrl.contains(".png", ignoreCase = true)) "image/png" else "image/jpeg"
-                } catch (e: Exception) {
-                    log.warn("Could not fetch cover image for mix {}: {}", id, e.message)
-                    val fallback = javaClass.classLoader.getResourceAsStream("default-cover.png")
-                        ?: throw IllegalStateException("default-cover.png missing from resources")
-                    coverBytes = fallback.readBytes()
-                    coverMime = "image/png"
-                }
-            } else {
-                val fallback = javaClass.classLoader.getResourceAsStream("default-cover.png")
-                    ?: throw IllegalStateException("default-cover.png missing from resources")
-                coverBytes = fallback.readBytes()
-                coverMime = "image/png"
-            }
+            val (coverBytes, coverMime) = fetchCover(mix.coverUrl, id)
             tag.setAlbumImage(coverBytes, coverMime)
 
             mp3.id3v2Tag = tag
