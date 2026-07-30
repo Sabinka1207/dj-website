@@ -8,8 +8,12 @@ export class ErrorBoundary extends Component<Props, State> {
   state: State = { crashed: false }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    const stack = [error.stack, info.componentStack].filter(Boolean).join('\n\n')
-    reportError(error.message || String(error), stack)
+    const stack = [error.stack, info.componentStack].filter(Boolean).join('\n\n--- React Component Stack ---\n')
+    reportError({
+      errorName: error.name || 'ReactError',
+      errorMessage: error.message || String(error),
+      stack,
+    })
   }
 
   static getDerivedStateFromError(): State {
