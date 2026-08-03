@@ -25,6 +25,7 @@ data class ClientErrorRequest(
     val errorKind: String = "",
     val severity: String = "",
     val action: String = "",
+    val summary: String = "",
     val possibleCause: String = "",
     val stackIsMinified: Boolean = false,
     val sourceFile: String = "",
@@ -48,8 +49,12 @@ data class ClientErrorRequest(
     val timezone: String = "",
     val online: Boolean = true,
     val sessionId: String = "",
+    val authState: String = "",
     val pageLoadMs: Long? = null,
     val timeSinceOpenMs: Long? = null,
+    val isLikelyBot: Boolean = false,
+    val botConfidence: String = "",
+    val botSignals: List<String> = emptyList(),
     val breadcrumbs: List<JsonNode> = emptyList(),
 )
 
@@ -139,6 +144,12 @@ class ClientErrorController(private val telegram: TelegramService) {
             }
             appendLine(header)
 
+            // ── one-line summary ───────────────────────────────────────────
+            if (b.summary.isNotBlank()) {
+                appendLine()
+                appendLine(esc(b.summary))
+            }
+
             // ── occurrence stats ───────────────────────────────────────────
             if (rec.count > 1) {
                 appendLine()
@@ -146,6 +157,17 @@ class ClientErrorController(private val telegram: TelegramService) {
                 appendLine("Count: <b>${rec.count}</b>")
                 appendLine("First seen: ${fmt.format(rec.firstSeen)}")
                 appendLine("Last seen:  ${fmt.format(rec.lastSeen)}")
+            }
+
+            // ── bot detection ──────────────────────────────────────────────
+            if (b.isLikelyBot) {
+                appendLine()
+                appendLine("🤖 <b>Visitor type</b>")
+                appendLine("Likely bot / crawler")
+                appendLine("Confidence: <b>${esc(b.botConfidence)}</b>")
+                if (b.botSignals.isNotEmpty()) {
+                    appendLine("Signals: ${b.botSignals.joinToString(", ") { esc(it) }}")
+                }
             }
 
             // ── error ──────────────────────────────────────────────────────
@@ -203,6 +225,10 @@ class ClientErrorController(private val telegram: TelegramService) {
                 appendLine()
                 appendLine("👤 <b>Session</b>")
                 appendLine("ID: <code>${esc(b.sessionId)}</code>")
+                if (b.authState.isNotBlank()) {
+                    val authLabel = if (b.authState == "Authenticated") "🔐 Authenticated" else "👁 Anonymous"
+                    appendLine("Auth: $authLabel")
+                }
                 if (b.pageLoadMs != null) appendLine("Page load: ${b.pageLoadMs}ms")
                 if (b.timeSinceOpenMs != null) {
                     val sec = b.timeSinceOpenMs / 1000

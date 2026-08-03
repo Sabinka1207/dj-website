@@ -1,5 +1,6 @@
 import { getBreadcrumbs, getLastFetchError } from './breadcrumbs'
-import { classifyError } from './errorClassifier'
+import { classifyError, detectBot } from './errorClassifier'
+import { getToken } from './adminAuth'
 import { getVisitorId } from './visitorId'
 
 // ── stable error ID ───────────────────────────────────────────────────────────
@@ -131,6 +132,7 @@ export interface ErrorReport {
   errorKind: string
   severity: string
   action: string
+  summary: string
   possibleCause: string
   stack: string
   stackIsMinified: boolean
@@ -161,8 +163,13 @@ export interface ErrorReport {
   online: boolean
   // session
   sessionId: string
+  authState: 'Authenticated' | 'Anonymous'
   pageLoadMs: number | null
   timeSinceOpenMs: number
+  // bot detection
+  isLikelyBot: boolean
+  botConfidence: string
+  botSignals: string[]
   // breadcrumbs
   breadcrumbs: ReturnType<typeof getBreadcrumbs>
 }
@@ -182,10 +189,31 @@ export async function buildErrorReport(opts: {
 }): Promise<ErrorReport> {
   const ua = navigator.userAgent
   const browser = parseBrowser(ua)
-  const { kind, severity, cause, action } = classifyError(opts.errorName, opts.errorMessage, opts.stack)
+  const os = parseOS(ua)
+  const device = deviceType(ua)
+  const viewportSize = `${window.innerWidth}×${window.innerHeight}`
+  const timeSinceOpen = Date.now() - pageOpenedAt
+  const crumbs = getBreadcrumbs()
+  const crumbKinds = crumbs.map(c => c.kind)
+
+  const { kind, severity, cause, action, summary } = classifyError(
+    opts.errorName,
+    opts.errorMessage,
+    opts.stack,
+    opts.sourceFile,
+  )
   const now = new Date()
   const lastFetchError = getLastFetchError()
   const errorId = await computeErrorId(opts.errorName, opts.errorMessage, opts.stack)
+
+  const bot = detectBot({
+    browserName: browser.name,
+    os,
+    viewportSize,
+    timeSinceOpenMs: timeSinceOpen,
+    breadcrumbKinds: crumbKinds,
+    userAgent: ua,
+  })
 
   return {
     errorId,
@@ -194,6 +222,9 @@ export async function buildErrorReport(opts: {
     errorKind: kind,
     severity,
     action,
+    summary: bot.isLikelyBot && bot.confidence !== 'Low'
+      ? `🤖 Likely bot traffic — ${summary}`
+      : summary,
     possibleCause: cause,
     stack: opts.stack,
     stackIsMinified: isMinifiedStack(opts.stack),
@@ -215,19 +246,24 @@ export async function buildErrorReport(opts: {
     userAgent: ua,
     browserName: browser.name,
     browserVersion: browser.version,
-    os: parseOS(ua),
-    deviceType: deviceType(ua),
+    os,
+    deviceType: device,
     screenResolution: `${screen.width}×${screen.height}`,
-    viewportSize: `${window.innerWidth}×${window.innerHeight}`,
+    viewportSize,
     language: navigator.language,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     online: navigator.onLine,
 
     sessionId: getVisitorId(),
+    authState: getToken() ? 'Authenticated' : 'Anonymous',
     pageLoadMs: pageLoadMs(),
-    timeSinceOpenMs: Date.now() - pageOpenedAt,
+    timeSinceOpenMs: timeSinceOpen,
 
-    breadcrumbs: getBreadcrumbs(),
+    isLikelyBot: bot.isLikelyBot,
+    botConfidence: bot.confidence,
+    botSignals: bot.signals,
+
+    breadcrumbs: crumbs,
   }
 }
 

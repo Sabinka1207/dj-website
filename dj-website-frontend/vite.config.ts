@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 function gitCommit(): string {
   try {
@@ -10,11 +12,20 @@ function gitCommit(): string {
   }
 }
 
+function appVersion(): string {
+  try {
+    const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'))
+    return pkg.version ?? 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'unknown'),
+    __APP_VERSION__: JSON.stringify(appVersion()),
     __GIT_COMMIT__: JSON.stringify(gitCommit()),
   },
   build: {

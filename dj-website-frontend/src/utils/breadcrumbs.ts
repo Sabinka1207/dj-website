@@ -101,10 +101,11 @@ window.fetch = async function (...args) {
   const rawUrl = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url
   const short = rawUrl.replace(window.location.origin, '').slice(0, 80)
   const method = ((args[1] as RequestInit | undefined)?.method ?? 'GET').toUpperCase()
-  push('fetch', `${method} ${short}`)
+  const startedAt = Date.now()
 
   try {
     const res = await _fetch(...args)
+    const durationMs = Date.now() - startedAt
 
     if (!res.ok) {
       // Clone so the caller can still consume the original body
@@ -121,12 +122,15 @@ window.fetch = async function (...args) {
         fetchErrorDetails.delete(fetchErrorDetails.keys().next().value!)
       }
 
-      push('fetch_error', `${method} ${short} → ${res.status}${body ? ` | ${body.slice(0, 60)}` : ''}`)
+      push('fetch_error', `${method} ${short} → ${res.status} (${durationMs}ms)${body ? ` | ${body.slice(0, 60)}` : ''}`)
+    } else {
+      push('fetch', `${method} ${short} → ${res.status} (${durationMs}ms)`)
     }
 
     return res
   } catch (err) {
-    push('fetch_error', `${method} ${short} → ${err instanceof Error ? err.message : String(err)}`)
+    const durationMs = Date.now() - startedAt
+    push('fetch_error', `${method} ${short} → ${err instanceof Error ? err.message : String(err)} (${durationMs}ms)`)
     throw err
   }
 }
