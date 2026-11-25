@@ -5,6 +5,8 @@ import logo from '../assets/Sabi logo white s png.png'
 import styles from './GlobalPlayer.module.css'
 import { getVisitorId } from '../utils/visitorId'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+
 function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '0:00'
   const m = Math.floor(seconds / 60)
@@ -64,7 +66,7 @@ export default function GlobalPlayer() {
         </button>
 
         <a
-          href={`/api/mixes/${currentMix.id}/download?v=${getVisitorId()}`}
+          href={`${API_BASE}/api/mixes/${currentMix.id}/download?v=${getVisitorId()}`}
           download
           className={styles.btn}
           aria-label="Download mix"

@@ -1,6 +1,8 @@
 import { createContext, useContext, useRef, useState, useEffect, useCallback, ReactNode } from 'react'
 import { getVisitorId } from '../utils/visitorId'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+
 export interface PlayerMix {
   id: number
   url: string
@@ -84,7 +86,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     } else {
       if (currentMix) reportPlay(currentMix.id)
       audio.pause()
-      audio.src = `/api/mixes/${mix.id}/stream`
+      audio.src = `${API_BASE}/api/mixes/${mix.id}/stream`
       audio.currentTime = 0
       setCurrentTime(0)
       setDuration(mix.durationSeconds)
