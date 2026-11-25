@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authHeaders, clearToken } from '../../utils/adminAuth'
@@ -24,6 +24,8 @@ type FormState = {
   partyName: string
   hours: string
 }
+
+type SortField = 'date' | 'venue' | 'city' | 'country'
 
 const EMPTY_FORM: FormState = { date: '', venue: '', city: '', country: 'DE', partyName: '', hours: '' }
 
@@ -74,6 +76,9 @@ export default function AdminEvents() {
   const [tempFocusY, setTempFocusY] = useState(50)
   const [renderedImgSize, setRenderedImgSize] = useState<{ w: number; h: number } | null>(null)
   const [grabbing, setGrabbing] = useState(false)
+  const [sortField, setSortField] = useState<SortField>('date')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [collapsedYears, setCollapsedYears] = useState<Set<number>>(new Set())
   const posterInputRef = useRef<HTMLInputElement>(null)
   const focalImgRef = useRef<HTMLImageElement>(null)
   const isDraggingRef = useRef(false)
@@ -85,7 +90,14 @@ export default function AdminEvents() {
     if (res.status === 401) { clearToken(); navigate('/admin/login'); return }
     if (!res.ok) return
     const data = await res.json()
-    if (Array.isArray(data)) { setEvents(data); setListLoading(false) }
+    if (Array.isArray(data)) {
+      setEvents(data)
+      setListLoading(false)
+      const currentYear = new Date().getFullYear()
+      const years = new Set<number>(data.map((e: Event) => new Date(e.date).getFullYear()))
+      years.delete(currentYear)
+      setCollapsedYears(years)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -295,6 +307,50 @@ export default function AdminEvents() {
     ? getCropBox(renderedImgSize.w, renderedImgSize.h, tempFocusX, tempFocusY)
     : null
 
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      let cmp = 0
+      if (sortField === 'date') cmp = a.date.localeCompare(b.date)
+      else if (sortField === 'venue') cmp = a.venue.localeCompare(b.venue)
+      else if (sortField === 'city') cmp = a.city.localeCompare(b.city)
+      else if (sortField === 'country') cmp = a.country.localeCompare(b.country)
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [events, sortField, sortDir])
+
+  const eventsByYear = useMemo(() => {
+    const map = new Map<number, Event[]>()
+    for (const ev of sortedEvents) {
+      const year = new Date(ev.date).getFullYear()
+      if (!map.has(year)) map.set(year, [])
+      map.get(year)!.push(ev)
+    }
+    return [...map.entries()].sort((a, b) => b[0] - a[0])
+  }, [sortedEvents])
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDir(field === 'date' ? 'desc' : 'asc')
+    }
+  }
+
+  const toggleYear = (year: number) => {
+    setCollapsedYears(prev => {
+      const next = new Set(prev)
+      if (next.has(year)) next.delete(year)
+      else next.add(year)
+      return next
+    })
+  }
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>
+    return <span style={{ marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
+  }
+
   return (
     <>
       <div>
@@ -404,58 +460,79 @@ export default function AdminEvents() {
             <thead>
               <tr>
                 <th></th>
-                <th>Date</th>
-                <th>Venue</th>
-                <th>City</th>
-                <th>Country</th>
+                <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} onClick={() => handleSort('date')}>
+                  Date<SortIcon field="date" />
+                </th>
+                <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} onClick={() => handleSort('venue')}>
+                  Venue<SortIcon field="venue" />
+                </th>
+                <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} onClick={() => handleSort('city')}>
+                  City<SortIcon field="city" />
+                </th>
+                <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }} onClick={() => handleSort('country')}>
+                  Country<SortIcon field="country" />
+                </th>
                 <th>Party name</th>
                 <th>Hours</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {events.map(ev => {
-                const { partyName, hours } = parseDescription(ev.description)
-                return (
-                  <tr key={ev.id}>
-                    <td style={{ width: 44, padding: '4px 8px' }}>
-                      {ev.posterUrl ? (
-                        <img
-                          src={ev.posterUrl}
-                          alt="poster"
-                          style={{
-                            width: 36,
-                            height: 48,
-                            objectFit: 'cover',
-                            objectPosition: `${ev.posterFocusX}% ${ev.posterFocusY}%`,
-                            borderRadius: 2,
-                            display: 'block',
-                          }}
-                        />
-                      ) : (
-                        <span className={styles.muted} style={{ fontSize: '1.1rem' }}>—</span>
-                      )}
-                    </td>
-                    <td>{ev.date}</td>
-                    <td>{ev.venue}</td>
-                    <td>{ev.city}</td>
-                    <td>{ev.country}</td>
-                    <td>{partyName}</td>
-                    <td>{hours || <span className={styles.muted}>—</span>}</td>
-                    <td className={styles.rowActions}>
-                      <button className={styles.iconBtn} onClick={() => openEdit(ev)} title="Edit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      </button>
-                      <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={() => handleDelete(ev.id)} title="Delete">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-              {events.length === 0 && (
-                <tr><td colSpan={8} className={styles.empty}>{listLoading ? <span className={styles.spinner} style={{ margin: '0 auto' }} /> : 'No events yet'}</td></tr>
+              {listLoading && (
+                <tr><td colSpan={8} className={styles.empty}><span className={styles.spinner} style={{ margin: '0 auto' }} /></td></tr>
               )}
+              {!listLoading && events.length === 0 && (
+                <tr><td colSpan={8} className={styles.empty}>No events yet</td></tr>
+              )}
+              {!listLoading && eventsByYear.map(([year, yearEvents]) => {
+                const collapsed = collapsedYears.has(year)
+                return [
+                  <tr key={`year-${year}`} onClick={() => toggleYear(year)} style={{ cursor: 'pointer', background: 'var(--color-surface, #1a1a1a)' }}>
+                    <td colSpan={8} style={{ padding: '6px 12px', fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.05em', color: 'var(--color-text-muted)', userSelect: 'none' }}>
+                      <span style={{ marginRight: 8 }}>{collapsed ? '▶' : '▼'}</span>
+                      {year}
+                      <span style={{ marginLeft: 8, fontWeight: 400, opacity: 0.5 }}>({yearEvents.length})</span>
+                    </td>
+                  </tr>,
+                  ...(!collapsed ? yearEvents.map(ev => {
+                    const { partyName, hours } = parseDescription(ev.description)
+                    return (
+                      <tr key={ev.id}>
+                        <td style={{ width: 44, padding: '4px 8px' }}>
+                          {ev.posterUrl ? (
+                            <img
+                              src={ev.posterUrl}
+                              alt="poster"
+                              style={{
+                                width: 36, height: 48,
+                                objectFit: 'cover',
+                                objectPosition: `${ev.posterFocusX}% ${ev.posterFocusY}%`,
+                                borderRadius: 2, display: 'block',
+                              }}
+                            />
+                          ) : (
+                            <span className={styles.muted} style={{ fontSize: '1.1rem' }}>—</span>
+                          )}
+                        </td>
+                        <td>{ev.date}</td>
+                        <td>{ev.venue}</td>
+                        <td>{ev.city}</td>
+                        <td>{ev.country}</td>
+                        <td>{partyName}</td>
+                        <td>{hours || <span className={styles.muted}>—</span>}</td>
+                        <td className={styles.rowActions}>
+                          <button className={styles.iconBtn} onClick={() => openEdit(ev)} title="Edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} onClick={() => handleDelete(ev.id)} title="Delete">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  }) : []),
+                ]
+              })}
             </tbody>
           </table>
         </div>
