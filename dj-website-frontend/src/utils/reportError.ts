@@ -62,6 +62,9 @@ const IGNORE_PATTERNS = [
   /extension:\/\//i,
   /moz-extension:\/\//i,
   /chrome-extension:\/\//i,
+  // Facebook in-app browser injecting its own perf monitoring JS into the page
+  /iabjs:\/\//i,
+  /postMessage.*Java object is gone/i,
 ]
 
 function shouldIgnore(message: string): boolean {
