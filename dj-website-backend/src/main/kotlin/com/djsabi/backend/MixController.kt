@@ -6,6 +6,7 @@ import com.djsabi.backend.repository.MixDownloadEventRepository
 import com.djsabi.backend.repository.MixPlayEventRepository
 import com.djsabi.backend.repository.MixRepository
 import com.mpatric.mp3agic.ID3v24Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
 import java.net.URI
@@ -19,6 +20,7 @@ import org.springframework.web.context.request.async.AsyncRequestNotUsableExcept
 import org.springframework.web.server.ResponseStatusException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 
 data class MixResponse(
     val id: Long,
@@ -80,6 +82,51 @@ class MixController(
             playEventRepository.save(MixPlayEvent(mixId = id, visitorId = body.visitorId, secondsPlayed = body.secondsPlayed))
         }
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/{id}/stream")
+    fun stream(@PathVariable id: Long, request: HttpServletRequest, response: HttpServletResponse) {
+        val mix = mixRepository.findById(id).orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
+        if (mix.publicId.isBlank() || r2BucketName.isBlank()) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+        val rangeHeader = request.getHeader("Range")
+        val totalSize = s3Client.headObject(
+            HeadObjectRequest.builder().bucket(r2BucketName).key(mix.publicId).build()
+        ).contentLength()
+
+        val (start, end) = if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+            val parts = rangeHeader.removePrefix("bytes=").split("-")
+            val s = parts[0].toLongOrNull() ?: 0L
+            val e = parts.getOrNull(1)?.toLongOrNull() ?: (totalSize - 1)
+            s to e
+        } else {
+            0L to (totalSize - 1)
+        }
+
+        val length = end - start + 1
+        response.contentType = "audio/mpeg"
+        response.setHeader("Accept-Ranges", "bytes")
+        response.setHeader("Cache-Control", "no-store")
+
+        if (rangeHeader != null) {
+            response.status = 206
+            response.setHeader("Content-Range", "bytes $start-$end/$totalSize")
+        }
+        response.setContentLengthLong(length)
+
+        val req = GetObjectRequest.builder()
+            .bucket(r2BucketName)
+            .key(mix.publicId)
+            .range("bytes=$start-$end")
+            .build()
+
+        s3Client.getObject(req).use { s3Stream ->
+            try {
+                s3Stream.transferTo(response.outputStream)
+            } catch (e: Exception) {
+                if (!isClientDisconnect(e)) log.error("Error streaming mix {}", id, e)
+            }
+        }
     }
 
     private fun defaultCover(): Pair<ByteArray, String> {

@@ -71,27 +71,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         reportPlay(mix.id)
         setIsPlaying(false)
       } else {
-        audio.play().catch(() => {})
         playStartRef.current = Date.now()
         setIsPlaying(true)
         if (typeof window !== 'undefined' && (window as any).umami) {
           (window as any).umami.track('mix_played', { title: mix.title, id: mix.id })
         }
+        audio.play().catch(() => {
+          setIsPlaying(false)
+          playStartRef.current = null
+        })
       }
     } else {
       if (currentMix) reportPlay(currentMix.id)
       audio.pause()
-      audio.src = mix.url
+      audio.src = `/api/mixes/${mix.id}/stream`
       audio.currentTime = 0
       setCurrentTime(0)
       setDuration(mix.durationSeconds)
       setCurrentMix(mix)
-      audio.play().catch(() => {})
       playStartRef.current = Date.now()
       setIsPlaying(true)
       if (typeof window !== 'undefined' && (window as any).umami) {
         (window as any).umami.track('mix_played', { title: mix.title, id: mix.id })
       }
+      audio.play().catch(() => {
+        setIsPlaying(false)
+        playStartRef.current = null
+      })
     }
   }, [currentMix, isPlaying, reportPlay])
 
@@ -152,6 +158,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const onEnded = () => {
       if (currentMix) reportPlay(currentMix.id)
       setIsPlaying(false)
+      audio.currentTime = 0
       setCurrentTime(0)
     }
 
