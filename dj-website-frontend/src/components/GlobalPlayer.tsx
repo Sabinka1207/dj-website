@@ -5,7 +5,7 @@ import logo from '../assets/Sabi logo white s png.png'
 import styles from './GlobalPlayer.module.css'
 import { getVisitorId } from '../utils/visitorId'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+const API_BASE = ''
 
 function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '0:00'

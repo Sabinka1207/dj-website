@@ -1,7 +1,7 @@
 import { createContext, useContext, useRef, useState, useEffect, useCallback, ReactNode } from 'react'
 import { getVisitorId } from '../utils/visitorId'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+const API_BASE = ''
 
 export interface PlayerMix {
   id: number
